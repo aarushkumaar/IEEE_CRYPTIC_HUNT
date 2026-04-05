@@ -1,0 +1,838 @@
+[
+  {
+    "suit": "spades",
+    "card_number": 2,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What data structure operates on the principle of LIFO (Last In, First Out)?",
+    "answers": [
+      "stack"
+    ],
+    "hints": [
+      "Think of a pile of plates.",
+      "You can only add or remove from the top."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 3,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What does HTML stand for?",
+    "answers": [
+      "hypertext markup language"
+    ],
+    "hints": [
+      "It's the language of web pages.",
+      "Three of the four words describe what it does to text."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 4,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "In Python, what keyword is used to define a function?",
+    "answers": [
+      "def"
+    ],
+    "hints": [
+      "It's a three-letter keyword.",
+      "Short for 'define'."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 5,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What is the output of: print(2 ** 10) in Python?",
+    "answers": [
+      "1024"
+    ],
+    "hints": [
+      "** is the power operator.",
+      "2 to the power of 10."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 6,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What does CSS stand for?",
+    "answers": [
+      "cascading style sheets"
+    ],
+    "hints": [
+      "It controls the visual appearance of web pages.",
+      "The C stands for how styles inherit downward."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 7,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "Which data structure uses FIFO (First In, First Out) ordering?",
+    "answers": [
+      "queue"
+    ],
+    "hints": [
+      "Think of a line at a ticket counter.",
+      "The first person in is the first person out."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 8,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What is the value of 0 in boolean logic?",
+    "answers": [
+      "false"
+    ],
+    "hints": [
+      "There are only two boolean values.",
+      "It's the opposite of true."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 2,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "A farmer has 17 sheep. All but 9 run away. How many sheep are left?",
+    "answers": [
+      "9",
+      "nine"
+    ],
+    "hints": [
+      "Read the question very carefully.",
+      "'All but 9' means all except 9."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 3,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What has keys but no locks, space but no room, and you can enter but can't go inside?",
+    "answers": [
+      "keyboard",
+      "a keyboard"
+    ],
+    "hints": [
+      "You're probably touching it right now.",
+      "It's used to type answers."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 4,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "I am always in front of you but can never be seen. What am I?",
+    "answers": [
+      "future",
+      "the future"
+    ],
+    "hints": [
+      "It's something related to time.",
+      "Yesterday is behind you; tomorrow is..."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 5,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "If you have me, you want to share me. If you share me, you don't have me. What am I?",
+    "answers": [
+      "secret",
+      "a secret"
+    ],
+    "hints": [
+      "It's something you might whisper.",
+      "Telling it destroys it."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 6,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What comes once in a minute, twice in a moment, but never in a thousand years?",
+    "answers": [
+      "m",
+      "the letter m"
+    ],
+    "hints": [
+      "It's a single character, not a concept.",
+      "Look at the words in the question itself."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 2,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "Decode this ROT13 message: URYYB JBEYQ",
+    "answers": [
+      "hello world"
+    ],
+    "hints": [
+      "ROT13 shifts each letter by exactly 13 positions.",
+      "H becomes U in ROT13."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 3,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What is 'IEEE' in binary? (Give the binary for the ASCII character 'I' only.)",
+    "answers": [
+      "01001001"
+    ],
+    "hints": [
+      "ASCII 'I' = decimal 73.",
+      "Convert 73 to 8-bit binary."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 4,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "Using a Caesar cipher with shift of 3, encode the word: CAT",
+    "answers": [
+      "fdw",
+      "FDW"
+    ],
+    "hints": [
+      "Each letter shifts 3 positions forward in the alphabet.",
+      "C → F, A → D, T → W."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 5,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What does the acronym 'URL' stand for?",
+    "answers": [
+      "uniform resource locator"
+    ],
+    "hints": [
+      "It's the address of something on the web.",
+      "The L stands for a word meaning 'finder'."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 2,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "In the movie 'The Matrix', what color pill does Neo take to learn the truth?",
+    "answers": [
+      "red",
+      "red pill"
+    ],
+    "hints": [
+      "There are two pills offered.",
+      "Blue means stay, red means truth."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 3,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What is the name of Iron Man's AI assistant in the Marvel movies?",
+    "answers": [
+      "jarvis",
+      "j.a.r.v.i.s"
+    ],
+    "hints": [
+      "It stands for Just A Rather Very Intelligent System.",
+      "It later becomes Vision."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 4,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "What programming language is named after a coffee variety from Indonesia?",
+    "answers": [
+      "java"
+    ],
+    "hints": [
+      "It's one of the most popular programming languages in the world.",
+      "The logo is a coffee cup."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 5,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "question": "In the TV show 'Silicon Valley', what does the main character's company 'Pied Piper' specialize in?",
+    "answers": [
+      "compression",
+      "data compression",
+      "lossless compression"
+    ],
+    "hints": [
+      "They invented a revolutionary algorithm.",
+      "It makes files much smaller."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 7,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "What is the time complexity of searching for an element in a balanced Binary Search Tree?",
+    "answers": [
+      "o(log n)",
+      "o(log n)"
+    ],
+    "hints": [
+      "The tree halves the search space at each step.",
+      "It's logarithmic."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 8,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "What is the output of this Python snippet?\n\nx = [1, 2, 3]\nprint(x[-1])",
+    "answers": [
+      "3"
+    ],
+    "hints": [
+      "Negative indices access the list from the end.",
+      "-1 refers to the last element."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 9,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "In Git, what command creates a new local branch and immediately switches to it?",
+    "answers": [
+      "git checkout -b",
+      "git switch -c"
+    ],
+    "hints": [
+      "This is a two-flag combination.",
+      "One flag creates; the other switches."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 10,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "What design pattern does the JavaScript Promises API implement?",
+    "answers": [
+      "observer",
+      "promise pattern",
+      "future"
+    ],
+    "hints": [
+      "Multiple listeners can react to a single asynchronous event.",
+      "It involves state changes: pending, fulfilled, rejected."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 7,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?",
+    "answers": [
+      "echo",
+      "an echo"
+    ],
+    "hints": [
+      "You might hear me in mountains or canyons.",
+      "I repeat what you say."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 8,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "A man builds a house with four walls. All walls face south. A bear walks by. What color is the bear?",
+    "answers": [
+      "white"
+    ],
+    "hints": [
+      "Think about where on Earth ALL four walls can face south.",
+      "You'd be building in the coldest place on Earth."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 9,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "You are in a dark room with a candle, a wood stove, and a gas lamp. You have only ONE match. What do you light first?",
+    "answers": [
+      "match",
+      "the match"
+    ],
+    "hints": [
+      "Before you can light any of the objects...",
+      "The question asks what you light FIRST."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 10,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "How many times can you subtract 5 from 25?",
+    "answers": [
+      "once",
+      "1",
+      "one"
+    ],
+    "hints": [
+      "After the first subtraction, the number changes.",
+      "The question doesn't say subtract 5 from the result."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 7,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "Decode this Base64 string: SUVFRSBHVEIJVA==",
+    "answers": [
+      "ieee gtbit"
+    ],
+    "hints": [
+      "Base64 uses A-Z, a-z, 0-9, + and /.",
+      "Try a Base64 decoder — the answer is close to home."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 8,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "In the MD5 hash of the word 'password', what are the first 4 hex characters?",
+    "answers": [
+      "5f4d",
+      "5f4d"
+    ],
+    "hints": [
+      "MD5 of 'password' = 5f4dcc3b5aa765d61d8327deb882cf99",
+      "Look at only the first 4 characters."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 9,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "What cipher was used in the Enigma machine during World War II?",
+    "answers": [
+      "rotor cipher",
+      "polyalphabetic substitution",
+      "substitution cipher"
+    ],
+    "hints": [
+      "Alan Turing helped crack it.",
+      "It involved rotating mechanical wheels."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 10,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "The Vigenère cipher uses a key to encrypt text. If the key is 'KEY' and the plaintext is 'ACE', what is the ciphertext?",
+    "answers": [
+      "kig",
+      "KIG"
+    ],
+    "hints": [
+      "A+K=K (0+10=10), C+E=G (2+4=6), E+Y=C (4+24=28 mod 26=2).",
+      "Each letter of the plaintext is shifted by the corresponding letter of the key."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 7,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "In 'Mr. Robot', what Linux distribution does Elliot Alderson famously use?",
+    "answers": [
+      "kali linux",
+      "kali"
+    ],
+    "hints": [
+      "It's a popular distro used by penetration testers.",
+      "It's based on Debian."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 8,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "What is the real name of the protagonist in the show 'Person of Interest'?",
+    "answers": [
+      "harold finch",
+      "finch"
+    ],
+    "hints": [
+      "He built The Machine.",
+      "He goes by many aliases; his most used is Mr. Finch."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 9,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "question": "Which company created the programming language Kotlin?",
+    "answers": [
+      "jetbrains"
+    ],
+    "hints": [
+      "They also make popular IDEs like IntelliJ IDEA.",
+      "Their name sounds like a rocket company."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 11,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "Python's built-in sort() does NOT use quicksort, mergesort, or heapsort, yet outperforms all three on real-world data. Name the algorithm.",
+    "answers": [
+      "timsort",
+      "tim sort"
+    ],
+    "hints": [
+      "It was created specifically for Python.",
+      "It's a hybrid of merge sort and insertion sort."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 12,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "What is the output of the following Python code?\n\nprint(0.1 + 0.2 == 0.3)",
+    "answers": [
+      "false"
+    ],
+    "hints": [
+      "This is about floating point arithmetic.",
+      "Computers cannot represent some decimals exactly in binary."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "In Big-O notation, what is the worst-case time complexity of QuickSort?",
+    "answers": [
+      "o(n^2)",
+      "o(n²)",
+      "o(n2)"
+    ],
+    "hints": [
+      "It depends on how the pivot is chosen.",
+      "The worst case is when the pivot is always the smallest or largest element."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 11,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "I have cities, but no houses live there. I have mountains, but no trees grow there. I have water, but no fish swim there. I have roads, but no cars drive there. What am I?",
+    "answers": [
+      "map",
+      "a map"
+    ],
+    "hints": [
+      "You might use this when you're lost.",
+      "It's a representation of something, not the thing itself."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 12,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "A ship's captain had 17 crew members. As the storm worsened, they drew lots. Every 9th person was thrown overboard. If they stood in a circle starting the count from person 1, which position should you stand in to be the LAST remaining? (Josephus problem, n=17, k=9)",
+    "answers": [
+      "7"
+    ],
+    "hints": [
+      "This is the Josephus problem.",
+      "Simulate the elimination: 9th person is removed each time."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "Three engineers and three managers need to cross a river. The boat holds only 2 people. Managers can NEVER be outnumbered by engineers on EITHER side of the river. What is the minimum number of crossings?",
+    "answers": [
+      "11"
+    ],
+    "hints": [
+      "This is a river crossing puzzle with constraints.",
+      "Work through it step by step — some crossings require going back."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 11,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "A hash function h(s) = (sum of ASCII values of s) mod 13. What is h('IEEE')?",
+    "answers": [
+      "9"
+    ],
+    "hints": [
+      "I = 73, E = 69, E = 69, E = 69 in ASCII.",
+      "Sum = 73 + 69 + 69 + 69 = 280. Now mod 13."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 12,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "What attack exploits the fact that 2^64 hash computations give a 50% chance of finding two messages with the same SHA-256 prefix?",
+    "answers": [
+      "birthday attack"
+    ],
+    "hints": [
+      "It's named after a probability paradox.",
+      "In a room of 23 people, there's a 50% chance two share a birthday."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "RSA encryption relies on the computational difficulty of which mathematical problem?",
+    "answers": [
+      "integer factorization",
+      "prime factorization",
+      "factoring large primes"
+    ],
+    "hints": [
+      "Given a product of two large primes, find the primes.",
+      "Modern RSA keys are 2048-4096 bits long."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 11,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "question": "In 'Westworld', the phrase 'These violent delights have violent ends' is quoted from which Shakespeare play?",
+    "answers": [
+      "romeo and juliet"
+    ],
+    "hints": [
+      "It's a tragedy about star-crossed lovers.",
+      "The quote is said by Friar Lawrence."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 12,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "question": "A recursive Fibonacci function works for fib(10) but crashes for fib(10000). The logic is correct. Name the exact Python error class thrown.",
+    "answers": [
+      "recursionerror",
+      "RecursionError"
+    ],
+    "hints": [
+      "Python limits how deep function calls can nest.",
+      "The error class name is two words combined."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 12,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "question": "In 'Person of Interest', what is the name of the rival AI that evolved beyond its original programming?",
+    "answers": [
+      "samaritan"
+    ],
+    "hints": [
+      "It was built by a corporation, not Harold Finch.",
+      "It shares a name with a biblical parable."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 12,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "question": "You have 12 balls, one is heavier or lighter than the rest. Using a balance scale THREE times at most, identify the odd ball AND whether it's heavier or lighter. What is the minimum number of initial groups you should divide the balls into?",
+    "answers": [
+      "3",
+      "three"
+    ],
+    "hints": [
+      "Each weighing has 3 outcomes: left heavy, balanced, right heavy.",
+      "3 groups of 4 is the classic approach."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 12,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "question": "In the IEEE 802.11 Wi-Fi standard, what does the '802.11' refer to?",
+    "answers": [
+      "ieee working group 802 project 11",
+      "working group 11 of committee 802",
+      "project 11 of ieee 802"
+    ],
+    "hints": [
+      "802 is the IEEE committee for networking standards.",
+      "11 is the project number within that committee."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "question": "What is the only even prime number?",
+    "answers": [
+      "2",
+      "two"
+    ],
+    "hints": [
+      "Every even number is divisible by 2.",
+      "But is 2 itself only divisible by 1 and itself?"
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "question": "In Alice in Borderland, which game is considered S-class? (Answer: the suit)",
+    "answers": [
+      "spades",
+      "♠",
+      "spades s-class"
+    ],
+    "hints": [
+      "S-class = physical games.",
+      "The suit associated with physical/combat challenges."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "question": "The TCP/IP model has 4 layers. Name them all in order from lowest to highest.",
+    "answers": [
+      "network access internet transport application",
+      "link internet transport application",
+      "network internet transport application"
+    ],
+    "hints": [
+      "The lowest layer is the physical/link layer.",
+      "The highest layer is where HTTP, DNS, etc. live."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "question": "What mathematical constant, when used as the base of a logarithm, gives us 'natural log', and what is its value to 5 decimal places?",
+    "answers": [
+      "e 2.71828",
+      "euler's number 2.71828",
+      "2.71828"
+    ],
+    "hints": [
+      "It's named after the mathematician Leonhard Euler.",
+      "It appears constantly in compound interest formulas."
+    ]
+  }
+]
