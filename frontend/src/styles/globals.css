@@ -2,34 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Egyptian Google Fonts ──────────────────────────────────────── */
+/* Added via index.html */
+
 /* ── CSS Variables ──────────────────────────────────────────────── */
 :root {
-  --bg-base:       #08080E;
-  --bg-card:       #111119;
-  --bg-elevated:   #17171F;
-  --accent:        #7B6EF6;
-  --accent-glow:   rgba(123, 110, 246, 0.25);
-  --cyan:          #1BE0D4;
-  --gold:          #F5C542;
-  --red:           #F04A57;
-  --green:         #22D77B;
-  --text-primary:  #EEEEF8;
-  --text-secondary:#9494B8;
-  --text-faint:    #4A4A6A;
-  --border:        #222236;
-  --border-glow:   #3A3A60;
+  /* Legacy variables (kept for compatibility) */
+  --bg-base:       #080808;
+  --bg-card:       #0D0B05;
+  --bg-elevated:   #111111;
+  --accent:        #C9A84C;
+  --accent-glow:   rgba(201, 168, 76, 0.25);
+  --cyan:          #C9A84C;
+  --gold:          #C9A84C;
+  --gold-light:    #E8D5A0;
+  --gold-dark:     #8B6914;
+  --red:           #C0392B;
+  --green:         #27AE60;
+  --danger:        #C0392B;
+  --success:       #27AE60;
+  --text-primary:  #F5ECD0;
+  --text-secondary:#8A7A5A;
+  --text-faint:    #4A3D28;
+  --border:        rgba(201, 168, 76, 0.25);
+  --border-glow:   rgba(201, 168, 76, 0.5);
 
-  --suit-spades:   #7B6EF6;
-  --suit-hearts:   #F04A57;
-  --suit-diamonds: #F5C542;
-  --suit-clubs:    #1BE0D4;
+  --suit-spades:   #C9A84C;
+  --suit-hearts:   #C9A84C;
+  --suit-diamonds: #C9A84C;
+  --suit-clubs:    #C9A84C;
 }
 
-/* ── Base Reset ─────────────────────────────────────────────────── */
+/* ── Hide Default Cursor Everywhere ─────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  cursor: none !important;
 }
 
 html {
@@ -42,9 +51,10 @@ html {
 body {
   background-color: var(--bg-base);
   color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'IM Fell English', Georgia, serif;
   min-height: 100vh;
   overflow-x: hidden;
+  cursor: none !important;
 }
 
 #root {
@@ -53,156 +63,327 @@ body {
   flex-direction: column;
 }
 
+/* ── Golden Scrollbar ────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #000; }
+::-webkit-scrollbar-thumb { background: #C9A84C; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #E8D5A0; }
+
 /* ── Selection ──────────────────────────────────────────────────── */
 ::selection {
-  background: rgba(123, 110, 246, 0.35);
-  color: #EEEEF8;
+  background: rgba(201, 168, 76, 0.35);
+  color: #F5ECD0;
 }
-
-/* ── Scrollbar ──────────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-base); }
-::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 /* ── Typography Utilities ───────────────────────────────────────── */
-.font-display { font-family: 'Syne', sans-serif; }
-.font-body    { font-family: 'DM Sans', sans-serif; }
-.font-mono    { font-family: 'IBM Plex Mono', monospace; }
+.font-display  { font-family: 'Cinzel Decorative', 'Cinzel', serif; }
+.font-body     { font-family: 'IM Fell English', Georgia, serif; }
+.font-caps     { font-family: 'Cinzel', serif; letter-spacing: 0.15em; }
+.font-mono     { font-family: 'IBM Plex Mono', monospace; }
 
-/* ── Glass Card ─────────────────────────────────────────────────── */
-.glass {
-  background: rgba(17, 17, 25, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(123, 110, 246, 0.2);
+/* ── Keyframe Animations ────────────────────────────────────────── */
+
+/* Floating card animation */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
 }
 
-/* ── Suit Color Helpers ─────────────────────────────────────────── */
-.suit-spades   { color: var(--suit-spades);   }
-.suit-hearts   { color: var(--suit-hearts);   }
-.suit-diamonds { color: var(--suit-diamonds); }
-.suit-clubs    { color: var(--suit-clubs);    }
-
-.border-spades   { border-color: var(--suit-spades);   }
-.border-hearts   { border-color: var(--suit-hearts);   }
-.border-diamonds { border-color: var(--suit-diamonds); }
-.border-clubs    { border-color: var(--suit-clubs);    }
-
-/* ── Playing Card Base ──────────────────────────────────────────── */
-.playing-card {
-  position: relative;
-  width: clamp(280px, 80vw, 360px);
-  aspect-ratio: 5 / 7;
-  border-radius: 16px;
-  border: 2px solid;
-  overflow: hidden;
-  will-change: transform;
-  transition: box-shadow 0.3s ease;
+/* Gold border pulse */
+@keyframes goldPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(201,168,76,0.25); }
+  50% { box-shadow: 0 0 30px rgba(201,168,76,0.55), 0 0 60px rgba(201,168,76,0.15); }
 }
 
-.playing-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-  opacity: 0.4;
-  pointer-events: none;
-  z-index: 0;
+/* Border shimmer */
+@keyframes borderShimmer {
+  0%   { border-color: rgba(201,168,76,0.25); }
+  50%  { border-color: rgba(201,168,76,0.9); }
+  100% { border-color: rgba(201,168,76,0.25); }
 }
 
-/* ── Input Styles ───────────────────────────────────────────────── */
-.input-dark {
-  background: var(--bg-elevated);
-  border: 1.5px solid var(--border);
-  color: var(--text-primary);
-  font-family: 'IBM Plex Mono', monospace;
-  border-radius: 8px;
-  padding: 12px 16px;
-  width: 100%;
-  font-size: 16px;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  outline: none;
+/* Subtle shimmer sweep */
+@keyframes shimmerSweep {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
 }
 
-.input-dark::placeholder { color: var(--text-faint); }
-.input-dark:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(123, 110, 246, 0.15);
-}
-
-/* ── Button Styles ──────────────────────────────────────────────── */
-.btn-primary {
-  background: var(--accent);
-  color: white;
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-  border: none;
-  border-radius: 8px;
-  padding: 12px 24px;
-  cursor: pointer;
-  transition: box-shadow 0.2s, transform 0.1s;
-  will-change: transform;
-}
-
-.btn-primary:hover {
-  box-shadow: 0 0 20px rgba(123, 110, 246, 0.4);
-  transform: translateY(-1px);
-}
-
-.btn-primary:active { transform: translateY(0); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1.5px solid var(--border);
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  border-radius: 8px;
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
-}
-
-.btn-ghost:hover {
-  border-color: var(--border-glow);
-  color: var(--text-primary);
-}
-
-/* ── Noise Texture Overlay ──────────────────────────────────────── */
-.noise-overlay::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 100;
-}
-
-/* ── Page Transition ────────────────────────────────────────────── */
-.page-enter {
-  animation: slide-in-right 0.35s ease-out forwards;
-}
-
-/* ── Loading Spinner ────────────────────────────────────────────── */
-.spinner {
-  width: 32px;
-  height: 32px;
-  border: 2.5px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
+/* Spin */
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
 
-/* ── Grid Pattern Background ────────────────────────────────────── */
-.grid-bg {
-  background-image:
-    linear-gradient(rgba(34, 34, 54, 0.4) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(34, 34, 54, 0.4) 1px, transparent 1px);
-  background-size: 40px 40px;
+/* Shake */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
 }
+
+/* Fade in */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Sand drift */
+@keyframes sandDrift {
+  0%   { transform: translateX(-20px); opacity: 0; }
+  20%  { opacity: 0.6; }
+  80%  { opacity: 0.6; }
+  100% { transform: translateX(20px); opacity: 0; }
+}
+
+/* Title reveal */
+@keyframes titleReveal {
+  0%   { opacity: 0; letter-spacing: 0.8em; }
+  100% { opacity: 1; letter-spacing: 0.4em; }
+}
+
+/* ── Card-level float animation class ───────────────────────────── */
+.animate-float { animation: float 4s ease-in-out infinite; }
+.animate-gold-pulse { animation: goldPulse 3s ease-in-out infinite; }
+.animate-shimmer { animation: borderShimmer 2s ease-in-out infinite; }
+
+/* ── Glass Card (legacy compat) ─────────────────────────────────── */
+.glass {
+  background: rgba(10, 8, 0, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+}
+
+/* ── Egyptian Card Base ─────────────────────────────────────────── */
+.playing-card {
+  position: relative;
+  width: clamp(280px, 80vw, 360px);
+  aspect-ratio: 5 / 7;
+  border-radius: 8px;
+  border: 2px solid rgba(201, 168, 76, 0.6);
+  overflow: hidden;
+  will-change: transform;
+  transition: box-shadow 0.3s ease;
+  background: radial-gradient(ellipse at center, #1E1508, #0D0B05);
+  animation: float 4s ease-in-out infinite;
+}
+
+/* ── Input Styles ───────────────────────────────────────────────── */
+.input-dark {
+  background: #111111;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: #F5ECD0;
+  font-family: 'IM Fell English', Georgia, serif;
+  border-radius: 2px;
+  padding: 12px 16px;
+  width: 100%;
+  font-size: 15px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+
+.input-dark::placeholder { color: rgba(138, 122, 90, 0.6); font-style: italic; }
+.input-dark:focus {
+  border-color: #C9A84C;
+  box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.12);
+}
+
+/* ── Button Styles ──────────────────────────────────────────────── */
+.btn-primary {
+  background: #C9A84C;
+  color: #080808;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  border: none;
+  border-radius: 2px;
+  padding: 12px 24px;
+  cursor: none !important;
+  transition: box-shadow 0.25s, transform 0.15s;
+  will-change: transform;
+  font-size: 12px;
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 24px rgba(201, 168, 76, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active  { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed !important; transform: none; }
+
+.btn-ghost {
+  background: transparent;
+  color: #8A7A5A;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  font-family: 'Cinzel', serif;
+  font-weight: 500;
+  border-radius: 2px;
+  padding: 10px 20px;
+  cursor: none !important;
+  transition: border-color 0.2s, color 0.2s;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+}
+
+.btn-ghost:hover {
+  border-color: #C9A84C;
+  color: #C9A84C;
+}
+
+/* ── Spinner ────────────────────────────────────────────────────── */
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 2.5px solid rgba(201, 168, 76, 0.2);
+  border-top-color: #C9A84C;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+/* ── Suit Color Helpers (remapped to gold) ───────────────────────── */
+.suit-spades, .suit-hearts, .suit-diamonds, .suit-clubs {
+  color: #C9A84C;
+}
+
+.border-spades, .border-hearts, .border-diamonds, .border-clubs {
+  border-color: rgba(201, 168, 76, 0.5);
+}
+
+/* ── Egyptian ornate border shimmer text ────────────────────────── */
+.gold-shimmer-text {
+  background: linear-gradient(90deg, #8B6914 0%, #C9A84C 30%, #E8D5A0 50%, #C9A84C 70%, #8B6914 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmerSweep 3s linear infinite;
+}
+
+/* ── Page fade animations ───────────────────────────────────────── */
+.page-enter {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+/* ── Sand particle decoration ───────────────────────────────────── */
+.sand-particle {
+  position: fixed;
+  width: 2px;
+  height: 2px;
+  background: #C9A84C;
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  animation: sandDrift 6s ease-in-out infinite;
+}
+
+/* ── Hieroglyph border pattern ──────────────────────────────────── */
+.hiero-border {
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  box-shadow: 
+    inset 0 0 30px rgba(201, 168, 76, 0.03),
+    0 0 20px rgba(201, 168, 76, 0.08);
+}
+
+/* ── Noise texture overlay ──────────────────────────────────────── */
+.noise-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Score bar Egyptian ─────────────────────────────────────────── */
+.score-bar-egypt {
+  background: rgba(0, 0, 0, 0.9);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+  backdrop-filter: blur(12px);
+}
+
+/* ── Game page: responsive two-column grid ───────────────────────── */
+.game-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+@media (max-width: 768px) {
+  .game-grid {
+    grid-template-columns: 1fr;
+  }
+  /* On mobile — card column shrinks, right column stacks below */
+  .game-col-left {
+    border-right: none !important;
+    border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+    padding: 32px 16px !important;
+  }
+  .game-col-right {
+    padding: 24px 20px !important;
+  }
+}
+
+/* ── sm-show: show on ≥640px ────────────────────────────────────── */
+.sm-show { display: none; }
+@media (min-width: 640px) {
+  .sm-show { display: inline !important; }
+}
+
+/* ── Landing: sticky canvas vignette enhancement ─────────────────── */
+.canvas-vignette {
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.65) 100%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* ── Modal — goldPulse is used inline so ensure it's defined here ── */
+/* (already defined above as @keyframes goldPulse) */
+
+/* ── Sponsor card hover ─────────────────────────────────────────── */
+.sponsor-card {
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+.sponsor-card:hover {
+  border-color: rgba(201, 168, 76, 0.5) !important;
+  background: rgba(201, 168, 76, 0.08) !important;
+}
+
+/* ── CTA button shimmer on hover ────────────────────────────────── */
+.cta-search {
+  position: relative;
+  overflow: hidden;
+}
+.cta-search::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(201, 168, 76, 0.15),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+.cta-search:hover::after {
+  left: 140%;
+}
+
+/* ── Typography size helpers ────────────────────────────────────── */
+.text-egypt-xs  { font-size: 9px;  letter-spacing: 0.25em; font-family: 'Cinzel', serif; }
+.text-egypt-sm  { font-size: 11px; letter-spacing: 0.15em; font-family: 'Cinzel', serif; }
+.text-egypt-md  { font-size: 13px; letter-spacing: 0.1em;  font-family: 'Cinzel', serif; }
+
+/* ── Gold ornate rule line ───────────────────────────────────────── */
+.gold-rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(201, 168, 76, 0.35), transparent);
+  border: none;
+  margin: 0;
+}
+

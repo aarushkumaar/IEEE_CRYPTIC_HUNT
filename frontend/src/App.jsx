@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import Landing     from './pages/Landing';
 import Welcome     from './pages/Welcome';
+import RoundsSelection from './pages/RoundsSelection';
 import Game        from './pages/Game';
 import Wildcard    from './pages/Wildcard';
 import Rumbling    from './pages/Rumbling';
@@ -10,10 +11,14 @@ import Fail        from './pages/Fail';
 import Leaderboard from './pages/Leaderboard';
 import Admin       from './pages/Admin';
 import ProtectedRoute from './components/ProtectedRoute';
+import CustomCursor   from './components/CustomCursor';
 
 export default function App() {
   return (
     <BrowserRouter>
+      {/* Global Egyptian cursor — rendered above everything */}
+      <CustomCursor />
+
       <Routes>
         {/* Public routes */}
         <Route path="/"            element={<Landing />} />
@@ -23,6 +28,7 @@ export default function App() {
         {/* Protected game routes — requires auth */}
         <Route element={<ProtectedRoute />}>
           <Route path="/welcome"  element={<Welcome />} />
+          <Route path="/rounds"   element={<RoundsSelection />} />
           <Route path="/round/:n" element={<Game />} />
           <Route path="/rumbling" element={<Rumbling />} />
           <Route path="/wildcard" element={<Wildcard />} />

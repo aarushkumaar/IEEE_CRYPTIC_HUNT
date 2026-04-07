@@ -1,5 +1,4 @@
 import Timer from './Timer';
-import SuitIcon from './SuitIcon';
 
 const ROUND_NAMES = {
   1: 'Code & Logic',
@@ -8,59 +7,97 @@ const ROUND_NAMES = {
   4: 'Wildcard',
 };
 
-const ROUND_SUITS = {
-  1: 'spades',
-  2: 'hearts',
-  3: 'diamonds',
-  4: 'clubs',
-};
+const SUIT_GLYPHS = { 1: '𓅓', 2: '𓃒', 3: '𓆙', 4: '𓋹' };
 
 export default function ScoreBar({ progress, score, startTime }) {
-  const round = progress?.round ?? 1;
+  const round           = progress?.round ?? 1;
   const questionInRound = progress?.questionInRound ?? 1;
-  const suit = ROUND_SUITS[round];
+  const totalQuestions  = progress?.totalQuestions ?? 12;
+  const glyph = SUIT_GLYPHS[round] || '𓂀';
 
   return (
     <div
-      className="w-full flex items-center justify-between px-4 md:px-8 py-3"
+      className="score-bar-egypt"
       style={{
-        background: 'rgba(8,8,14,0.9)',
-        borderBottom: '1px solid var(--border)',
-        backdropFilter: 'blur(12px)',
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 20px',
+        height: 48,
         position: 'sticky',
         top: 0,
         zIndex: 50,
+        gap: 12,
       }}
     >
-      {/* Left: Round + Question */}
-      <div className="flex items-center gap-2">
-        <SuitIcon suit={suit} size={18} />
-        <span className="font-display font-semibold text-sm text-text-primary">
-          Round {round}
+      {/* Left — Round info */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+        <span style={{ fontSize: 16, filter: 'drop-shadow(0 0 4px rgba(201,168,76,0.5))' }}>{glyph}</span>
+        <span style={{
+          fontFamily: '"Cinzel", serif',
+          fontWeight: 600,
+          fontSize: 11,
+          letterSpacing: '0.12em',
+          color: '#C9A84C',
+          whiteSpace: 'nowrap',
+        }}>
+          ROUND {round}
         </span>
-        <span className="text-text-faint text-xs hidden sm:inline">— {ROUND_NAMES[round]}</span>
-        <span className="text-text-secondary text-xs ml-1">
-          · Q{questionInRound}/5
+        <span style={{
+          fontFamily: '"IM Fell English", serif',
+          fontStyle: 'italic',
+          fontSize: 11,
+          color: 'rgba(138,122,90,0.7)',
+          display: 'none',
+        }}
+        className="sm-show"
+        >
+          — {ROUND_NAMES[round]}
+        </span>
+        <span style={{
+          fontFamily: '"Cinzel", serif',
+          fontSize: 9,
+          letterSpacing: '0.1em',
+          color: 'rgba(201,168,76,0.4)',
+          marginLeft: 4,
+        }}>
+          Q{questionInRound}/{Math.ceil(totalQuestions / 3)}
         </span>
       </div>
 
-      {/* Center: Score */}
-      <div className="flex items-center gap-1">
-        <span className="text-text-secondary text-xs font-body">Score</span>
-        <span
-          className="font-display font-bold text-lg"
-          style={{ color: 'var(--accent)' }}
-        >
+      {/* Center — Score */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{
+          fontFamily: '"Cinzel", serif',
+          fontSize: 9,
+          letterSpacing: '0.2em',
+          color: 'rgba(201,168,76,0.45)',
+        }}>
+          SCORE
+        </span>
+        <span style={{
+          fontFamily: '"Cinzel Decorative", serif',
+          fontSize: 18,
+          color: '#C9A84C',
+          textShadow: '0 0 12px rgba(201,168,76,0.4)',
+        }}>
           {score ?? 0}
         </span>
       </div>
 
-      {/* Right: Timer */}
-      <div className="flex items-center gap-1">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-faint">
-          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-        </svg>
-        <Timer startTime={startTime} className="text-sm" />
+      {/* Right — Timer */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ color: 'rgba(201,168,76,0.4)', fontSize: 14 }}>⏳</span>
+        <Timer
+          startTime={startTime}
+          style={{
+            fontFamily: '"Cinzel", serif',
+            fontSize: 11,
+            color: 'rgba(201,168,76,0.6)',
+            letterSpacing: '0.1em',
+          }}
+        />
       </div>
     </div>
   );
