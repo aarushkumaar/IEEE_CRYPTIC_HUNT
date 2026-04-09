@@ -30,7 +30,7 @@ export function useAuth() {
   async function fetchProfile(userId) {
     const { data } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, name, score, status, hints_used, game_start_time, disqualified, game_finished, tries_remaining')
       .eq('id', userId)
       .single();
     setProfile(data);

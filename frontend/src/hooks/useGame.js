@@ -17,9 +17,12 @@ export function useGame() {
     setAnswerResult(null);
     try {
       const { data } = await api.get('/game/current');
-      if (data.completed) {
-        return { completed: true };
+
+      // Pass through special server states without overwriting local state
+      if (data.disqualified || data.expired || data.gameFinished || data.completed) {
+        return data;
       }
+
       setQuestion(data.question);
       setProgress(data.progress);
       return data;
@@ -38,16 +41,17 @@ export function useGame() {
     try {
       const { data } = await api.post('/game/answer', { answer });
       setAnswerResult(data);
-      
-      if (data.correct) {
-        setCardState('glow');
-      } else {
-        setCardState('shake');
+
+      // Don't animate card state for disqualified/expired — Game.jsx handles the overlay
+      if (!data.disqualified && !data.expired && !data.gameFinished) {
+        if (data.correct) {
+          setCardState('glow');
+        } else {
+          setCardState('shake');
+        }
+        setTimeout(() => setCardState('idle'), 700);
       }
-      
-      // Reset card state after animation
-      setTimeout(() => setCardState('idle'), 700);
-      
+
       return data;
     } catch (err) {
       setError(err.message);

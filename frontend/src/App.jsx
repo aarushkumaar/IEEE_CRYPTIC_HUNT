@@ -10,6 +10,7 @@ import Pass        from './pages/Pass';
 import Fail        from './pages/Fail';
 import Leaderboard from './pages/Leaderboard';
 import Admin       from './pages/Admin';
+import AuthCallback  from './pages/AuthCallback';
 import ProtectedRoute from './components/ProtectedRoute';
 import CustomCursor   from './components/CustomCursor';
 
@@ -21,8 +22,9 @@ export default function App() {
 
       <Routes>
         {/* Public routes */}
-        <Route path="/"            element={<Landing />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/"              element={<Landing />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/leaderboard"   element={<Leaderboard />} />
         <Route path="/admin"       element={<Admin />} />
 
         {/* Protected game routes — requires auth */}

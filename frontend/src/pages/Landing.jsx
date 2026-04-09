@@ -205,38 +205,17 @@ function ScrollHero() {
 
   return (
     <>
-      {/* SECTION 1 — Tomb opening */}
+      {/* SECTION 1 — Tomb opening (no overlaid text) */}
       {hasTomb ? (
-        <ScrollCanvas frames={tombFrames}>
-          {/* AMENTIS title overlay */}
-          <div style={{ textAlign: 'center' }}>
-            <p style={{
-              fontFamily: '"Cinzel", serif',
-              fontSize: 'clamp(9px, 1.2vw, 12px)',
-              letterSpacing: '0.4em',
-              color: 'rgba(201,168,76,0.7)',
-              marginBottom: 12,
-            }}>
-              CHARTERING THE UNKNOWN
-            </p>
-            <h1 style={{
-              fontFamily: '"Cinzel Decorative", serif',
-              fontSize: 'clamp(48px, 9vw, 100px)',
-              fontWeight: 900,
-              color: '#C9A84C',
-              letterSpacing: '0.1em',
-              textShadow: '0 0 60px rgba(201,168,76,0.4)',
-              lineHeight: 1,
-            }}>
-              AMENTIS
-            </h1>
-          </div>
-        </ScrollCanvas>
+        <ScrollCanvas frames={tombFrames} />
       ) : (
         <StaticEgyptianHero />
       )}
 
-      {/* SECTION 2 — Pyramid flythrough */}
+      {/* SECTION 2 — Post-video reveal */}
+      {hasTomb && <HeroRevealSection />}
+
+      {/* SECTION 3 — Pyramid flythrough */}
       {hasPyramid && (
         <ScrollCanvas frames={pyramidFrames}>
           <div style={{ textAlign: 'center' }}>
@@ -257,7 +236,100 @@ function ScrollHero() {
   );
 }
 
-/* ── Sponsor placeholder card ────────────────────────────────────── */
+/* ── Post-video Hero Reveal Section ─────────────────────────────── */
+function HeroRevealSection() {
+  return (
+    <section style={{
+      minHeight: '100vh',
+      background: '#000',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Ambient radial shimmer */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'radial-gradient(ellipse at 50% 60%, rgba(201,168,76,0.06) 0%, transparent 70%)',
+        animation: 'ambientPulse 4s ease-in-out infinite',
+        pointerEvents: 'none',
+      }} />
+
+      {/* AMENTIS main title */}
+      <motion.h1
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.5, ease: 'easeOut' }}
+        viewport={{ once: true }}
+        style={{
+          fontFamily: '"Cinzel Decorative", serif',
+          fontSize: 'clamp(52px, 11vw, 120px)',
+          fontWeight: 900,
+          color: '#C9A84C',
+          letterSpacing: '0.12em',
+          lineHeight: 1,
+          textShadow: '0 0 60px rgba(201,168,76,0.4), 0 0 120px rgba(201,168,76,0.18)',
+          animation: 'titleGlow 3s ease-in-out infinite',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        AMENTIS
+      </motion.h1>
+
+      {/* Gold animated divider */}
+      <motion.div
+        initial={{ scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        transition={{ delay: 0.4, duration: 1, ease: 'easeOut' }}
+        viewport={{ once: true }}
+        style={{
+          width: '40%',
+          maxWidth: 340,
+          height: 1,
+          background: 'linear-gradient(to right, transparent, #C9A84C, transparent)',
+          transformOrigin: 'center',
+          margin: '20px 0 24px',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      />
+
+      {/* Subtitle */}
+      <motion.p
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 1, ease: 'easeOut' }}
+        viewport={{ once: true }}
+        style={{
+          fontFamily: '"Cinzel", serif',
+          fontSize: 'clamp(10px, 1.6vw, 14px)',
+          letterSpacing: '0.4em',
+          color: 'rgba(201,168,76,0.6)',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
+        CHARTERING THE UNKNOWN
+      </motion.p>
+
+      <style>{`
+        @keyframes ambientPulse {
+          0%, 100% { opacity: 0.7; }
+          50%       { opacity: 1; }
+        }
+        @keyframes titleGlow {
+          0%, 100% { text-shadow: 0 0 60px rgba(201,168,76,0.35), 0 0 120px rgba(201,168,76,0.12); }
+          50%       { text-shadow: 0 0 80px rgba(201,168,76,0.6),  0 0 160px rgba(201,168,76,0.25); }
+        }
+      `}</style>
+    </section>
+  );
+}
+
 function SponsorCard({ delay }) {
   return (
     <motion.div

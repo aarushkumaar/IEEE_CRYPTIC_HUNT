@@ -49,6 +49,7 @@ export default function LoginModal({ onClose }) {
   const [loading, setLoading]     = useState(false);
   const [error, setError]         = useState('');
   const [isUnlocking, setIsUnlocking] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -336,6 +337,59 @@ export default function LoginModal({ onClose }) {
               onMouseLeave={e => (e.target.style.boxShadow = 'none')}
             >
               {loading ? 'PERFORMING RITUAL…' : 'COMMENCE RITUAL'}
+            </button>
+
+            {/* ── OR divider ── */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
+              <div style={{ flex: 1, height: 1, background: 'rgba(201,168,76,0.2)' }} />
+              <span style={{
+                fontFamily: '"Cinzel", serif',
+                fontSize: 9,
+                letterSpacing: '0.2em',
+                color: 'rgba(201,168,76,0.4)',
+              }}>OR</span>
+              <div style={{ flex: 1, height: 1, background: 'rgba(201,168,76,0.2)' }} />
+            </div>
+
+            {/* ── Google OAuth button ── */}
+            <button
+              id="modal-google-btn"
+              type="button"
+              disabled={oauthLoading}
+              onClick={async () => {
+                setOauthLoading(true);
+                await supabase.auth.signInWithOAuth({
+                  provider: 'google',
+                  options: { redirectTo: window.location.origin + '/auth/callback' },
+                });
+              }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 10,
+                background: oauthLoading ? 'rgba(201,168,76,0.07)' : 'rgba(0,0,0,0.6)',
+                border: '1px solid rgba(201,168,76,0.4)',
+                color: '#E8D5A0',
+                padding: '13px 24px',
+                fontFamily: '"Cinzel", serif',
+                fontSize: 11,
+                letterSpacing: '0.15em',
+                cursor: oauthLoading ? 'not-allowed' : 'none',
+                transition: 'background 0.2s, border-color 0.2s, box-shadow 0.2s',
+                borderRadius: 2,
+              }}
+              onMouseEnter={e => !oauthLoading && (e.currentTarget.style.boxShadow = '0 0 20px rgba(201,168,76,0.25)')}
+              onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+            >
+              {/* Google G SVG */}
+              <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+                <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+                <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+                <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+              </svg>
+              {oauthLoading ? 'REDIRECTING…' : 'CONTINUE WITH GOOGLE'}
             </button>
           </form>
 
