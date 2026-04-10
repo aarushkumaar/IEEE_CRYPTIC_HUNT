@@ -1,8 +1,99 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import ScrollCanvas from '../components/ScrollCanvas';
 import LoginModal from '../components/LoginModal';
 
+/* ── Sand / dust particle canvas ─────────────────────────────────── */
+function SandParticles() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Fixed canvas = always viewport-sized
+    let W = window.innerWidth;
+    let H = window.innerHeight;
+    canvas.width = W;
+    canvas.height = H;
+
+    const COUNT = 250;
+    const particles = Array.from({ length: COUNT }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,           // start spread across full screen
+      r: Math.random() * 2 + 0.4,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -(Math.random() * 0.35 + 0.08),
+      alpha: Math.random() * 0.5 + 0.08,
+      life: Math.random(),             // stagger initial life so they don't all reset at once
+      decay: Math.random() * 0.001 + 0.0003,
+    }));
+
+    function reset(p) {
+      p.x = Math.random() * W;
+      p.y = H + 10;
+      p.r = Math.random() * 2 + 0.4;
+      p.vx = (Math.random() - 0.5) * 0.3;
+      p.vy = -(Math.random() * 0.35 + 0.08);
+      p.alpha = Math.random() * 0.5 + 0.08;
+      p.life = 1;
+    }
+
+    let raf;
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= p.decay;
+
+        // Wrap particles that go off screen horizontally
+        if (p.x < 0) p.x = W;
+        if (p.x > W) p.x = 0;
+
+        // Reset particles that fade out or go off top
+        if (p.life <= 0 || p.y < -10) reset(p);
+
+        const a = p.alpha * Math.max(0, p.life);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(201,168,76,${a.toFixed(3)})`;
+        ctx.fill();
+      }
+      raf = requestAnimationFrame(draw);
+    }
+    draw();
+
+    function onResize() {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W;
+      canvas.height = H;
+    }
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }}
+    />
+  );
+}
 /* ── Static URL frame arrays ─────────────────────────────────────
    Frames live in /frontend/assets/ (Vite static serving),
    not in /src/assets/, so import.meta.glob returns empty.
@@ -330,41 +421,456 @@ function HeroRevealSection() {
   );
 }
 
-function SponsorCard({ delay }) {
+/* ── Sponsor Carousel ──────────────────────────────────────────── */
+const SPONSOR_SLIDES = [
+  [
+    { label: 'SPONSOR I' },
+    { label: 'SPONSOR II' },
+    { label: 'SPONSOR III' },
+  ],
+  [
+    { label: 'SPONSOR IV' },
+    { label: 'SPONSOR V' },
+    { label: 'SPONSOR VI' },
+  ],
+];
+
+function PatronCard({ label, index }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.5 }}
+      transition={{ delay: index * 0.12, duration: 0.55, ease: 'easeOut' }}
       viewport={{ once: true }}
+      whileHover={{ borderColor: 'rgba(201,168,76,0.8)', scale: 1.025 }}
       style={{
-        width: 140,
-        height: 70,
-        background: 'rgba(201,168,76,0.05)',
-        border: '1px solid rgba(201,168,76,0.2)',
-        borderRadius: 4,
+        flex: '1 1 0',
+        minWidth: 0,
+        aspectRatio: '4/3',
+        background: 'rgba(5,3,0,0.75)',
+        border: '1px solid rgba(201,168,76,0.22)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'rgba(201,168,76,0.25)',
-        fontFamily: '"Cinzel", serif',
-        fontSize: 9,
-        letterSpacing: '0.2em',
         position: 'relative',
         overflow: 'hidden',
-        transition: 'border-color 0.3s, background 0.3s',
-      }}
-      whileHover={{
-        borderColor: 'rgba(201,168,76,0.5)',
-        background: 'rgba(201,168,76,0.08)',
+        transition: 'border-color 0.35s',
+        cursor: 'default',
       }}
     >
-      {/* Corner brackets */}
-      <div style={{ position: 'absolute', top: 4, left: 4, width: 10, height: 10, borderTop: '1px solid rgba(201,168,76,0.4)', borderLeft: '1px solid rgba(201,168,76,0.4)' }} />
-      <div style={{ position: 'absolute', top: 4, right: 4, width: 10, height: 10, borderTop: '1px solid rgba(201,168,76,0.4)', borderRight: '1px solid rgba(201,168,76,0.4)' }} />
-      <div style={{ position: 'absolute', bottom: 4, left: 4, width: 10, height: 10, borderBottom: '1px solid rgba(201,168,76,0.4)', borderLeft: '1px solid rgba(201,168,76,0.4)' }} />
-      <div style={{ position: 'absolute', bottom: 4, right: 4, width: 10, height: 10, borderBottom: '1px solid rgba(201,168,76,0.4)', borderRight: '1px solid rgba(201,168,76,0.4)' }} />
-      SPONSOR
+      {/* shimmer sweep */}
+      <motion.div
+        animate={{ x: ['-110%', '110%'] }}
+        transition={{ duration: 2.2, repeat: Infinity, repeatDelay: 2.5, ease: 'easeInOut' }}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(105deg, transparent 35%, rgba(201,168,76,0.09) 50%, transparent 65%)',
+          pointerEvents: 'none',
+        }}
+      />
+      {/* corner brackets */}
+      {[{ top: 6, left: 6, bt: 'borderTop', bl: 'borderLeft' }, { top: 6, right: 6, bt: 'borderTop', bl: 'borderRight' },
+      { bottom: 6, left: 6, bt: 'borderBottom', bl: 'borderLeft' }, { bottom: 6, right: 6, bt: 'borderBottom', bl: 'borderRight' }]
+        .map((c, i) => (
+          <motion.div
+            key={i}
+            whileHover={{ borderColor: 'rgba(201,168,76,0.9)' }}
+            style={{
+              position: 'absolute', width: 14, height: 14,
+              top: c.top, left: c.left, right: c.right, bottom: c.bottom,
+              [c.bt]: '1px solid rgba(201,168,76,0.45)',
+              [c.bl]: '1px solid rgba(201,168,76,0.45)',
+              transition: 'border-color 0.3s',
+            }}
+          />
+        ))
+      }
+      <span style={{
+        fontFamily: '"Cinzel",serif', fontSize: 10, letterSpacing: '0.25em',
+        color: 'rgba(201,168,76,0.22)', userSelect: 'none',
+      }}>{label}</span>
+    </motion.div>
+  );
+}
+
+function PatronsCarousel() {
+  const [slide, setSlide] = useState(0);
+  const total = SPONSOR_SLIDES.length;
+
+  useEffect(() => {
+    const id = setInterval(() => setSlide(s => (s + 1) % total), 4000);
+    return () => clearInterval(id);
+  }, [total]);
+
+  const prev = () => setSlide(s => (s - 1 + total) % total);
+  const next = () => setSlide(s => (s + 1) % total);
+
+  return (
+    <section style={{
+      background: '#000',
+      padding: '80px 48px',
+      borderTop: '1px solid rgba(201,168,76,0.08)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* ambient warm fog */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'radial-gradient(ellipse 80% 60% at 50% 100%, rgba(201,168,76,0.05) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* heading */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        style={{ marginBottom: 48, position: 'relative', zIndex: 1 }}
+      >
+        <h2 style={{
+          fontFamily: '"Cinzel Decorative",serif',
+          fontSize: 'clamp(22px,4vw,36px)',
+          fontWeight: 900,
+          color: '#C9A84C',
+          letterSpacing: '0.18em',
+          margin: 0,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 14,
+          textShadow: '0 0 40px rgba(201,168,76,0.25)',
+        }}>
+          THE PATRONS
+          <motion.span
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ fontSize: '0.7em', opacity: 0.75, display: 'inline-block' }}
+          >⚜</motion.span>
+        </h2>
+        {/* animated gold underline */}
+        <motion.div
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          transition={{ delay: 0.3, duration: 0.7, ease: 'easeOut' }}
+          viewport={{ once: true }}
+          style={{
+            marginTop: 10, height: 2, width: 80,
+            background: 'linear-gradient(to right, #C9A84C, transparent)',
+            transformOrigin: 'left',
+          }}
+        />
+      </motion.div>
+
+      {/* slide area + arrows */}
+      <div style={{ position: 'relative', overflow: 'hidden', zIndex: 1 }}>
+        {/* prev arrow */}
+        <button onClick={prev} aria-label="Previous" style={{
+          position: 'absolute', left: -16, top: '50%', transform: 'translateY(-50%)',
+          zIndex: 2, background: 'transparent', border: '1px solid rgba(201,168,76,0.35)',
+          color: '#C9A84C', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
+          fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 0.2s, border-color 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(201,168,76,0.12)'; e.currentTarget.style.borderColor = '#C9A84C'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.35)'; }}
+        >‹</button>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={slide}
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            style={{ display: 'flex', gap: 24 }}
+          >
+            {SPONSOR_SLIDES[slide].map((s, i) => (
+              <PatronCard key={i} label={s.label} index={i} />
+            ))}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* next arrow */}
+        <button onClick={next} aria-label="Next" style={{
+          position: 'absolute', right: -16, top: '50%', transform: 'translateY(-50%)',
+          zIndex: 2, background: 'transparent', border: '1px solid rgba(201,168,76,0.35)',
+          color: '#C9A84C', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
+          fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          transition: 'background 0.2s, border-color 0.2s',
+        }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(201,168,76,0.12)'; e.currentTarget.style.borderColor = '#C9A84C'; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.35)'; }}
+        >›</button>
+      </div>
+
+      {/* dots */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 32, position: 'relative', zIndex: 1 }}>
+        {SPONSOR_SLIDES.map((_, i) => (
+          <motion.button
+            key={i}
+            onClick={() => setSlide(i)}
+            animate={{ width: i === slide ? 28 : 8, background: i === slide ? '#C9A84C' : 'rgba(201,168,76,0.25)' }}
+            transition={{ duration: 0.3 }}
+            style={{
+              height: 8, borderRadius: 4, border: 'none',
+              cursor: 'pointer', padding: 0,
+            }}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ── Phases Section ────────────────────────────────────────────── */
+const PHASES = [
+  {
+    number: 1,
+    title: 'THE DESCENT',
+    description: 'Enter the labyrinth of riddles. Your journey begins as you descend into the first layer of the cryptic hunt, facing logic and language puzzles that test the sharpness of your mind.',
+    side: 'left',
+  },
+  {
+    number: 2,
+    title: 'DECODING',
+    description: 'The hieroglyphs speak — but only to those who listen. Decipher encrypted messages, hidden patterns and ciphered truths buried within the ancient scrolls of data.',
+    side: 'right',
+  },
+  {
+    number: 3,
+    title: 'THE ASCENT',
+    description: 'Only the worthy rise. The final phase converges all disciplines — technology, cryptography, and lateral thinking — into a culminating trial for the top minds.',
+    side: 'left',
+  },
+];
+
+function DiamondIcon({ number }) {
+  return (
+    <div style={{
+      width: 56, height: 56,
+      position: 'relative',
+      flexShrink: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {/* outer glow pulse ring */}
+      <motion.div
+        animate={{ scale: [1, 1.55, 1], opacity: [0.45, 0, 0.45] }}
+        transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          position: 'absolute',
+          width: 42, height: 42,
+          border: '1.5px solid rgba(201,168,76,0.55)',
+          transform: 'rotate(45deg)',
+          borderRadius: 2,
+        }}
+      />
+      {/* inner diamond */}
+      <motion.div
+        animate={{
+          boxShadow: [
+            '0 0 10px rgba(201,168,76,0.3)',
+            '0 0 22px rgba(201,168,76,0.7)',
+            '0 0 10px rgba(201,168,76,0.3)',
+          ]
+        }}
+        transition={{ duration: 2.6, repeat: Infinity, ease: 'easeInOut' }}
+        style={{
+          width: 36, height: 36,
+          border: '2px solid #C9A84C',
+          transform: 'rotate(45deg)',
+          background: '#09060000',
+          position: 'absolute',
+        }}
+      />
+      <span style={{
+        position: 'relative', zIndex: 1,
+        fontFamily: '"Cinzel",serif', fontSize: 13,
+        color: '#C9A84C', fontWeight: 700,
+      }}>{number}</span>
+    </div>
+  );
+}
+
+/* animated spine that draws itself in */
+function AnimatedSpine() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-100px' });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ scaleY: 0 }}
+      animate={inView ? { scaleY: 1 } : { scaleY: 0 }}
+      transition={{ duration: 1.4, ease: 'easeInOut' }}
+      style={{
+        position: 'absolute',
+        left: '50%', top: 0, bottom: 0,
+        width: 2,
+        background: 'linear-gradient(to bottom, transparent, rgba(201,168,76,0.5) 12%, rgba(201,168,76,0.5) 88%, transparent)',
+        transform: 'translateX(-50%)',
+        transformOrigin: 'top',
+        boxShadow: '0 0 8px rgba(201,168,76,0.2)',
+      }}
+    />
+  );
+}
+
+function PhasesSection() {
+  return (
+    <section style={{
+      background: '#000',
+      padding: '80px 24px',
+      borderTop: '1px solid rgba(201,168,76,0.08)',
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* ambient warm fog */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(201,168,76,0.04) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'radial-gradient(ellipse 50% 40% at 50% 100%, rgba(201,168,76,0.03) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* heading */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        style={{ marginBottom: 64, paddingLeft: 48, position: 'relative', zIndex: 1 }}
+      >
+        <h2 style={{
+          fontFamily: '"Cinzel Decorative",serif',
+          fontSize: 'clamp(22px,4vw,36px)',
+          fontWeight: 900,
+          color: '#C9A84C',
+          letterSpacing: '0.18em',
+          margin: 0,
+          textShadow: '0 0 40px rgba(201,168,76,0.25)',
+        }}>
+          PHASES
+        </h2>
+        <motion.div
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          transition={{ delay: 0.3, duration: 0.7, ease: 'easeOut' }}
+          viewport={{ once: true }}
+          style={{
+            marginTop: 10, height: 2, width: 80,
+            background: 'linear-gradient(to right, #C9A84C, transparent)',
+            transformOrigin: 'left',
+          }}
+        />
+      </motion.div>
+
+      {/* timeline */}
+      <div style={{ maxWidth: 760, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+        <AnimatedSpine />
+
+        {PHASES.map((phase, i) => {
+          const isLeft = phase.side === 'left';
+          return (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: isLeft ? -40 : 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.2, duration: 0.7, ease: 'easeOut' }}
+              viewport={{ once: true }}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 64px 1fr',
+                alignItems: 'center',
+                marginBottom: i < PHASES.length - 1 ? 80 : 0,
+                position: 'relative',
+              }}
+            >
+              {/* left cell */}
+              <div style={{ order: isLeft ? 0 : 2 }}>
+                {isLeft && <PhaseCard phase={phase} align="right" />}
+              </div>
+
+              {/* center diamond */}
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', order: 1 }}>
+                <DiamondIcon number={phase.number} />
+              </div>
+
+              {/* right cell */}
+              <div style={{ order: isLeft ? 2 : 0 }}>
+                {!isLeft && <PhaseCard phase={phase} align="left" />}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function PhaseCard({ phase, align }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <motion.div
+      onHoverStart={() => setHovered(true)}
+      onHoverEnd={() => setHovered(false)}
+      animate={{
+        boxShadow: hovered
+          ? align === 'right'
+            ? '-4px 0 24px rgba(201,168,76,0.18)'
+            : '4px 0 24px rgba(201,168,76,0.18)'
+          : 'none',
+      }}
+      style={{
+        textAlign: align,
+        padding: align === 'right' ? '20px 28px 20px 0' : '20px 0 20px 28px',
+        borderRight: align === 'right' ? '1px solid transparent' : 'none',
+        borderLeft: align === 'left' ? '1px solid transparent' : 'none',
+        transition: 'border-color 0.3s',
+        position: 'relative',
+      }}
+    >
+      {/* accent bar */}
+      <motion.div
+        animate={{ scaleY: hovered ? 1 : 0.4, opacity: hovered ? 1 : 0.35 }}
+        transition={{ duration: 0.3 }}
+        style={{
+          position: 'absolute',
+          [align === 'right' ? 'right' : 'left']: 0,
+          top: '20%', bottom: '20%',
+          width: 2,
+          background: 'linear-gradient(to bottom, transparent, #C9A84C, transparent)',
+          transformOrigin: 'center',
+        }}
+      />
+      <p style={{
+        fontFamily: '"Cinzel",serif',
+        fontSize: 'clamp(10px,1.4vw,12px)',
+        letterSpacing: '0.22em',
+        color: hovered ? '#E8D5A0' : '#C9A84C',
+        margin: '0 0 8px',
+        fontWeight: 700,
+        transition: 'color 0.3s',
+      }}>
+        PHASE {phase.number}: {phase.title}
+      </p>
+      <p style={{
+        fontFamily: '"IM Fell English",serif',
+        fontStyle: 'italic',
+        fontSize: 'clamp(12px,1.5vw,14px)',
+        color: hovered ? 'rgba(232,213,160,0.8)' : 'rgba(232,213,160,0.5)',
+        margin: 0,
+        lineHeight: 1.75,
+        transition: 'color 0.3s',
+      }}>
+        {phase.description}
+      </p>
     </motion.div>
   );
 }
@@ -375,7 +881,8 @@ export default function Landing() {
   const hasFrames = tombFrames.length > 0 || pyramidFrames.length > 0;
 
   return (
-    <div style={{ background: '#000', color: '#C9A84C', minHeight: '100vh' }}>
+    <div style={{ background: '#000', color: '#C9A84C', minHeight: '100vh', position: 'relative', zIndex: 1 }}>
+      <SandParticles />
 
       {/* ── HERO: scroll-driven canvas OR static fallback ── */}
       {hasFrames ? <ScrollHero /> : <StaticEgyptianHero />}
@@ -385,57 +892,13 @@ export default function Landing() {
       <GoldDivider />
       <HieroStrip />
 
-      {/* ── SPONSORS ──────────────────────────────────────────── */}
-      <section style={{
-        background: '#000',
-        padding: '80px 40px',
-        borderTop: '1px solid rgba(201,168,76,0.08)',
-      }}>
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          style={{
-            textAlign: 'center',
-            fontFamily: '"Cinzel", serif',
-            letterSpacing: '0.3em',
-            color: 'rgba(201,168,76,0.55)',
-            fontSize: 11,
-            marginBottom: 12,
-          }}
-        >
-          𓃒 &nbsp;&nbsp; SPONSORED BY &nbsp;&nbsp; 𓃒
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ delay: 0.15, duration: 0.6 }}
-          viewport={{ once: true }}
-          style={{
-            textAlign: 'center',
-            fontFamily: '"IM Fell English", serif',
-            fontStyle: 'italic',
-            color: 'rgba(201,168,76,0.3)',
-            fontSize: 12,
-            marginBottom: 40,
-          }}
-        >
-          Those who illuminate the path
-        </motion.p>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'center',
-          gap: 24,
-          flexWrap: 'wrap',
-          maxWidth: 800,
-          margin: '0 auto',
-        }}>
-          {[0, 0.1, 0.2, 0.3].map((delay, i) => (
-            <SponsorCard key={i} delay={delay} />
-          ))}
-        </div>
-      </section>
+      {/* ── THE PATRONS carousel ───────────────────────────────── */}
+      <PatronsCarousel />
+
+      <GoldDivider />
+
+      {/* ── PHASES timeline ───────────────────────────────────── */}
+      <PhasesSection />
 
       <GoldDivider />
 
