@@ -630,19 +630,16 @@ const PHASES = [
     number: 1,
     title: 'THE DESCENT',
     description: 'Enter the labyrinth of riddles. Your journey begins as you descend into the first layer of the cryptic hunt, facing logic and language puzzles that test the sharpness of your mind.',
-    side: 'left',
   },
   {
     number: 2,
     title: 'DECODING',
     description: 'The hieroglyphs speak — but only to those who listen. Decipher encrypted messages, hidden patterns and ciphered truths buried within the ancient scrolls of data.',
-    side: 'right',
   },
   {
     number: 3,
     title: 'THE ASCENT',
     description: 'Only the worthy rise. The final phase converges all disciplines — technology, cryptography, and lateral thinking — into a culminating trial for the top minds.',
-    side: 'left',
   },
 ];
 
@@ -693,23 +690,24 @@ function DiamondIcon({ number }) {
   );
 }
 
-/* animated spine that draws itself in */
-function AnimatedSpine() {
+/* animated horizontal spine that draws itself in */
+function HorizontalSpine() {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: '-100px' });
+  const inView = useInView(ref, { once: true, margin: '-50px' });
   return (
     <motion.div
       ref={ref}
-      initial={{ scaleY: 0 }}
-      animate={inView ? { scaleY: 1 } : { scaleY: 0 }}
+      initial={{ scaleX: 0 }}
+      animate={inView ? { scaleX: 1 } : { scaleX: 0 }}
       transition={{ duration: 1.4, ease: 'easeInOut' }}
       style={{
         position: 'absolute',
-        left: '50%', top: 0, bottom: 0,
-        width: 2,
-        background: 'linear-gradient(to bottom, transparent, rgba(201,168,76,0.5) 12%, rgba(201,168,76,0.5) 88%, transparent)',
-        transform: 'translateX(-50%)',
-        transformOrigin: 'top',
+        top: 28,
+        left: 0,
+        right: 0,
+        height: 2,
+        background: 'linear-gradient(to right, transparent, rgba(201,168,76,0.5) 8%, rgba(201,168,76,0.5) 92%, transparent)',
+        transformOrigin: 'left',
         boxShadow: '0 0 8px rgba(201,168,76,0.2)',
       }}
     />
@@ -745,7 +743,7 @@ function PhasesSection() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
-        style={{ marginBottom: 64, paddingLeft: 48, position: 'relative', zIndex: 1 }}
+        style={{ marginBottom: 64, textAlign: 'center', position: 'relative', zIndex: 1 }}
       >
         <h2 style={{
           fontFamily: '"Cinzel Decorative",serif',
@@ -767,54 +765,60 @@ function PhasesSection() {
             marginTop: 10, height: 2, width: 80,
             background: 'linear-gradient(to right, #C9A84C, transparent)',
             transformOrigin: 'left',
+            margin: '10px auto 0',
           }}
         />
       </motion.div>
 
-      {/* timeline */}
-      <div style={{ maxWidth: 760, margin: '0 auto', position: 'relative', zIndex: 1 }}>
-        <AnimatedSpine />
-
-        {PHASES.map((phase, i) => {
-          const isLeft = phase.side === 'left';
-          return (
+      {/* horizontal timeline */}
+      <div style={{
+        maxWidth: 960,
+        margin: '0 auto',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        {/* diamond row + spine */}
+        <div style={{ position: 'relative', display: 'flex', justifyContent: 'space-around', alignItems: 'center', padding: '0 20px' }}>
+          <HorizontalSpine />
+          {PHASES.map((phase, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, x: isLeft ? -40 : 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.2, duration: 0.7, ease: 'easeOut' }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 + i * 0.25, duration: 0.5, ease: 'backOut' }}
               viewport={{ once: true }}
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 64px 1fr',
-                alignItems: 'center',
-                marginBottom: i < PHASES.length - 1 ? 80 : 0,
-                position: 'relative',
-              }}
+              style={{ position: 'relative', zIndex: 2 }}
             >
-              {/* left cell */}
-              <div style={{ order: isLeft ? 0 : 2 }}>
-                {isLeft && <PhaseCard phase={phase} align="right" />}
-              </div>
-
-              {/* center diamond */}
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', order: 1 }}>
-                <DiamondIcon number={phase.number} />
-              </div>
-
-              {/* right cell */}
-              <div style={{ order: isLeft ? 2 : 0 }}>
-                {!isLeft && <PhaseCard phase={phase} align="left" />}
-              </div>
+              <DiamondIcon number={phase.number} />
             </motion.div>
-          );
-        })}
+          ))}
+        </div>
+
+        {/* card row */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: `repeat(${PHASES.length}, 1fr)`,
+          gap: 24,
+          marginTop: 32,
+        }}>
+          {PHASES.map((phase, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 + i * 0.2, duration: 0.6, ease: 'easeOut' }}
+              viewport={{ once: true }}
+            >
+              <PhaseCard phase={phase} />
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-function PhaseCard({ phase, align }) {
+function PhaseCard({ phase }) {
   const [hovered, setHovered] = useState(false);
   return (
     <motion.div
@@ -822,39 +826,38 @@ function PhaseCard({ phase, align }) {
       onHoverEnd={() => setHovered(false)}
       animate={{
         boxShadow: hovered
-          ? align === 'right'
-            ? '-4px 0 24px rgba(201,168,76,0.18)'
-            : '4px 0 24px rgba(201,168,76,0.18)'
+          ? '0 4px 28px rgba(201,168,76,0.18)'
           : 'none',
       }}
       style={{
-        textAlign: align,
-        padding: align === 'right' ? '20px 28px 20px 0' : '20px 0 20px 28px',
-        borderRight: align === 'right' ? '1px solid transparent' : 'none',
-        borderLeft: align === 'left' ? '1px solid transparent' : 'none',
+        textAlign: 'center',
+        padding: '24px 16px',
+        borderTop: `2px solid ${hovered ? 'rgba(201,168,76,0.5)' : 'rgba(201,168,76,0.15)'}`,
         transition: 'border-color 0.3s',
         position: 'relative',
       }}
     >
-      {/* accent bar */}
+      {/* top accent dot connecting to spine */}
       <motion.div
-        animate={{ scaleY: hovered ? 1 : 0.4, opacity: hovered ? 1 : 0.35 }}
+        animate={{ opacity: hovered ? 1 : 0.4 }}
         transition={{ duration: 0.3 }}
         style={{
           position: 'absolute',
-          [align === 'right' ? 'right' : 'left']: 0,
-          top: '20%', bottom: '20%',
-          width: 2,
-          background: 'linear-gradient(to bottom, transparent, #C9A84C, transparent)',
-          transformOrigin: 'center',
+          top: -4,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 6,
+          height: 6,
+          borderRadius: '50%',
+          background: '#C9A84C',
         }}
       />
       <p style={{
         fontFamily: '"Cinzel",serif',
-        fontSize: 'clamp(10px,1.4vw,12px)',
+        fontSize: 'clamp(10px,1.3vw,12px)',
         letterSpacing: '0.22em',
         color: hovered ? '#E8D5A0' : '#C9A84C',
-        margin: '0 0 8px',
+        margin: '0 0 10px',
         fontWeight: 700,
         transition: 'color 0.3s',
       }}>
@@ -863,7 +866,7 @@ function PhaseCard({ phase, align }) {
       <p style={{
         fontFamily: '"IM Fell English",serif',
         fontStyle: 'italic',
-        fontSize: 'clamp(12px,1.5vw,14px)',
+        fontSize: 'clamp(12px,1.4vw,14px)',
         color: hovered ? 'rgba(232,213,160,0.8)' : 'rgba(232,213,160,0.5)',
         margin: 0,
         lineHeight: 1.75,
