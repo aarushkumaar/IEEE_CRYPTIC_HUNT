@@ -7,14 +7,11 @@ export function useGame() {
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState(null);
   const [answerResult, setAnswerResult] = useState(null); // { correct, scoreDelta, newScore }
-  const [hint, setHint]               = useState(null);
   const [cardState, setCardState]     = useState('idle'); // idle | shake | glow | slide
 
   const fetchCurrent = useCallback(async () => {
     setLoading(true);
     setError(null);
-    setHint(null);
-    setAnswerResult(null);
     try {
       const { data } = await api.get('/game/current');
 
@@ -27,6 +24,11 @@ export function useGame() {
       setProgress(data.progress);
       return data;
     } catch (err) {
+      // FIX: 4xx responses with structured errors should be passed back, not swallowed
+      const errData = err.response?.data;
+      if (errData?.error) {
+        return errData; // e.g. { error: 'GAME_EXPIRED' } or { error: 'SESSION_NOT_FOUND' }
+      }
       setError(err.message);
       return null;
     } finally {
@@ -77,17 +79,6 @@ export function useGame() {
     }
   }, []);
 
-  const requestHint = useCallback(async () => {
-    try {
-      const { data } = await api.post('/game/hint');
-      setHint(data.hint);
-      return data;
-    } catch (err) {
-      setError(err.message);
-      return null;
-    }
-  }, []);
-
   const startGame = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -121,10 +112,24 @@ export function useGame() {
     }
   }, []);
 
+  const requestHint = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await api.post('/game/hint');
+      return data;
+    } catch (err) {
+      setError(err.message);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     question, progress, loading, error,
-    answerResult, hint, cardState,
+    answerResult, cardState, hint: null,
     fetchCurrent, submitAnswer, skipQuestion,
-    requestHint, startGame, getResult, getSession,
+    startGame, getResult, getSession, requestHint,
   };
 }

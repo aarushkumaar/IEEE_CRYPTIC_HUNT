@@ -20,7 +20,7 @@ function ExplodingCards() {
       (Math.random() - 0.5) * 0.1,
       (Math.random() - 0.5) * 0.06,
     ),
-    color: ['#7B6EF6', '#F04A57', '#F5C542', '#1BE0D4'][i % 4],
+    color: ['#C9A84C', '#E8D5A0', '#8B6914', '#A0956C'][i % 4],
   }));
 
   useFrame((_, delta) => {
@@ -75,8 +75,8 @@ export default function Rumbling() {
       <div style={{ position: 'absolute', inset: 0 }}>
         <Canvas camera={{ position: [0, 0, 5], fov: 70 }}>
           <ambientLight intensity={0.2} />
-          <pointLight position={[2, 2, 2]} intensity={2} color="#F04A57" />
-          <pointLight position={[-2, -2, 2]} intensity={2} color="#7B6EF6" />
+          <pointLight position={[2, 2, 2]} intensity={2} color="#C9A84C" />
+          <pointLight position={[-2, -2, 2]} intensity={2} color="#8B6914" />
           <ExplodingCards />
           <ShakingCamera />
         </Canvas>
@@ -99,7 +99,7 @@ export default function Rumbling() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 2.5, duration: 0.5 }}
           className="font-display font-bold"
-          style={{ fontSize: 'clamp(24px, 6vw, 48px)', color: '#F04A57', marginTop: 8 }}
+          style={{ fontSize: 'clamp(24px, 6vw, 48px)', color: '#C9A84C', marginTop: 8 }}
         >
           BEGINS
         </motion.h2>
@@ -109,7 +109,7 @@ export default function Rumbling() {
           animate={{ opacity: 1 }}
           transition={{ delay: 3.8 }}
           className="font-body mt-4"
-          style={{ color: '#9494B8', fontSize: 16 }}
+          style={{ color: '#E8D5A0', fontSize: 16 }}
         >
           The Wildcard Round awaits…
         </motion.p>
@@ -122,7 +122,7 @@ export default function Rumbling() {
         transition={{ duration: 5.5, times: [0, 0.7, 0.8, 0.9, 1] }}
         style={{
           position: 'absolute', inset: 0,
-          background: 'white',
+          background: 'rgba(201,168,76,0.4)',
           pointerEvents: 'none',
           zIndex: 50,
         }}

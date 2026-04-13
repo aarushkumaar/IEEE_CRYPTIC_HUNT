@@ -1,12 +1,20 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< Updated upstream
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
   updateProfile
+=======
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+>>>>>>> Stashed changes
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { firebaseAuth, firestore } from '../lib/firebase';
@@ -50,14 +58,52 @@ function LockIcon({ isUnlocking }) {
 
 export default function LoginModal({ onClose }) {
   const navigate = useNavigate();
-  const [tab, setTab]             = useState('login');
-  const [email, setEmail]         = useState('');
-  const [password, setPassword]   = useState('');
-  const [name, setName]           = useState('');
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState('');
+  const [tab, setTab]                 = useState('login');
+  const [email, setEmail]             = useState('');
+  const [password, setPassword]       = useState('');
+  const [name, setName]               = useState('');
+  const [loading, setLoading]         = useState(false);
+  const [error, setError]             = useState('');
   const [isUnlocking, setIsUnlocking] = useState(false);
   const [oauthLoading, setOauthLoading] = useState(false);
+
+  /* ── Helper: ensure profile exists then route player ───────────── */
+  async function ensureProfileAndRoute(firebaseUser, displayName) {
+    // Ensure profile doc exists in Firestore
+    const profileRef  = doc(firestore, 'profiles', firebaseUser.uid);
+    const profileSnap = await getDoc(profileRef);
+
+    if (!profileSnap.exists()) {
+      const resolvedName =
+        displayName ||
+        firebaseUser.displayName ||
+        firebaseUser.email?.split('@')[0] ||
+        'Initiate';
+
+      await api.post('/auth/register', {
+        uid:   firebaseUser.uid,
+        name:  resolvedName,
+        email: firebaseUser.email,
+      });
+    }
+
+    // Check existing game session to route correctly
+    try {
+      const { data: session } = await api.get('/game/session');
+      if (session?.hasSession && !session.completed) {
+        const round = session.currentRound;
+        if (round >= 4) navigate('/wildcard');
+        else navigate(`/round/${round}`);
+      } else if (session?.completed) {
+        const { data: result } = await api.get('/game/result');
+        navigate(result?.status === 'passed' ? '/pass' : '/fail');
+      } else {
+        navigate('/rounds');
+      }
+    } catch {
+      navigate('/rounds');
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -67,6 +113,7 @@ export default function LoginModal({ onClose }) {
 
     try {
       if (tab === 'register') {
+<<<<<<< Updated upstream
         const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
         await updateProfile(userCredential.user, { displayName: name.trim() });
         await api.post('/auth/register', { 
@@ -83,12 +130,43 @@ export default function LoginModal({ onClose }) {
         } else {
           navigate('/welcome');
         }
+=======
+        // Create Firebase Auth user
+        const { user } = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+        // Create Firestore profile
+        await api.post('/auth/register', {
+          uid:   user.uid,
+          name:  name.trim() || email.split('@')[0],
+          email: user.email,
+        });
+        navigate('/rounds');
+      } else {
+        // Sign in with Firebase
+        const { user } = await signInWithEmailAndPassword(firebaseAuth, email, password);
+        await ensureProfileAndRoute(user, null);
+>>>>>>> Stashed changes
       }
     } catch (err) {
       setError(err.message || 'The ritual has failed. Try again.');
       setIsUnlocking(false);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleGoogleSignIn() {
+    setOauthLoading(true);
+    setError('');
+    try {
+      const provider  = new GoogleAuthProvider();
+      const { user }  = await signInWithPopup(firebaseAuth, provider);
+      await ensureProfileAndRoute(user, user.displayName);
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        setError(err.message || 'Google sign-in failed. Try again.');
+      }
+    } finally {
+      setOauthLoading(false);
     }
   }
 
@@ -351,6 +429,7 @@ export default function LoginModal({ onClose }) {
               id="modal-google-btn"
               type="button"
               disabled={oauthLoading}
+<<<<<<< Updated upstream
               onClick={async () => {
                 setOauthLoading(true);
                 try {
@@ -373,6 +452,9 @@ export default function LoginModal({ onClose }) {
                   setOauthLoading(false);
                 }
               }}
+=======
+              onClick={handleGoogleSignIn}
+>>>>>>> Stashed changes
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -399,7 +481,7 @@ export default function LoginModal({ onClose }) {
                 <path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
                 <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
               </svg>
-              {oauthLoading ? 'REDIRECTING…' : 'CONTINUE WITH GOOGLE'}
+              {oauthLoading ? 'SIGNING IN…' : 'CONTINUE WITH GOOGLE'}
             </button>
           </form>
 

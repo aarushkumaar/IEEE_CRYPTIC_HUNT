@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< Updated upstream
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 import api from '../lib/api';
@@ -8,15 +9,40 @@ import api from '../lib/api';
  * AuthCallback — handles redirect after Firebase OAuth sign-in.
  * Firebase Auth picks up the credential automatically from the URL.
  * We wait for the auth state to resolve, then check the player's game session.
+=======
+import { firebaseAuth } from '../lib/firebase';
+import api from '../lib/api';
+
+/**
+ * AuthCallback — simplified for Firebase.
+ *
+ * With Supabase, Google OAuth used a server-side redirect that landed here.
+ * With Firebase, we use signInWithPopup (no redirect) so this page is only
+ * reached if the user somehow navigates here directly.
+ *
+ * If a user is already signed in, we route them to the correct page.
+ * Otherwise, we send them back to the landing page.
+>>>>>>> Stashed changes
  */
 export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
+<<<<<<< Updated upstream
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (!firebaseUser) return; // still loading — wait
 
       unsubscribe(); // Stop listening once we have a user
+=======
+    async function route() {
+      const user = firebaseAuth.currentUser;
+
+      if (!user) {
+        // No active session — go home
+        navigate('/', { replace: true });
+        return;
+      }
+>>>>>>> Stashed changes
 
       try {
         const { data: gameSession } = await api.get('/game/session');
@@ -28,13 +54,21 @@ export default function AuthCallback() {
         } else if (gameSession?.completed) {
           navigate('/pass', { replace: true });
         } else {
+<<<<<<< Updated upstream
           navigate('/welcome', { replace: true });
         }
       } catch {
         navigate('/welcome', { replace: true });
+=======
+          navigate('/rounds', { replace: true });
+        }
+      } catch {
+        navigate('/rounds', { replace: true });
+>>>>>>> Stashed changes
       }
-    });
+    }
 
+<<<<<<< Updated upstream
     // Fallback — if auth never fires within 5s, send to home
     const timeout = setTimeout(() => {
       unsubscribe();
@@ -45,6 +79,11 @@ export default function AuthCallback() {
       unsubscribe();
       clearTimeout(timeout);
     };
+=======
+    // Small delay to let Firebase auth state settle
+    const timer = setTimeout(route, 500);
+    return () => clearTimeout(timer);
+>>>>>>> Stashed changes
   }, [navigate]);
 
   return (

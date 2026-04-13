@@ -41,17 +41,18 @@ function StatusBadge({ status }) {
 
 export default function Leaderboard() {
   const { user } = useAuth();
-  const [players, setPlayers]   = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [search, setSearch]     = useState('');
-  const [flashId, setFlashId]   = useState(null);
+  const [players, setPlayers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch]   = useState('');
+  const [flashId, setFlashId] = useState(null);
   const myRowRef = useRef(null);
 
-  // Initial fetch
+  // Initial fetch from backend
   useEffect(() => {
     fetchPlayers();
   }, []);
 
+<<<<<<< Updated upstream
   useEffect(() => {
     const leaderboardRef = ref(rtdb, 'leaderboard');
     onValue(leaderboardRef, (snapshot) => {
@@ -66,6 +67,43 @@ export default function Leaderboard() {
         setPlayers(players);
       }
     });
+=======
+  // Firebase Realtime Database live listener
+  useEffect(() => {
+    const leaderboardRef = ref(rtdb, 'leaderboard');
+
+    onValue(leaderboardRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+
+      // Convert object map to sorted array
+      const updated = Object.entries(data).map(([id, val]) => ({
+        id,
+        name:        val.name        ?? '—',
+        score:       val.score       ?? 0,
+        status:      val.status      ?? 'waiting',
+        // RTDB stores timeStarted/timeEnded; map to snake_case for display
+        time_started: val.timeStarted ?? null,
+        time_ended:   val.timeEnded   ?? null,
+      }));
+
+      setPlayers(prev => {
+        const sorted = sortPlayers(updated);
+        // Find which player's score changed for flash effect
+        const changed = sorted.find(p => {
+          const old = prev.find(o => o.id === p.id);
+          return old && old.score !== p.score;
+        });
+        if (changed) {
+          setFlashId(changed.id);
+          setTimeout(() => setFlashId(null), 1500);
+        }
+        return sorted;
+      });
+    });
+
+    // Cleanup RTDB listener on unmount
+>>>>>>> Stashed changes
     return () => off(leaderboardRef);
   }, []);
 
@@ -80,10 +118,16 @@ export default function Leaderboard() {
     setLoading(true);
     try {
       const { data } = await api.get('/scoreboard');
+<<<<<<< Updated upstream
       setPlayers(data || []);
     } catch {
       console.error('Failed to fetch leaderboard from API.');
       setPlayers([]);
+=======
+      setPlayers(sortPlayers(data || []));
+    } catch {
+      // RTDB listener will populate once it fires
+>>>>>>> Stashed changes
     } finally {
       setLoading(false);
     }
@@ -173,7 +217,7 @@ export default function Leaderboard() {
             <div
               className="grid font-body text-xs font-medium px-4 py-3"
               style={{
-                gridTemplateColumns: '60px 1fr 80px 100px 80px 80px',
+                gridTemplateColumns: '60px 1fr 80px 100px 80px',
                 background: 'var(--bg-elevated)',
                 color: 'var(--text-faint)',
                 borderBottom: '1px solid var(--border)',
@@ -184,7 +228,6 @@ export default function Leaderboard() {
               <span className="text-right">Score</span>
               <span className="text-right">Time</span>
               <span className="text-center">Status</span>
-              <span className="text-right hidden sm:block">Hints</span>
             </div>
 
             {/* Rows */}
@@ -198,7 +241,7 @@ export default function Leaderboard() {
                 const timeTaken = player.time_started && player.time_ended
                   ? Math.floor((new Date(player.time_ended) - new Date(player.time_started)) / 1000)
                   : null;
-                const isMe = player.id === user?.id;
+                const isMe       = player.id === user?.uid;
                 const isFlashing = player.id === flashId;
 
                 return (
@@ -209,7 +252,7 @@ export default function Leaderboard() {
                     transition={{ duration: 1.2 }}
                     className="grid items-center px-4 py-3 font-body text-sm border-b last:border-b-0 transition-colors"
                     style={{
-                      gridTemplateColumns: '60px 1fr 80px 100px 80px 80px',
+                      gridTemplateColumns: '60px 1fr 80px 100px 80px',
                       borderColor: 'var(--border)',
                       background: isMe ? 'rgba(123,110,246,0.06)' : 'var(--bg-card)',
                       outline: isMe ? '1px solid rgba(123,110,246,0.2)' : 'none',
@@ -245,11 +288,6 @@ export default function Leaderboard() {
                     {/* Status */}
                     <span className="flex justify-center">
                       <StatusBadge status={player.status} />
-                    </span>
-
-                    {/* Hints */}
-                    <span className="text-right text-xs hidden sm:block" style={{ color: 'var(--text-faint)' }}>
-                      {player.hints_used ?? 0}
                     </span>
                   </motion.div>
                 );

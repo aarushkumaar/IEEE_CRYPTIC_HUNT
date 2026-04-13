@@ -12,8 +12,8 @@ export default function Wildcard() {
   const { profile } = useAuth();
   const {
     question, progress, loading, error,
-    cardState, hint,
-    fetchCurrent, submitAnswer, skipQuestion, requestHint,
+    cardState,
+    fetchCurrent, submitAnswer, skipQuestion,
   } = useGame();
 
   const [answer, setAnswer]           = useState('');
@@ -24,6 +24,9 @@ export default function Wildcard() {
 
   useEffect(() => {
     (async () => {
+      // For mock API: signal that we're loading the wildcard round
+      sessionStorage.setItem('mockPendingRound', '4');
+      
       const data = await fetchCurrent();
       if (data?.completed) navigate('/pass');
     })();
@@ -38,14 +41,25 @@ export default function Wildcard() {
     if (!answer.trim() || loading) return;
     const result = await submitAnswer(answer);
     if (!result) return;
+    
     setScore(result.newScore);
     setAnswer('');
     setFeedback({ correct: result.correct });
-    setTimeout(() => setFeedback(null), 1200);
-    if (result.completed) {
-      setTimeout(() => navigate(result.newScore >= 10 ? '/pass' : '/fail'), 1000);
+    
+    // Handle wildcard results
+    if (result.disqualified) {
+      // Failed the wildcard - game over
+      setTimeout(() => navigate('/fail'), 1500);
       return;
     }
+    
+    if (result.completed && result.correct) {
+      // Won the wildcard - go to victory!
+      setTimeout(() => navigate('/victory'), 1500);
+      return;
+    }
+    
+    setTimeout(() => setFeedback(null), 1200);
     await fetchCurrent();
     inputRef.current?.focus();
   }
@@ -63,7 +77,7 @@ export default function Wildcard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-base)' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#080808', color: '#F5ECD0' }}>
       {/* Special Wildcard ScoreBar */}
       <div
         className="w-full flex items-center justify-between px-4 md:px-8 py-3"
@@ -74,34 +88,46 @@ export default function Wildcard() {
           position: 'sticky', top: 0, zIndex: 50,
         }}
       >
-        <div className="font-display font-bold text-sm" style={{ color: 'var(--gold)' }}>
+        <div className="font-display font-bold text-sm" style={{ color: '#C9A84C' }}>
           ♠♥♦♣ WILDCARD ROUND
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-text-secondary text-xs">Score</span>
-          <span className="font-display font-bold text-lg" style={{ color: 'var(--gold)' }}>{score}</span>
+          <span style={{ fontSize: 12, color: 'rgba(201,168,76,0.6)' }}>Score</span>
+          <span style={{ fontFamily: '"Cinzel", serif', fontWeight: 'bold', fontSize: 18, color: '#C9A84C' }}>{score}</span>
         </div>
-        <span className="font-mono text-sm" style={{ color: 'var(--text-secondary)' }}>
-          Q{progress?.questionInRound ?? '?'}/5
+        <span style={{ fontFamily: '"Courier New", monospace', fontSize: 12, color: 'rgba(201,168,76,0.5)' }}>
+          Q1/1
         </span>
       </div>
 
       {/* Ambient glow */}
       <div style={{
         position: 'fixed', inset: 0, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at 50% 40%, rgba(245,197,66,0.04) 0%, transparent 60%)',
+        background: 'radial-gradient(ellipse at 50% 40%, rgba(201,168,76,0.04) 0%, transparent 60%)',
       }} />
 
-      <div className="flex-1 flex flex-col items-center justify-center px-4 py-8 gap-6 relative z-10">
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        padding: '32px 16px', gap: 24, position: 'relative', zIndex: 10
+      }}>
+        {!question && !loading && (
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ color: '#C9A84C', fontFamily: '"Cinzel", serif', fontSize: 14, marginBottom: 16 }}>
+              Loading Wildcard Question...
+            </p>
+          </div>
+        )}
+        
         {question && (
           <div style={{ position: 'relative' }}>
             {/* Wildcard badge */}
             <div
-              className="absolute -top-6 left-1/2 -translate-x-1/2 font-mono text-xs px-3 py-1 rounded-full z-10"
               style={{
-                background: 'rgba(245,197,66,0.12)',
-                border: '1px solid rgba(245,197,66,0.3)',
-                color: 'var(--gold)',
+                position: 'absolute', top: -24, left: '50%', transform: 'translateX(-50%)',
+                fontFamily: '"Courier New", monospace', fontSize: 12, paddingX: 12, paddingY: 4, borderRadius: '50%', zIndex: 10,
+                background: 'rgba(201,168,76,0.12)',
+                border: '1px solid rgba(201,168,76,0.3)',
+                color: '#C9A84C',
               }}
             >
               ✦ WILDCARD
@@ -125,8 +151,9 @@ export default function Wildcard() {
                     pointerEvents: 'none', zIndex: 10,
                   }}
                 >
-                  <span className="font-display font-bold text-3xl" style={{
-                    color: feedback.correct ? 'var(--success)' : 'var(--danger)',
+                  <span style={{
+                    fontFamily: '"Cinzel Decorative", serif', fontWeight: 700, fontSize: 36,
+                    color: feedback.correct ? '#27AE60' : '#C0392B',
                   }}>
                     {feedback.correct ? '✓ +1' : '✗'}
                   </span>
@@ -136,54 +163,37 @@ export default function Wildcard() {
           </div>
         )}
 
-        <AnimatePresence>
-          {hint && (
-            <motion.div
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className="max-w-sm w-full px-4 py-3 rounded-lg font-body text-sm"
-              style={{
-                background: 'rgba(245,197,66,0.08)',
-                border: '1px solid rgba(245,197,66,0.2)',
-                color: 'var(--gold)',
-              }}
-            >
-              💡 {hint}
-            </motion.div>
-          )}
-        </AnimatePresence>
+
 
         {question && (
-          <form onSubmit={handleAnswer} className="w-full max-w-sm flex flex-col gap-3">
+          <form onSubmit={handleAnswer} style={{ width: '100%', maxWidth: 448, display: 'flex', flexDirection: 'column', gap: 12 }}>
             <input
               ref={inputRef}
               id="wildcard-answer-input"
-              className="input-dark text-center"
               type="text"
               placeholder="Type your answer…"
               value={answer}
               onChange={e => setAnswer(e.target.value)}
               autoComplete="off"
               autoFocus
+              style={{
+                padding: '12px', borderRadius: 4, fontFamily: '"IM Fell English", serif', fontSize: 14,
+                background: '#0A0A08', border: '1px solid rgba(201,168,76,0.3)', color: '#F5ECD0',
+                outline: 'none',
+              }}
             />
-            <div className="flex gap-3">
-              <button id="wildcard-submit-btn" type="submit" disabled={loading || !answer.trim()} className="btn-primary flex-1"
-                style={{ background: 'var(--gold)', color: '#08080E' }}>
-                {loading ? <span className="flex justify-center"><span className="spinner" style={{ width: 18, height: 18, borderTopColor: '#08080E' }} /></span> : 'Submit'}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button id="wildcard-submit-btn" type="submit" disabled={loading || !answer.trim()} 
+                style={{ flex: 1, background: '#C9A84C', color: '#08080E', border: 'none', padding: '12px 16px', borderRadius: 4, fontFamily: '"Cinzel", serif', fontWeight: 700, cursor: 'pointer', opacity: loading || !answer.trim() ? 0.5 : 1 }}>
+                {loading ? '...' : 'Submit'}
               </button>
-              <button type="button" onClick={requestHint} className="btn-ghost px-4" title="Hint">💡</button>
-              <button type="button" onClick={() => setShowSkipConfirm(true)} className="btn-ghost px-3">Skip</button>
             </div>
           </form>
         )}
-
-        {progress && (
-          <ProgressPips total={5} current={progress.questionInRound - 1} suit="diamonds" />
-        )}
       </div>
 
-      {/* Skip confirm */}
+      {/* Skip confirm - DISABLED */}
+      <div style={{ display: 'none' }}>
       <AnimatePresence>
         {showSkipConfirm && (
           <motion.div
@@ -211,6 +221,7 @@ export default function Wildcard() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   );
 }

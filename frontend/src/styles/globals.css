@@ -387,3 +387,12 @@ body {
   margin: 0;
 }
 
+/* ── Grid background for pages ──────────────────────────────────── */
+.grid-bg {
+  background: linear-gradient(135deg, rgba(13, 11, 5, 0.5) 1px, transparent 1px),
+              linear-gradient(45deg, rgba(13, 11, 5, 0.5) 1px, transparent 1px);
+  background-size: 60px 60px;
+  background-position: 0 0, 30px 30px;
+  background-color: var(--bg-base);
+}
+

@@ -20,6 +20,21 @@ function formatDate(iso) {
   return new Date(iso).toLocaleString('en-IN', { hour12: false });
 }
 
+// Format timestamp as DD MMM YYYY, HH:MM:SS in IST
+function formatIST(iso) {
+  if (!iso) return null;
+  return new Date(iso).toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+}
+
 function StatusBadge({ player }) {
   if (player.disqualified) return <Badge label="DISQUALIFIED" bg="rgba(192,57,43,0.18)" color="#C0392B" />;
   if (player.game_finished) return <Badge label="FINISHED" bg="rgba(201,168,76,0.12)" color="#C9A84C" />;
@@ -704,13 +719,14 @@ export default function Admin() {
               <thead>
                 <tr>
                   {[
-                    ['Name',    'name'],
-                    ['Score',   'score'],
-                    ['Status',  'status'],
-                    ['Time',    'time_taken_seconds'],
-                    ['Hints',   'hints_used'],
-                    ['DQ?',     'disqualified'],
-                    ['Entered', 'game_start_time'],
+                    ['Name',         'name'],
+                    ['Score',        'score'],
+                    ['Status',       'status'],
+                    ['Time',         'time_taken_seconds'],
+                    ['Hints',        'hints_used'],
+                    ['DQ?',          'disqualified'],
+                    ['Login Time',   'login_time'],
+                    ['Logout Time',  'logout_time'],
                   ].map(([label, col]) => (
                     <th key={col} onClick={() => toggleSort(col)} style={thStyle}>
                       {label} <SortIcon col={col} />
@@ -757,8 +773,12 @@ export default function Admin() {
                         : <span style={{ color: 'rgba(201,168,76,0.25)', fontSize: 12 }}>—</span>
                       }
                     </td>
-                    <td style={{ ...tdStyle, fontSize: 11, color: 'rgba(201,168,76,0.45)', fontFamily: 'monospace' }}>
-                      {player.game_start_time ? new Date(player.game_start_time).toLocaleTimeString('en-IN', { hour12: false }) : '—'}
+                    <td style={{ ...tdStyle, fontSize: 10, color: 'rgba(201,168,76,0.55)', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                      {formatIST(player.login_time) || '—'}
+                    </td>
+                    <td style={{ ...tdStyle, fontSize: 10, fontFamily: 'monospace', whiteSpace: 'nowrap',
+                      color: player.logout_time ? 'rgba(201,168,76,0.55)' : '#27AE60' }}>
+                      {player.logout_time ? formatIST(player.logout_time) : 'Still Active'}
                     </td>
                     <td style={tdStyle}>
                       <div style={{ display: 'flex', gap: 6 }}>
@@ -817,7 +837,8 @@ export default function Admin() {
                     ['Q Completed',   'questions_completed'],
                     ['Q Attempted',   'questions_attempted'],
                     ['Avg Time/Q',    'avg_time_per_q'],
-                    ['Tries Left',    'tries_remaining'],
+                    ['Login Time',    'login_time'],
+                    ['Logout Time',   'logout_time'],
                     ['Last Active',   'last_active'],
                     ['Status',        'status'],
                   ].map(([label, col]) => (
@@ -851,9 +872,15 @@ export default function Admin() {
                     <td style={{ ...tdStyle, fontSize: 12, fontFamily: 'monospace' }}>
                       {row.avg_time_per_q ? `${row.avg_time_per_q}s` : '—'}
                     </td>
-                    <td style={{ ...tdStyle, fontSize: 12 }}>{row.tries_remaining ?? '—'}</td>
+                    <td style={{ ...tdStyle, fontSize: 10, fontFamily: 'monospace', whiteSpace: 'nowrap', color: 'rgba(201,168,76,0.55)' }}>
+                      {formatIST(row.login_time) || '—'}
+                    </td>
+                    <td style={{ ...tdStyle, fontSize: 10, fontFamily: 'monospace', whiteSpace: 'nowrap',
+                      color: row.logout_time ? 'rgba(201,168,76,0.55)' : '#27AE60' }}>
+                      {row.logout_time ? formatIST(row.logout_time) : 'Still Active'}
+                    </td>
                     <td style={{ ...tdStyle, fontSize: 11, fontFamily: 'monospace', color: 'rgba(201,168,76,0.45)' }}>
-                      {row.last_active ? new Date(row.last_active).toLocaleTimeString('en-IN', { hour12: false }) : '—'}
+                      {row.last_active ? formatIST(row.last_active) : '—'}
                     </td>
                     <td style={tdStyle}><StatusBadge player={row} /></td>
                   </tr>

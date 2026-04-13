@@ -1,323 +1,50 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
+import { useGame } from '../hooks/useGame';
+import SuitCard from '../components/SuitCard';
 import api from '../lib/api';
+<<<<<<< Updated upstream
+=======
+import { firebaseAuth } from '../lib/firebase';
+>>>>>>> Stashed changes
 
-/* ── Confetti: loaded lazily only when needed ─────────────────────── */
-async function fireConfetti() {
-  const { default: confetti } = await import('canvas-confetti');
-  confetti({
-    particleCount: 120,
-    spread: 70,
-    colors: ['#D4AF37', '#E8D5A0', '#C9A84C', '#fff', '#B8963E'],
-    origin: { y: 0.55 },
-  });
-  setTimeout(() => confetti({ particleCount: 60, spread: 55, origin: { y: 0.5, x: 0.3 }, colors: ['#D4AF37', '#E8D5A0'] }), 350);
-  setTimeout(() => confetti({ particleCount: 60, spread: 55, origin: { y: 0.5, x: 0.7 }, colors: ['#D4AF37', '#E8D5A0'] }), 600);
-}
+const SUITS  = ['hearts', 'diamonds', 'spades', 'clubs'];
+const LABELS = {
+  hearts:   'Hearts',
+  diamonds: 'Diamonds',
+  spades:   'Spades',
+  clubs:    'Clubs',
+};
 
-/* ── Chain SVG overlay for locked cards ──────────────────────────── */
-function ChainOverlay({ breaking }) {
-  return (
-    <div style={{
-      position: 'absolute', inset: 0,
-      zIndex: 10,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.62)',
-      borderRadius: 16,
-      overflow: 'hidden',
-      pointerEvents: 'none',
-    }}>
-      {/* Chain SVG */}
-      <svg width="80" height="160" viewBox="0 0 80 160"
-        style={{
-          animation: breaking
-            ? 'chainBreak 0.5s ease-out forwards'
-            : 'chainSway 2s ease-in-out infinite',
-        }}
-      >
-        {/* Chain links */}
-        {[0, 1, 2, 3, 4].map(i => (
-          <g key={i} transform={`translate(20, ${i * 30 + 5})`}>
-            <ellipse cx="20" cy="12" rx="16" ry="8"
-              fill="none" stroke="#4a4a4a" strokeWidth="4"
-              style={{ filter: 'url(#metallic)' }}
-            />
-            <ellipse cx="20" cy="12" rx="16" ry="8"
-              fill="none" stroke="#7a7a7a" strokeWidth="1.5" opacity="0.4"
-            />
-          </g>
-        ))}
-        {/* Lock icon at bottom */}
-        <g transform="translate(22, 140)">
-          <rect x="2" y="10" width="28" height="20" rx="3" fill="#3a3a3a" stroke="#555" strokeWidth="1.5" />
-          <path d="M8 10 L8 5 Q8 0 16 0 Q24 0 24 5 L24 10"
-            stroke="#4a4a4a" strokeWidth="3.5" fill="none" strokeLinecap="round"
-          />
-          <circle cx="16" cy="18" r="3" fill="#222" />
-          <rect x="14.5" y="18" width="3" height="4" rx="1" fill="#222" />
-        </g>
-        <defs>
-          <filter id="metallic">
-            <feGaussianBlur in="SourceAlpha" stdDeviation="1" result="blur" />
-            <feOffset dx="1" dy="1" in="blur" result="shadow" />
-            <feComposite in="SourceGraphic" in2="shadow" operator="over" />
-          </filter>
-        </defs>
-      </svg>
-      <style>{`
-        @keyframes chainSway {
-          0%, 100% { transform: rotate(-3deg); }
-          50%       { transform: rotate(3deg); }
-        }
-        @keyframes chainBreak {
-          0%   { transform: scale(1) translateY(0); opacity: 1; }
-          40%  { transform: scale(1.1) translateY(-8px); }
-          100% { transform: scale(0.5) translateY(60px); opacity: 0; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-/* ── Completed stamp ─────────────────────────────────────────────── */
-function CompletedStamp() {
-  return (
-    <div style={{
-      position: 'absolute', inset: 0, zIndex: 10,
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(0,0,0,0.5)',
-      borderRadius: 16,
-      pointerEvents: 'none',
-    }}>
-      <div style={{
-        border: '3px solid rgba(212,175,55,0.7)',
-        borderRadius: 8,
-        padding: '10px 20px',
-        transform: 'rotate(-15deg)',
-        textAlign: 'center',
-      }}>
-        <div style={{
-          fontFamily: '"Cinzel", serif',
-          fontSize: 22,
-          fontWeight: 900,
-          color: 'rgba(212,175,55,0.85)',
-          letterSpacing: '0.15em',
-        }}>✓</div>
-        <div style={{
-          fontFamily: '"Cinzel", serif',
-          fontSize: 9,
-          letterSpacing: '0.2em',
-          color: 'rgba(212,175,55,0.7)',
-          marginTop: 4,
-        }}>COMPLETED</div>
-      </div>
-    </div>
-  );
-}
-
-/* ── Art Deco Card ───────────────────────────────────────────────── */
-function ArtDecoCard({ round, state, onClick, highlighted }) {
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
-  const [breaking, setBreaking]   = useState(false);
-  const didBreak = useRef(false);
-
-  // Trigger chain-break animation when this card transitions locked→active
-  useEffect(() => {
-    if (highlighted && !didBreak.current) {
-      didBreak.current = true;
-      setBreaking(true);
-    }
-  }, [highlighted]);
-
-  const isLocked    = state === 'locked';
-  const isCompleted = state === 'completed';
-  const isActive    = state === 'active';
-
-  const cardOpacity = isLocked ? 0.45 : isCompleted ? 0.7 : 1;
-
-  return (
-    <div
-      onClick={!isLocked && !isCompleted ? onClick : undefined}
-      onMouseMove={isActive ? (e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.clientX - rect.left - rect.width / 2;
-        const y = e.clientY - rect.top - rect.height / 2;
-        setRotation({
-          x: -(y / (rect.height / 2)) * 10,
-          y:  (x / (rect.width  / 2)) * 10,
-        });
-      } : undefined}
-      onMouseLeave={() => setRotation({ x: 0, y: 0 })}
-      style={{
-        width: 220, height: 300,
-        position: 'relative',
-        cursor: isActive ? 'none' : 'default',
-        filter: isLocked ? 'grayscale(0.7) brightness(0.6)' : 'none',
-        opacity: cardOpacity,
-        transition: 'filter 0.4s, opacity 0.4s',
-      }}
-    >
-      {/* Chain overlay for locked */}
-      <AnimatePresence>
-        {isLocked && !breaking && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{ position: 'absolute', inset: 0, zIndex: 10 }}
-          >
-            <ChainOverlay breaking={false} />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Chain break animation */}
-      {breaking && (
-        <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
-          <ChainOverlay breaking={true} />
-        </div>
-      )}
-
-      {/* Completed stamp */}
-      {isCompleted && <CompletedStamp />}
-
-      {/* 3-D tilt card body */}
-      <motion.div
-        animate={{ rotateX: rotation.x, rotateY: rotation.y }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        style={{
-          width: '100%', height: '100%',
-          borderRadius: 16,
-          border: `2px solid ${isActive && highlighted ? '#E8D5A0' : '#D4AF37'}`,
-          boxShadow: isActive
-            ? highlighted
-              ? '0 0 40px rgba(212,175,55,0.8), 0 0 80px rgba(212,175,55,0.3)'
-              : '0 0 20px rgba(212,175,55,0.3)'
-            : 'none',
-          overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          transformStyle: 'preserve-3d',
-          background: 'linear-gradient(160deg, #111 0%, #000 100%)',
-          animation: isActive && highlighted ? 'borderPulse 2s ease-in-out infinite' : 'none',
-          transition: 'box-shadow 0.3s, border-color 0.3s',
-        }}
-      >
-        {/* Art deco SVG border */}
-        <svg
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', zIndex: 1, pointerEvents: 'none' }}
-          viewBox="0 0 220 300" preserveAspectRatio="none"
-        >
-          <rect x="8" y="8" width="204" height="284" fill="none" stroke="#D4AF37" strokeWidth="1" />
-          <rect x="14" y="14" width="192" height="272" fill="none" stroke="#D4AF37" strokeWidth="2.5" />
-          <polyline points="14,35 35,35 35,14" fill="none" stroke="#D4AF37" strokeWidth="1.5" />
-          <polyline points="22,30 30,30 30,22" fill="none" stroke="#D4AF37" strokeWidth="1" />
-          <polyline points="206,35 185,35 185,14" fill="none" stroke="#D4AF37" strokeWidth="1.5" />
-          <polyline points="198,30 190,30 190,22" fill="none" stroke="#D4AF37" strokeWidth="1" />
-          <polyline points="14,265 35,265 35,286" fill="none" stroke="#D4AF37" strokeWidth="1.5" />
-          <polyline points="22,270 30,270 30,278" fill="none" stroke="#D4AF37" strokeWidth="1" />
-          <polyline points="206,265 185,265 185,286" fill="none" stroke="#D4AF37" strokeWidth="1.5" />
-          <polyline points="198,270 190,270 190,278" fill="none" stroke="#D4AF37" strokeWidth="1" />
-          <line x1="35" y1="40" x2="185" y2="40" stroke="#D4AF37" strokeWidth="1" />
-          <line x1="35" y1="45" x2="185" y2="45" stroke="#D4AF37" strokeWidth="1" />
-          <line x1="35" y1="260" x2="185" y2="260" stroke="#D4AF37" strokeWidth="1" />
-          <line x1="35" y1="255" x2="185" y2="255" stroke="#D4AF37" strokeWidth="1" />
-        </svg>
-
-        {/* Card content */}
-        <div style={{ position: 'relative', zIndex: 2, textAlign: 'center', transform: 'translateZ(20px)' }}>
-          <h2 style={{
-            fontFamily: '"Cinzel Decorative", serif',
-            fontSize: 18,
-            fontWeight: 900,
-            color: '#D4AF37',
-            letterSpacing: '0.1em',
-            marginBottom: 4,
-          }}>
-            AMENTIS
-          </h2>
-          <p style={{
-            fontFamily: '"Cinzel", serif',
-            fontSize: 10,
-            color: 'rgba(212,175,55,0.6)',
-            letterSpacing: '0.2em',
-            marginBottom: 16,
-          }}>
-            ROUND {round.id}
-          </p>
-
-          {/* Badge circle */}
-          <div style={{
-            width: 70, height: 70,
-            margin: '0 auto',
-            border: '2px solid #D4AF37',
-            borderRadius: '50%',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            position: 'relative',
-          }}>
-            <svg viewBox="0 0 100 100" style={{ position: 'absolute', width: '100%', height: '100%', animation: 'spin 20s linear infinite' }}>
-              <path id={`curve-${round.id}`} d="M 15 50 A 35 35 0 1 1 15 50.001" fill="transparent" />
-              <text fontSize="7" fill="#D4AF37" fontWeight="bold" letterSpacing="1px" fontFamily="sans-serif">
-                <textPath href={`#curve-${round.id}`} startOffset="0%" fill="#D4AF37">
-                  IEEE GTBIT STUDENT BRANCH •
-                </textPath>
-              </text>
-            </svg>
-            <div style={{ width: 34, height: 34, border: '1px solid #D4AF37', transform: 'rotate(45deg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ transform: 'rotate(-45deg)', color: '#D4AF37', fontSize: 16 }}>⚜</span>
-            </div>
-          </div>
-
-          <div style={{ marginTop: 14 }}>
-            <span style={{
-              filter: 'drop-shadow(0 0 6px rgba(212,175,55,0.6))',
-              color: '#D4AF37',
-              fontSize: 22,
-            }}>𓏡</span>
-          </div>
-
-          {/* State label */}
-          <p style={{
-            marginTop: 12,
-            fontFamily: '"Cinzel", serif',
-            fontSize: 9,
-            letterSpacing: '0.25em',
-            color: isLocked ? 'rgba(212,175,55,0.3)' : isCompleted ? 'rgba(212,175,55,0.6)' : 'rgba(212,175,55,0.8)',
-          }}>
-            {isLocked ? '🔒 LOCKED' : isCompleted ? '✓ COMPLETED' : 'ENTER CHAMBER'}
-          </p>
-        </div>
-      </motion.div>
-
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes borderPulse {
-          0%, 100% { box-shadow: 0 0 20px rgba(212,175,55,0.4); }
-          50%       { box-shadow: 0 0 50px rgba(212,175,55,0.9), 0 0 100px rgba(212,175,55,0.3); }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-/* ── Main RoundsSelection page ───────────────────────────────────── */
-const ROUNDS = [
-  { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 },
-];
+/* ── Flip + flash sequence ─────────────────────────────────────────
+   State machine:
+   idle → selecting → flipping → flash → navigating
+──────────────────────────────────────────────────────────────────── */
+const STAGES = {
+  IDLE:       'idle',
+  SELECTING:  'selecting',   // chosen card scales up, others fade
+  FLIP_OUT:   'flip_out',    // selected flips to 90deg
+  FLASH:      'flash',       // white/gold flash at 90deg pivot
+  FLIP_IN:    'flip_in',     // completes flip back
+  NAVIGATING: 'navigating',  // navigate away
+};
 
 export default function RoundsSelection() {
   const navigate  = useNavigate();
-  const location  = useLocation();
   const { user }  = useAuth();
+  const { startGame } = useGame();
 
-  const [currentRound, setCurrentRound] = useState(null);
-  const [loading, setLoading]           = useState(true);
-  // which card was just unlocked (for chain-break anim + glow)
-  const justUnlocked = location.state?.justUnlocked ?? null;
+  const [stage, setStage]       = useState(STAGES.IDLE);
+  const [chosen, setChosen]     = useState(null); // suit string
+  const [flashOpacity, setFlashOpacity] = useState(0);
+  const [error, setError]       = useState(null);
+  const [checking, setChecking] = useState(true);
 
+  /* ── Check for existing session on mount ─────────────────────── */
   useEffect(() => {
+<<<<<<< Updated upstream
     async function loadSession() {
       if (!user) return;
       try {
@@ -336,128 +63,286 @@ export default function RoundsSelection() {
       // We rely on useAuth to handle top-level auth gate
     }
   }, [user]);
+=======
+    (async () => {
+      try {
+        const currentUser = firebaseAuth.currentUser;
+        if (!currentUser) { setChecking(false); return; }
+        const { data } = await api.get('/game/session');
+        if (data?.hasSession && !data?.completed && !data?.eliminated) {
+          // Session already exists — go straight to game
+          navigate('/round/1', { replace: true });
+          return;
+        }
+      } catch { /* no session */ }
+      setChecking(false);
+    })();
+  }, [navigate]);
+>>>>>>> Stashed changes
 
-  // Fire confetti if we just completed a round
-  useEffect(() => {
-    if (location.state?.justCompleted) {
-      fireConfetti();
-      // Clear the state so it doesn't fire again on back-navigate
-      window.history.replaceState({}, '');
-    }
-  }, [location.state?.justCompleted]);
+  /* ── Card click handler ─────────────────────────────────────────
+     Full sequence:
+     1. Mark chosen card, begin SELECTING (scale up, others fade)
+     2. 300ms → FLIP_OUT (rotateY to 90deg)
+     3. 300ms → FLASH (show flash overlay)
+     4. 150ms → FLIP_IN (rotateY back to 0)
+     5. 300ms → NAVIGATING (start game + navigate)
+  ──────────────────────────────────────────────────────────────── */
+  const handleCardClick = useCallback(async (suit) => {
+    if (stage !== STAGES.IDLE) return;
+    setChosen(suit);
+    setStage(STAGES.SELECTING);
 
-  function getCardState(roundId) {
-    if (currentRound === null) return 'locked';
-    if (roundId < currentRound) return 'completed';
-    if (roundId === currentRound) return 'active';
-    return 'locked';
+    await delay(320);
+    setStage(STAGES.FLIP_OUT);
+
+    await delay(320);
+    setStage(STAGES.FLASH);
+    setFlashOpacity(1);
+
+    await delay(160);
+    setStage(STAGES.FLIP_IN);
+    setFlashOpacity(0);
+
+    await delay(320);
+    setStage(STAGES.NAVIGATING);
+
+    // Kick off game start
+    try {
+      await startGame();
+    } catch { /* already started — that's fine */ }
+
+    navigate('/round/1');
+  }, [stage, navigate, startGame]);
+
+  if (checking) {
+    return (
+      <div style={{
+        minHeight: '100vh', background: '#080808',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ color: 'rgba(201,168,76,0.5)', fontFamily: '"Cinzel", serif', fontSize: 12, letterSpacing: '0.3em' }}>
+          CONSULTING THE ORACLE…
+        </span>
+      </div>
+    );
   }
 
   return (
     <div style={{
       minHeight: '100vh',
+      background: 'radial-gradient(ellipse at center, #0D0800 0%, #060404 60%, #000 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
+      padding: '40px 24px',
       position: 'relative',
-      background: 'radial-gradient(circle at center, #1a0d00 0%, #000 70%)',
       overflow: 'hidden',
     }}>
-      {/* Background glow */}
+      {/* Background texture */}
       <div style={{
-        position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse at top center, rgba(201,168,76,0.07) 0%, transparent 60%)',
-        pointerEvents: 'none',
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse at top center, rgba(201,168,76,0.05) 0%, transparent 55%)',
       }} />
 
-      {/* Header pill */}
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        style={{
-          position: 'absolute',
-          top: '8%',
-          background: 'rgba(255,255,255,0.92)',
-          color: '#000',
-          padding: '10px 52px',
-          borderRadius: 50,
-          boxShadow: '0 0 60px 30px rgba(255,255,255,0.5), inset 0 0 10px rgba(0,0,0,0.5)',
-          zIndex: 10,
-        }}
-      >
-        <h1 style={{
-          fontFamily: 'sans-serif',
-          fontWeight: 900,
-          fontSize: 22,
-          letterSpacing: '0.12em',
-          margin: 0,
-        }}>
-          ROUNDS
-        </h1>
-      </motion.div>
+      {/* Particle-like dots */}
+      {Array.from({ length: 18 }).map((_, i) => (
+        <motion.div
+          key={i}
+          animate={{ opacity: [0.1, 0.35, 0.1], scale: [1, 1.2, 1] }}
+          transition={{ duration: 3 + i * 0.4, repeat: Infinity, delay: i * 0.25 }}
+          style={{
+            position: 'absolute',
+            width: 2, height: 2,
+            borderRadius: '50%',
+            background: '#C9A84C',
+            left: `${5 + (i * 5.5) % 90}%`,
+            top: `${8 + (i * 7.3) % 84}%`,
+            pointerEvents: 'none',
+          }}
+        />
+      ))}
 
-      {/* Subtitle */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.6 }}
-        style={{
-          position: 'absolute',
-          top: 'calc(8% + 68px)',
+      {/* ── Title ─────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: -32 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7 }}
+        style={{ textAlign: 'center', marginBottom: 40, zIndex: 5 }}
+      >
+        <p style={{
           fontFamily: '"Cinzel", serif',
           fontSize: 10,
-          letterSpacing: '0.3em',
-          color: 'rgba(201,168,76,0.45)',
-          zIndex: 10,
-        }}
-      >
-        SELECT YOUR CHAMBER
-      </motion.p>
+          letterSpacing: '0.5em',
+          color: 'rgba(201,168,76,0.4)',
+          marginBottom: 12,
+          textTransform: 'uppercase',
+        }}>
+          𓂀 &nbsp; THE RITUAL &nbsp; 𓂀
+        </p>
+        <h1 style={{
+          fontFamily: '"Cinzel Decorative", serif',
+          fontSize: 'clamp(26px, 5vw, 46px)',
+          fontWeight: 900,
+          color: '#C9A84C',
+          letterSpacing: '0.08em',
+          textShadow: '0 0 40px rgba(201,168,76,0.35)',
+          margin: '0 0 14px 0',
+          lineHeight: 1.15,
+        }}>
+          CHOOSE YOUR SEAL
+        </h1>
+        <p style={{
+          fontFamily: '"IM Fell English", Georgia, serif',
+          fontStyle: 'italic',
+          fontSize: 'clamp(13px, 2vw, 16px)',
+          color: 'rgba(232,213,160,0.45)',
+          margin: 0,
+          lineHeight: 1.6,
+        }}>
+          All paths lead to the same tomb.
+        </p>
+      </motion.div>
 
-      {/* Cards grid */}
-      {loading ? (
-        <div style={{
+      {/* ── Card grid ─────────────────────────────────────────────── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: 28,
+        maxWidth: 620,
+        width: '100%',
+        zIndex: 5,
+        perspective: '1200px',
+      }}
+      className="suit-card-grid"
+      >
+        {SUITS.map((suit, i) => {
+          const isChosen = chosen === suit;
+          const isFading = chosen !== null && !isChosen;
+
+          return (
+            <motion.div
+              key={suit}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: i * 0.12, ease: 'easeOut' }}
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                transformStyle: 'preserve-3d',
+              }}
+            >
+              {/* Flip wrapper */}
+              <motion.div
+                animate={
+                  isChosen && stage === STAGES.FLIP_OUT
+                    ? { rotateY: 90 }
+                    : isChosen && stage === STAGES.FLIP_IN
+                    ? { rotateY: 0 }
+                    : isChosen && stage === STAGES.FLASH
+                    ? { rotateY: 90 }
+                    : { rotateY: 0 }
+                }
+                transition={{ duration: 0.31, ease: stage === STAGES.FLIP_OUT ? 'easeIn' : 'easeOut' }}
+                style={{
+                  width: '100%',
+                  maxWidth: 260,
+                  position: 'relative',
+                  transformStyle: 'preserve-3d',
+                }}
+              >
+                <SuitCard
+                  suit={suit}
+                  isSelected={isChosen && stage === STAGES.SELECTING}
+                  isFading={isFading}
+                  onClick={() => handleCardClick(suit)}
+                />
+
+                {/* Flash overlay mid-flip */}
+                {isChosen && (
+                  <motion.div
+                    animate={{ opacity: flashOpacity }}
+                    transition={{ duration: 0.15 }}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      borderRadius: 16,
+                      background: 'radial-gradient(ellipse at 40% 35%, #ffffff, #F5C542)',
+                      pointerEvents: 'none',
+                      zIndex: 20,
+                    }}
+                  />
+                )}
+              </motion.div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* ── Desktop — single row override ─────────────────────────── */}
+      <style>{`
+        @media (min-width: 900px) {
+          .suit-card-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+            max-width: 1000px !important;
+            gap: 20px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .suit-card-grid {
+            gap: 16px !important;
+          }
+        }
+      `}</style>
+
+      {/* Error */}
+      {error && (
+        <p style={{
+          marginTop: 24,
           fontFamily: '"Cinzel", serif',
           fontSize: 11,
-          letterSpacing: '0.3em',
-          color: 'rgba(201,168,76,0.5)',
-        }}>
-          CONSULTING THE ORACLE…
-        </div>
-      ) : (
-        <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: 28,
+          color: '#C0392B',
+          letterSpacing: '0.2em',
           zIndex: 5,
-          marginTop: 80,
-          padding: '0 24px',
-          maxWidth: 1100,
-          perspective: '1200px',
         }}>
-          {ROUNDS.map((r, i) => (
-            <motion.div
-              key={r.id}
-              initial={{ opacity: 0, y: 40 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.12, duration: 0.6, ease: 'easeOut' }}
-            >
-              <ArtDecoCard
-                round={r}
-                state={getCardState(r.id)}
-                highlighted={r.id === justUnlocked || (r.id === currentRound && justUnlocked === null)}
-                onClick={() => {
-                  if (r.id >= 4) navigate('/wildcard');
-                  else navigate(`/round/${r.id}`);
-                }}
-              />
-            </motion.div>
-          ))}
-        </div>
+          {error}
+        </p>
       )}
+
+      {/* Loading overlay during navigation */}
+      <AnimatePresence>
+        {stage === STAGES.NAVIGATING && (
+          <motion.div
+            key="nav-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            style={{
+              position: 'fixed', inset: 0,
+              background: '#080808',
+              zIndex: 1000,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <motion.span
+              animate={{ opacity: [0.4, 1, 0.4] }}
+              transition={{ duration: 1.2, repeat: Infinity }}
+              style={{
+                fontFamily: '"Cinzel", serif',
+                fontSize: 11,
+                letterSpacing: '0.4em',
+                color: '#C9A84C',
+              }}
+            >
+              ENTERING THE CHAMBER…
+            </motion.span>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }

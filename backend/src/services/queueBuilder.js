@@ -1,5 +1,6 @@
 import { db } from '../firebase.js';
 
+/* ── Fisher-Yates shuffle ──────────────────────────────────────────── */
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -8,6 +9,7 @@ function shuffle(arr) {
   return arr;
 }
 
+<<<<<<< Updated upstream
 async function getRandomQuestions(round, count) {
   const snap = await db.collection('questions').where('round', '==', round).get();
 
@@ -17,20 +19,40 @@ async function getRandomQuestions(round, count) {
 
   const ids = snap.docs.map(d => d.id);
   return shuffle(ids).slice(0, count);
+=======
+/* ── Fetch questions by difficulty (Firestore) ───────────────────── */
+async function getByDifficulty(difficulty, isWildcard, needed) {
+  const snapshot = await db.collection('questions')
+    .where('difficulty', '==', difficulty)
+    .where('isWildcard', '==', isWildcard)
+    .get();
+
+  if (snapshot.empty || snapshot.docs.length < needed) {
+    throw new Error(
+      `Not enough ${difficulty} questions (wildcard=${isWildcard}). ` +
+      `Need ${needed}, found ${snapshot.docs.length}.`
+    );
+  }
+
+  const ids = snapshot.docs.map(doc => doc.id);
+  return shuffle(ids).slice(0, needed);
+>>>>>>> Stashed changes
 }
 
+/* ── Build 13-element queue: 4 easy + 4 medium + 4 hard + 1 wildcard ─ */
 export async function buildQueue(userId) {
-  // 5 questions per round, 4 rounds = 20 total
-  const [r1, r2, r3, r4] = await Promise.all([
-    getRandomQuestions(1, 5),
-    getRandomQuestions(2, 5),
-    getRandomQuestions(3, 5),
-    getRandomQuestions(4, 5),
+  const [easy, medium, hard, wildcard] = await Promise.all([
+    getByDifficulty('easy',   false, 4),
+    getByDifficulty('medium', false, 4),
+    getByDifficulty('hard',   false, 4),
+    getByDifficulty('hard',   true,  1),  // wildcard questions have difficulty=hard
   ]);
 
-  const queue = [...r1, ...r2, ...r3, ...r4];
+  const queue     = [...easy, ...medium, ...hard, ...wildcard];
+  const triesUsed = new Array(13).fill(0);
 
   await db.collection('sessions').doc(userId).set({
+<<<<<<< Updated upstream
     user_id:       userId,
     queue,
     current_index: 0,
@@ -38,6 +60,14 @@ export async function buildQueue(userId) {
     phase_scores:  [0, 0, 0, 0],
     created_at:    new Date().toISOString(),
   });
+=======
+    queue,
+    currentIndex: 0,
+    currentRound: 1,
+    triesUsed,
+    phaseScores: [0, 0, 0, 0],
+  }, { merge: true });
+>>>>>>> Stashed changes
 
   return queue;
 }

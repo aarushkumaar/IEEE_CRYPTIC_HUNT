@@ -1,40 +1,75 @@
-import { createClient } from '@supabase/supabase-js';
+import admin from 'firebase-admin';
 import { readFileSync } from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-  console.error('❌ Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env');
+if (!process.env.FIREBASE_PROJECT_ID || !process.env.FIREBASE_CLIENT_EMAIL || !process.env.FIREBASE_PRIVATE_KEY) {
+  console.error('❌ Missing FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, or FIREBASE_PRIVATE_KEY in .env');
   process.exit(1);
 }
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const app = admin.initializeApp({
+  credential: admin.credential.cert({
+    projectId:   process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey:  process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  }),
+});
+
+const db = admin.firestore();
 
 const questions = JSON.parse(readFileSync('./questions.json', 'utf8'));
 
-console.log(`📦 Seeding ${questions.length} questions...`);
+console.log('🗑️  Deleting all existing questions...');
 
-// Normalize all answers to lowercase before seeding
+// Delete existing questions in batches
+const existingSnap = await db.collection('questions').get();
+if (!existingSnap.empty) {
+  const batches = [];
+  const docs    = existingSnap.docs;
+  for (let i = 0; i < docs.length; i += 499) {
+    const batch = db.batch();
+    docs.slice(i, i + 499).forEach(doc => batch.delete(doc.ref));
+    batches.push(batch.commit());
+  }
+  await Promise.all(batches);
+}
+console.log('✅ Deleted existing questions.');
+
+// Normalize and convert to camelCase before seeding
 const normalized = questions.map(q => ({
-  ...q,
-  answers: q.answers.map(a => a.trim().toLowerCase()),
+  suit:        q.suit,
+  cardNumber:  q.card_number,    // snake_case → camelCase
+  difficulty:  q.difficulty,
+  round:       q.round,
+  isWildcard:  q.is_wildcard,    // snake_case → camelCase
+  maxTries:    q.max_tries,      // snake_case → camelCase
+  question:    q.question,
+  answers:     q.answers.map(a => a.trim().toLowerCase()),
+  hints:       q.hints ?? [],
 }));
 
-const { data, error } = await supabase.from('questions').insert(normalized);
+console.log(`📦 Seeding ${normalized.length} questions...`);
 
-if (error) {
-  console.error('❌ Seed failed:', error.message);
-  process.exit(1);
+// Insert in batches of 499
+for (let i = 0; i < normalized.length; i += 499) {
+  const batch = db.batch();
+  normalized.slice(i, i + 499).forEach(q => {
+    const ref = db.collection('questions').doc();
+    batch.set(ref, q);
+  });
+  await batch.commit();
 }
 
-console.log(`✅ Successfully seeded ${questions.length} questions.`);
+console.log(`✅ Successfully seeded ${normalized.length} questions.`);
 
-// Summary by round
-const rounds = [1, 2, 3, 4];
-rounds.forEach(r => {
-  const count = questions.filter(q => q.round === r).length;
-  console.log(`   Round ${r}: ${count} questions`);
+// Summary by difficulty
+const difficulties = ['easy', 'medium', 'hard'];
+difficulties.forEach(d => {
+  const count = normalized.filter(q => q.difficulty === d && !q.isWildcard).length;
+  console.log(`   ${d}: ${count} questions`);
 });
+const wildcards = normalized.filter(q => q.isWildcard).length;
+console.log(`   wildcard: ${wildcards} question(s)`);
+
+process.exit(0);

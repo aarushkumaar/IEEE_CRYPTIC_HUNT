@@ -1,29 +1,35 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import { useGame } from '../hooks/useGame';
 import QuestionCard from '../components/QuestionCard';
-import ScoreBar from '../components/ScoreBar';
-import ProgressPips from '../components/ProgressPips';
 import api from '../lib/api';
 import { signOut } from 'firebase/auth';
 import { firebaseAuth } from '../lib/firebase';
 
-const ROUND_SUITS  = { 1: 'spades', 2: 'hearts', 3: 'diamonds', 4: 'clubs' };
+const PHASE_LABELS = { 1: 'EASY', 2: 'MEDIUM', 3: 'HARD', 4: 'WILDCARD' };
 const SUIT_SYMBOLS = { spades: '♠', hearts: '♥', diamonds: '♦', clubs: '♣' };
 const SUIT_GLYPHS  = { spades: '𓅓', hearts: '𓃒', diamonds: '𓆙', clubs: '𓋹' };
 
-/* ── 12-hour Game Timer ───────────────────────────────────────────── */
-function GameTimer({ gameStartTime, onExpire }) {
-  const [remaining, setRemaining] = useState(null); // ms
+/* ── Helpers ──────────────────────────────────────────────────────── */
+function getPhaseFromIndex(idx) {
+  if (idx <= 3)  return 1;
+  if (idx <= 7)  return 2;
+  if (idx <= 11) return 3;
+  return 4;
+}
+
+/* ── 12-hour Game Timer (reads loginTime from API, polls /status) ─── */
+function GameTimer({ loginTime, warningActive, onExpire }) {
+  const [remaining, setRemaining] = useState(null);
 
   useEffect(() => {
-    if (!gameStartTime) return;
+    if (!loginTime) return;
     const GAME_MS = 12 * 60 * 60 * 1000;
 
     function tick() {
-      const elapsed = Date.now() - new Date(gameStartTime).getTime();
+      const elapsed = Date.now() - new Date(loginTime).getTime();
       const left    = Math.max(0, GAME_MS - elapsed);
       setRemaining(left);
       if (left === 0) onExpire?.();
@@ -32,28 +38,29 @@ function GameTimer({ gameStartTime, onExpire }) {
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
-  }, [gameStartTime, onExpire]);
+  }, [loginTime, onExpire]);
 
   if (remaining === null) return null;
 
-  const h = Math.floor(remaining / 3600000);
-  const m = Math.floor((remaining % 3600000) / 60000);
-  const s = Math.floor((remaining % 60000) / 1000);
-
+  const h   = Math.floor(remaining / 3600000);
+  const m   = Math.floor((remaining % 3600000) / 60000);
+  const s   = Math.floor((remaining % 60000) / 1000);
   const pad = n => String(n).padStart(2, '0');
-  const isLow = remaining < 30 * 60 * 1000; // < 30 min
+  const isLow  = remaining < 30 * 60 * 1000;
+  const color  = warningActive ? '#C0392B' : isLow ? '#C0392B' : '#C9A84C';
+  const border = `1px solid ${(warningActive || isLow) ? 'rgba(192,57,43,0.5)' : 'rgba(201,168,76,0.25)'}`;
 
   return (
     <div style={{
       fontFamily: '"Courier New", Courier, monospace',
       fontSize: 13,
       letterSpacing: '0.12em',
-      color: isLow ? '#C0392B' : '#C9A84C',
-      border: `1px solid ${isLow ? 'rgba(192,57,43,0.5)' : 'rgba(201,168,76,0.25)'}`,
+      color,
+      border,
       padding: '5px 12px',
       borderRadius: 2,
-      background: isLow ? 'rgba(192,57,43,0.08)' : 'rgba(201,168,76,0.04)',
-      boxShadow: isLow ? '0 0 12px rgba(192,57,43,0.3)' : 'none',
+      background: (warningActive || isLow) ? 'rgba(192,57,43,0.08)' : 'rgba(201,168,76,0.04)',
+      boxShadow: (warningActive || isLow) ? '0 0 12px rgba(192,57,43,0.3)' : 'none',
       transition: 'color 0.4s, border-color 0.4s, box-shadow 0.4s',
     }}>
       ⏳ {pad(h)}:{pad(m)}:{pad(s)}
@@ -61,8 +68,35 @@ function GameTimer({ gameStartTime, onExpire }) {
   );
 }
 
+/* ── Warning banner (score < 5 with < 15min to 2-hour mark) ─────── */
+function WarningBanner() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{
+        position: 'fixed', top: 56, left: 0, right: 0,
+        background: 'rgba(192,57,43,0.15)',
+        borderBottom: '1px solid rgba(192,57,43,0.35)',
+        padding: '10px 20px',
+        textAlign: 'center',
+        zIndex: 190,
+      }}
+    >
+      <span style={{
+        fontFamily: '"Cinzel", serif',
+        fontSize: 10,
+        letterSpacing: '0.2em',
+        color: '#C0392B',
+      }}>
+        ⚠ WARNING — YOU HAVE LESS THAN 15 MINUTES TO REACH A SCORE OF 5 OR BE ELIMINATED
+      </span>
+    </motion.div>
+  );
+}
+
 /* ── Egyptian nav bar ─────────────────────────────────────────────── */
-function EgyptianNav({ score, progress, onBack, gameStartTime, onTimerExpire }) {
+function EgyptianNav({ score, progress, onBack, loginTime, warningActive, onTimerExpire }) {
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0,
@@ -119,7 +153,7 @@ function EgyptianNav({ score, progress, onBack, gameStartTime, onTimerExpire }) 
 
       {/* Right — Timer + Score */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
-        <GameTimer gameStartTime={gameStartTime} onExpire={onTimerExpire} />
+        <GameTimer loginTime={loginTime} warningActive={warningActive} onExpire={onTimerExpire} />
 
         <div style={{
           fontFamily: '"Cinzel", serif',
@@ -138,7 +172,7 @@ function EgyptianNav({ score, progress, onBack, gameStartTime, onTimerExpire }) 
           </span>
           {progress && (
             <span style={{ color: 'rgba(201,168,76,0.45)', marginLeft: 6, fontSize: 9 }}>
-              / {progress.totalQuestions}
+              / 13
             </span>
           )}
         </div>
@@ -147,7 +181,7 @@ function EgyptianNav({ score, progress, onBack, gameStartTime, onTimerExpire }) 
   );
 }
 
-/* ── Egyptian answer input ────────────────────────────────────────── */
+/* ── Answer input ─────────────────────────────────────────────────── */
 function EgyptianInput({ value, onChange, onSubmit, loading, disabled, inputRef }) {
   return (
     <form onSubmit={onSubmit} style={{ width: '100%' }}>
@@ -237,9 +271,38 @@ function EgyptianInput({ value, onChange, onSubmit, loading, disabled, inputRef 
   );
 }
 
-/* ── 3 Tries indicator ────────────────────────────────────────────── */
-function TriesIndicator({ triesLeft }) {
-  const total = 3;
+/* ── Tries indicator — dynamic based on maxTries ─────────────────── */
+function TriesIndicator({ triesLeft, maxTries = 3, isWildcard = false }) {
+  const triesUsed = maxTries - triesLeft;
+
+  if (isWildcard) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: -4 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          background: 'rgba(192,57,43,0.12)',
+          border: '2px solid rgba(192,57,43,0.5)',
+          borderRadius: 2,
+          padding: '10px 18px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+        }}
+      >
+        <span style={{ fontSize: 16 }}>⚠</span>
+        <span style={{
+          fontFamily: '"Cinzel", serif',
+          fontSize: 9,
+          letterSpacing: '0.22em',
+          color: '#C0392B',
+        }}>
+          ONE ATTEMPT. NO SECOND CHANCE.
+        </span>
+      </motion.div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <span style={{
@@ -251,10 +314,9 @@ function TriesIndicator({ triesLeft }) {
         ATTEMPTS:
       </span>
       <div style={{ display: 'flex', gap: 6 }}>
-        {Array.from({ length: total }).map((_, i) => {
-          const used     = total - (triesLeft ?? total);
-          const isUsed   = i < used;
-          const isLast   = used === 2 && i === 1; // warn on last
+        {Array.from({ length: maxTries }).map((_, i) => {
+          const isUsed = i < triesUsed;
+          const isLast = i === maxTries - 1 && triesUsed === maxTries - 1;
           return (
             <div key={i} style={{
               width: 18, height: 18,
@@ -273,7 +335,7 @@ function TriesIndicator({ triesLeft }) {
           );
         })}
       </div>
-      {triesLeft !== undefined && triesLeft === 1 && (
+      {triesLeft === 1 && (
         <span style={{
           fontFamily: '"Cinzel", serif',
           fontSize: 9,
@@ -297,10 +359,10 @@ function TriesIndicator({ triesLeft }) {
 /* ── Status indicator ─────────────────────────────────────────────── */
 function StatusIndicator({ cardState, feedback }) {
   const states = {
-    idle:    { label: 'AWAITING INPUT',        color: 'rgba(201,168,76,0.4)', dot: 'rgba(201,168,76,0.5)' },
-    correct: { label: 'SEAL ACCEPTED',         color: '#27AE60',              dot: '#27AE60' },
-    wrong:   { label: 'SEAL REJECTED',         color: '#C0392B',              dot: '#C0392B' },
-    loading: { label: 'CONSULTING THE ORACLE…',color: 'rgba(201,168,76,0.6)', dot: '#C9A84C' },
+    idle:    { label: 'AWAITING INPUT',         color: 'rgba(201,168,76,0.4)', dot: 'rgba(201,168,76,0.5)' },
+    correct: { label: 'SEAL ACCEPTED',          color: '#27AE60',              dot: '#27AE60' },
+    wrong:   { label: 'SEAL REJECTED',          color: '#C0392B',              dot: '#C0392B' },
+    loading: { label: 'CONSULTING THE ORACLE…', color: 'rgba(201,168,76,0.6)', dot: '#C9A84C' },
   };
   const state = feedback
     ? (feedback.correct ? states.correct : states.wrong)
@@ -325,190 +387,65 @@ function StatusIndicator({ cardState, feedback }) {
   );
 }
 
-/* ── Disqualification Modal ───────────────────────────────────────── */
-function DisqualificationModal({ onLogout }) {
+/* ── Phase transition overlay (3 seconds) ─────────────────────────── */
+function PhaseOverlay({ phase, onDone }) {
+  const labels = { 1: 'PHASE 1 COMPLETE', 2: 'PHASE 2 COMPLETE', 3: 'PHASE 3 COMPLETE' };
+
+  useEffect(() => {
+    const id = setTimeout(onDone, 3000);
+    return () => clearTimeout(id);
+  }, [onDone]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       style={{
         position: 'fixed', inset: 0,
         background: 'rgba(0,0,0,0.97)',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        zIndex: 9999,
+        zIndex: 400,
       }}
     >
       <motion.div
-        initial={{ scale: 0.8, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
+        initial={{ scale: 0.7, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 180, damping: 18 }}
-        style={{
-          background: '#080808',
-          border: '2px solid rgba(192,57,43,0.6)',
-          borderRadius: 4,
-          padding: '56px 48px',
-          maxWidth: 480,
-          width: '90%',
-          textAlign: 'center',
-          position: 'relative',
-          boxShadow: '0 0 80px rgba(192,57,43,0.2)',
-        }}
+        style={{ textAlign: 'center' }}
       >
-        {/* Corner brackets — red */}
-        {[
-          { top: 10, left: 10,   borderTop: '2px solid rgba(192,57,43,0.7)',    borderLeft:  '2px solid rgba(192,57,43,0.7)'  },
-          { top: 10, right: 10,  borderTop: '2px solid rgba(192,57,43,0.7)',    borderRight: '2px solid rgba(192,57,43,0.7)'  },
-          { bottom: 10, left: 10, borderBottom: '2px solid rgba(192,57,43,0.7)', borderLeft: '2px solid rgba(192,57,43,0.7)' },
-          { bottom: 10, right: 10, borderBottom: '2px solid rgba(192,57,43,0.7)', borderRight: '2px solid rgba(192,57,43,0.7)' },
-        ].map((s, i) => (
-          <div key={i} style={{ position: 'absolute', width: 20, height: 20, ...s }} />
-        ))}
-
-        {/* Hieroglyph */}
-        <div style={{
-          fontSize: 52,
-          marginBottom: 24,
-          filter: 'drop-shadow(0 0 20px rgba(192,57,43,0.5))',
-          animation: 'redGlow 2s ease-in-out infinite',
-        }}>
+        <div style={{ fontSize: 56, marginBottom: 24, filter: 'drop-shadow(0 0 20px rgba(201,168,76,0.5))' }}>
           𓂀
         </div>
-
-        <h2 style={{
-          fontFamily: '"Cinzel Decorative", serif',
-          fontSize: 'clamp(16px, 3vw, 22px)',
-          color: '#C0392B',
-          letterSpacing: '0.06em',
-          marginBottom: 20,
-          lineHeight: 1.4,
-        }}>
-          The Gods Have<br />Judged You Unworthy
-        </h2>
-
-        <div style={{
-          width: '60%',
-          height: 1,
-          background: 'linear-gradient(to right, transparent, rgba(192,57,43,0.5), transparent)',
-          margin: '0 auto 20px',
-        }} />
-
-        {/* Hieroglyph border strip */}
         <p style={{
           fontFamily: '"Cinzel", serif',
-          fontSize: 9,
-          letterSpacing: '0.25em',
-          color: 'rgba(192,57,43,0.4)',
-          marginBottom: 20,
-        }}>
-          𓂀 𓅓 𓆙 𓋴 𓇯 𓃒 𓏏 𓈖 𓆣 𓋹
-        </p>
-
-        <p style={{
-          fontFamily: '"IM Fell English", serif',
-          fontStyle: 'italic',
-          fontSize: 15,
-          color: 'rgba(232,213,160,0.65)',
-          lineHeight: 1.75,
-          marginBottom: 36,
-        }}>
-          You have been disqualified from the sacred hunt.
-          The chamber seals itself against you.
-        </p>
-
-        <button
-          id="disqual-logout-btn"
-          onClick={onLogout}
-          style={{
-            background: 'rgba(192,57,43,0.18)',
-            border: '2px solid rgba(192,57,43,0.6)',
-            color: '#C0392B',
-            padding: '14px 48px',
-            fontFamily: '"Cinzel", serif',
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: '0.3em',
-            cursor: 'none',
-            borderRadius: 2,
-            transition: 'background 0.2s, box-shadow 0.2s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(192,57,43,0.3)';
-            e.currentTarget.style.boxShadow = '0 0 24px rgba(192,57,43,0.4)';
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(192,57,43,0.18)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          DEPART IN SHAME
-        </button>
-
-        <style>{`
-          @keyframes redGlow {
-            0%, 100% { filter: drop-shadow(0 0 12px rgba(192,57,43,0.4)); }
-            50%       { filter: drop-shadow(0 0 28px rgba(192,57,43,0.8)); }
-          }
-        `}</style>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-/* ── Timer-expired full-screen overlay ───────────────────────────── */
-function ExpiredModal({ onLogout }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      style={{
-        position: 'fixed', inset: 0,
-        background: 'rgba(0,0,0,0.97)',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        zIndex: 9998,
-      }}
-    >
-      <div style={{ textAlign: 'center', maxWidth: 420, padding: '0 24px' }}>
-        <div style={{ fontSize: 52, marginBottom: 24, filter: 'drop-shadow(0 0 20px rgba(201,168,76,0.4))' }}>⌛</div>
-        <h2 style={{
-          fontFamily: '"Cinzel Decorative", serif',
-          fontSize: 'clamp(18px, 3.5vw, 26px)',
-          color: '#C9A84C',
-          letterSpacing: '0.08em',
+          fontSize: 10,
+          letterSpacing: '0.4em',
+          color: 'rgba(201,168,76,0.5)',
           marginBottom: 16,
         }}>
-          Time Has Expired
+          THE GODS ARE PLEASED
+        </p>
+        <h2 style={{
+          fontFamily: '"Cinzel Decorative", serif',
+          fontSize: 'clamp(28px, 5vw, 42px)',
+          color: '#C9A84C',
+          textShadow: '0 0 40px rgba(201,168,76,0.4)',
+          letterSpacing: '0.1em',
+        }}>
+          {labels[phase] ?? 'PHASE COMPLETE'}
         </h2>
         <p style={{
           fontFamily: '"IM Fell English", serif',
           fontStyle: 'italic',
+          marginTop: 16,
+          color: 'rgba(232,213,160,0.5)',
           fontSize: 15,
-          color: 'rgba(232,213,160,0.55)',
-          lineHeight: 1.75,
-          marginBottom: 36,
         }}>
-          The sands of time have run out. Your journey through the chamber is complete.
+          {phase === 3 ? 'Prepare for the Wildcard…' : `Entering ${PHASE_LABELS[phase + 1] ?? 'next phase'}…`}
         </p>
-        <button
-          id="expired-logout-btn"
-          onClick={onLogout}
-          style={{
-            background: 'rgba(201,168,76,0.12)',
-            border: '2px solid rgba(201,168,76,0.5)',
-            color: '#C9A84C',
-            padding: '14px 48px',
-            fontFamily: '"Cinzel", serif',
-            fontWeight: 700,
-            fontSize: 12,
-            letterSpacing: '0.3em',
-            cursor: 'none',
-            borderRadius: 2,
-          }}
-        >
-          DEPART
-        </button>
-      </div>
+      </motion.div>
     </motion.div>
   );
 }
@@ -543,16 +480,6 @@ function BackToast({ onStay, onLeave }) {
           position: 'relative',
         }}
       >
-        {/* Corner brackets */}
-        {[
-          { top: 8, left: 8,    borderTop: '2px solid rgba(201,168,76,0.5)', borderLeft:  '2px solid rgba(201,168,76,0.5)' },
-          { top: 8, right: 8,   borderTop: '2px solid rgba(201,168,76,0.5)', borderRight: '2px solid rgba(201,168,76,0.5)' },
-          { bottom: 8, left: 8,  borderBottom: '2px solid rgba(201,168,76,0.5)', borderLeft:  '2px solid rgba(201,168,76,0.5)' },
-          { bottom: 8, right: 8, borderBottom: '2px solid rgba(201,168,76,0.5)', borderRight: '2px solid rgba(201,168,76,0.5)' },
-        ].map((s, i) => (
-          <div key={i} style={{ position: 'absolute', width: 14, height: 14, ...s }} />
-        ))}
-
         <p style={{
           fontFamily: '"Cinzel Decorative", serif',
           fontSize: 15,
@@ -616,151 +543,265 @@ function BackToast({ onStay, onLeave }) {
   );
 }
 
-/* ── Main Game component ──────────────────────────────────────────── */
+/* ── Timer-expired full-screen overlay ───────────────────────────── */
+function ExpiredModal({ onLogout }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.97)',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        zIndex: 9998,
+      }}
+    >
+      <div style={{ textAlign: 'center', maxWidth: 420, padding: '0 24px' }}>
+        <div style={{ fontSize: 52, marginBottom: 24, filter: 'drop-shadow(0 0 20px rgba(201,168,76,0.4))' }}>⌛</div>
+        <h2 style={{
+          fontFamily: '"Cinzel Decorative", serif',
+          fontSize: 'clamp(18px, 3.5vw, 26px)',
+          color: '#C9A84C',
+          letterSpacing: '0.08em',
+          marginBottom: 16,
+        }}>
+          Time Has Expired
+        </h2>
+        <p style={{
+          fontFamily: '"IM Fell English", serif',
+          fontStyle: 'italic',
+          fontSize: 15,
+          color: 'rgba(232,213,160,0.55)',
+          lineHeight: 1.75,
+          marginBottom: 36,
+        }}>
+          The sands of time have run out. Your journey through the chamber is complete.
+        </p>
+        <button
+          id="expired-logout-btn"
+          onClick={onLogout}
+          style={{
+            background: 'rgba(201,168,76,0.12)',
+            border: '2px solid rgba(201,168,76,0.5)',
+            color: '#C9A84C',
+            padding: '14px 48px',
+            fontFamily: '"Cinzel", serif',
+            fontWeight: 700,
+            fontSize: 12,
+            letterSpacing: '0.3em',
+            cursor: 'none',
+            borderRadius: 2,
+          }}
+        >
+          DEPART
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ══ Main Game component ══════════════════════════════════════════════ */
 export default function Game() {
   const { n } = useParams();
-  const roundNum = parseInt(n, 10);
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { profile } = useAuth();
 
   const {
     question, progress, loading, error,
     cardState, hint,
-    fetchCurrent, submitAnswer, skipQuestion, requestHint,
+    fetchCurrent, submitAnswer, requestHint,
   } = useGame();
 
-  const [answer, setAnswer]               = useState('');
-  const [score, setScore]                 = useState(profile?.score ?? 0);
-  const [showSkipConfirm, setShowSkipConfirm] = useState(false);
-  const [feedback, setFeedback]           = useState(null);
-  const [roundOverlay, setRoundOverlay]   = useState(null);
-  const [triesLeft, setTriesLeft]         = useState(3);
-  const [disqualified, setDisqualified]   = useState(profile?.disqualified ?? false);
-  const [gameExpired, setGameExpired]     = useState(profile?.game_finished ?? false);
-  const [gameStartTime, setGameStartTime] = useState(profile?.game_start_time ?? null);
+  const [answer, setAnswer]             = useState('');
+  const [score, setScore]               = useState(profile?.score ?? 0);
+  const [feedback, setFeedback]         = useState(null);
+  const [phaseOverlay, setPhaseOverlay] = useState(null); // phase number being completed
+  const [gameExpired, setGameExpired]   = useState(false);
   const [showBackToast, setShowBackToast] = useState(false);
+
+  // Login-time based state (from /game/status polling)
+  const [loginTime, setLoginTime]         = useState(null);
+  const [warningActive, setWarningActive] = useState(false);
+
+  // Exhausted tries message
+  const [showExhausted, setShowExhausted] = useState(false);
+
   const inputRef = useRef(null);
 
+  // Derive from progress
+  const currentPhase  = progress ? (progress.phase ?? getPhaseFromIndex(progress.index ?? 0)) : 1;
+  const triesLeft     = progress?.triesLeft ?? 3;
+  const maxTries      = progress?.maxTries  ?? 3;
+  const isWildcard    = progress?.isWildcard ?? false;
+  const suit          = question?.suit ?? 'spades';
+  const symbol        = SUIT_SYMBOLS[suit] ?? '♠';
+
+  /* ── Initial load ─────────────────────────────────────────────── */
   useEffect(() => {
     (async () => {
-      const data = await fetchCurrent();
+      let data = await fetchCurrent();
       if (!data) return;
 
-      if (data.disqualified) { setDisqualified(true); return; }
-      if (data.expired || data.gameFinished) { setGameExpired(true); return; }
-      if (data.completed) { handleCompletion({}); return; }
+      // Handle 12-hour expiry
+      if (data.error === 'GAME_EXPIRED') { setGameExpired(true); return; }
 
-      // Sync game start time from server
-      if (data.gameStartTime) setGameStartTime(data.gameStartTime);
-      if (data.progress?.triesLeft !== undefined) setTriesLeft(data.progress.triesLeft);
-
-      if (data.question && data.progress.round !== roundNum) {
-        const r = data.progress.round;
-        if (r >= 4) navigate('/wildcard', { replace: true });
-        else navigate(`/round/${r}`, { replace: true });
+      // SESSION_NOT_FOUND: auto-call /game/start then retry once
+      if (data.error === 'SESSION_NOT_FOUND') {
+        try {
+          await api.post('/game/start');
+          data = await fetchCurrent();
+          if (!data) return;
+        } catch (e) {
+          console.error('Auto-start failed:', e);
+          return;
+        }
       }
+
+      // Process the (possibly retried) response
+      if (data.error === 'GAME_EXPIRED') { setGameExpired(true); return; }
+      if (data.eliminated) {
+        navigate('/eliminated', { replace: true, state: { reason: data.reason } });
+        return;
+      }
+      if (data.completed || data.gameFinished) {
+        handleCompletion({});
+        return;
+      }
+      if (data.timeInfo?.loginTime) setLoginTime(data.timeInfo.loginTime);
+      if (data.timeInfo?.warningActive) setWarningActive(data.timeInfo.warningActive);
     })();
     // eslint-disable-next-line
   }, []);
 
+
+  /* ── Sync score from profile ─────────────────────────────────── */
   useEffect(() => {
     if (profile?.score !== undefined) setScore(profile.score);
-    if (profile?.disqualified)        setDisqualified(true);
-    if (profile?.game_finished)       setGameExpired(true);
-    if (profile?.game_start_time)     setGameStartTime(profile.game_start_time);
   }, [profile]);
 
-  // ── Handle back button click ────────────────────────────────────
-  function handleBack() {
-    if (answer.trim().length > 0) {
-      setShowBackToast(true);
-    } else {
-      navigate('/rounds');
+  /* ── Poll /game/status every 60 s for timer + warning state ──── */
+  useEffect(() => {
+    async function pollStatus() {
+      try {
+        const { data } = await api.get('/game/status');
+        if (data?.loginTime) setLoginTime(data.loginTime);
+        if (data?.warningActive !== undefined) setWarningActive(data.warningActive);
+        // FIX 2: Server says game expired
+        if (data?.gameExpired || data?.eliminated) {
+          if (data.gameExpired) {
+            setGameExpired(true);
+          } else {
+            navigate('/eliminated', { replace: true, state: { reason: 'Time-based elimination.' } });
+          }
+        }
+      } catch { /* silent */ }
     }
+    const id = setInterval(pollStatus, 60_000);
+    return () => clearInterval(id);
+  }, [navigate]);
+
+  /* ── Handle back button ───────────────────────────────────────── */
+  function handleBack() {
+    if (answer.trim().length > 0) setShowBackToast(true);
+    else navigate('/rounds');
   }
 
-  // ── Handle timer expiry ─────────────────────────────────────────
+  /* ── Handle timer expiry ──────────────────────────────────────── */
   const handleTimerExpire = useCallback(async () => {
     try {
+<<<<<<< Updated upstream
       await api.post('/game/expire');
+=======
+      // api interceptor auto-attaches the Firebase token
+      await api.post('/game/expire', {});
+>>>>>>> Stashed changes
     } catch { /* silent */ }
     setGameExpired(true);
   }, []);
 
-  // ── Handle logout ───────────────────────────────────────────────
+  /* ── Handle logout ────────────────────────────────────────────── */
   async function handleLogout() {
     await signOut(firebaseAuth);
     navigate('/');
   }
 
+  /* ── Handle answer submit ─────────────────────────────────────── */
   async function handleAnswer(e) {
     e.preventDefault();
     if (!answer.trim() || loading) return;
 
-    const result = await submitAnswer(answer);
+    // Always send normalised answer to backend
+    const normAnswer = answer.trim().toLowerCase();
+
+    const result = await submitAnswer(normAnswer);
     if (!result) return;
 
-    // Handle disqualification from backend
-    if (result.disqualified) {
-      setDisqualified(true);
+    // FIX 2: Handle 12-hour expiry returned from /game/answer
+    if (result.error === 'GAME_EXPIRED') { setGameExpired(true); return; }
+
+    // Eliminated response (wildcard wrong or time-based)
+    if (result.eliminated) {
+      navigate('/eliminated', { replace: true, state: { reason: result.message ?? 'You have been eliminated.' } });
       return;
     }
 
-    if (result.expired || result.gameFinished) {
-      setGameExpired(true);
+    if (result.completed || result.gameFinished) {
+      setScore(result.newScore ?? score);
+      handleCompletion(result);
       return;
     }
 
-    setScore(result.newScore);
     setAnswer('');
+    setScore(result.newScore ?? score);
     setFeedback({ correct: result.correct, delta: result.scoreDelta });
     setTimeout(() => setFeedback(null), 1500);
 
-    // Update tries remaining
-    if (result.triesLeft !== undefined) setTriesLeft(result.triesLeft);
+    if (result.exhausted && !result.correct) {
+      // Show "Tries exhausted" message for 2s then auto-fetch next question
+      setShowExhausted(true);
+      setTimeout(async () => {
+        setShowExhausted(false);
+        if (result.phaseComplete) {
+          await showPhaseTransition(currentPhase);
+        } else {
+          await fetchCurrent();
+        }
+        inputRef.current?.focus();
+      }, 2000);
+      return;
+    }
 
-    await next(result);
-  }
+    if (!result.advanced) {
+      // Wrong but still has tries — stay on same question
+      return;
+    }
 
-  async function handleSkip() {
-    setShowSkipConfirm(false);
-    const result = await skipQuestion();
-    if (!result) return;
-    if (result.disqualified) { setDisqualified(true); return; }
-    if (result.expired || result.gameFinished) { setGameExpired(true); return; }
-    setScore(result.newScore);
-    setTriesLeft(3);
-    await next(result);
-  }
-
-  async function next(result) {
-    if (result.completed) return handleCompletion(result);
-    if (result.roundComplete) {
-      await handleRoundComplete(result.newRound);
+    // Correct and advanced
+    if (result.phaseComplete) {
+      await showPhaseTransition(currentPhase);
+    } else if (result.completed) {
+      handleCompletion(result);
     } else {
-      const data = await fetchCurrent();
-      if (data?.progress?.triesLeft !== undefined) setTriesLeft(data.progress.triesLeft);
+      await fetchCurrent();
       inputRef.current?.focus();
     }
   }
 
-  async function handleRoundComplete(newRound) {
-    setRoundOverlay(roundNum);
-    await new Promise(r => setTimeout(r, 2400));
-    setRoundOverlay(null);
-    if (roundNum === 3) {
-      navigate('/rumbling');
-    } else {
-      // Navigate to rounds page with justCompleted + justUnlocked chain-break
-      navigate('/rounds', {
-        state: { justCompleted: true, justUnlocked: roundNum + 1 },
-      });
-    }
+  async function showPhaseTransition(completedPhase) {
+    setPhaseOverlay(completedPhase);
+    // PhaseOverlay will call its own onDone after 3s
+  }
+
+  function handlePhaseOverlayDone() {
+    setPhaseOverlay(null);
+    fetchCurrent().then(() => inputRef.current?.focus());
   }
 
   function handleCompletion(result) {
     setTimeout(() => {
-      if (profile?.status === 'passed' || (result.newScore ?? score) >= 10) {
+      const finalScore = result.newScore ?? score;
+      if (finalScore >= parseInt(import.meta.env.VITE_PASS_THRESHOLD ?? '8', 10) || profile?.status === 'passed') {
         navigate('/pass');
       } else {
         navigate('/fail');
@@ -768,35 +809,41 @@ export default function Game() {
     }, 800);
   }
 
-  const suit   = ROUND_SUITS[roundNum] || 'spades';
-  const glyph  = SUIT_GLYPHS[suit];
-  const symbol = SUIT_SYMBOLS[suit];
-
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#080808',
-      color: '#F5ECD0',
-      display: 'flex',
-      flexDirection: 'column',
-    }}>
+    <div
+      data-passkey="GREAT_HUNT_IT_IS"
+      style={{
+        minHeight: '100vh',
+        background: '#080808',
+        color: '#F5ECD0',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       {/* Egyptian Nav */}
       <EgyptianNav
         score={score}
         progress={progress}
         onBack={handleBack}
-        gameStartTime={gameStartTime}
+        loginTime={loginTime}
+        warningActive={warningActive}
         onTimerExpire={handleTimerExpire}
       />
+
+      {/* Warning banner */}
+      <AnimatePresence>
+        {warningActive && <WarningBanner key="warning" />}
+      </AnimatePresence>
 
       {/* Main two-column layout */}
       <div style={{
         flex: 1,
-        paddingTop: 56,
+        paddingTop: warningActive ? 96 : 56,
         display: 'grid',
         gridTemplateColumns: 'minmax(280px, 380px) 1fr',
         gap: 0,
-        minHeight: 'calc(100vh - 56px)',
+        minHeight: `calc(100vh - ${warningActive ? 96 : 56}px)`,
+        transition: 'padding-top 0.3s',
       }}>
 
         {/* ── LEFT COLUMN — Card ──────────────────────────────────── */}
@@ -840,7 +887,7 @@ export default function Game() {
               textShadow: '0 0 20px rgba(201,168,76,0.4)',
             }}>
               {progress
-                ? `${progress.questionInRound + (roundNum - 1) * 5} / ${progress.totalQuestions}`
+                ? `${(progress.index ?? 0) + 1} / 13`
                 : `— / —`
               }
             </p>
@@ -897,9 +944,18 @@ export default function Game() {
             ) : null}
           </div>
 
-          {/* Type / Suit labels */}
+          {/* Phase + suit labels */}
           {question && (
             <div style={{ textAlign: 'center', zIndex: 1 }}>
+              <p style={{
+                fontFamily: '"Cinzel", serif',
+                fontSize: 9,
+                letterSpacing: '0.2em',
+                color: 'rgba(201,168,76,0.4)',
+                marginBottom: 2,
+              }}>
+                PHASE {currentPhase} · {PHASE_LABELS[currentPhase] ?? ''}
+              </p>
               <p style={{
                 fontFamily: '"Cinzel", serif',
                 fontSize: 9,
@@ -911,14 +967,22 @@ export default function Game() {
             </div>
           )}
 
-          {/* Progress pips */}
+          {/* Progress pips (4 per phase) */}
           {progress && (
-            <div style={{ zIndex: 1 }}>
-              <ProgressPips
-                total={5}
-                current={progress.questionInRound - 1}
-                suit={suit}
-              />
+            <div style={{ zIndex: 1, display: 'flex', gap: 6 }}>
+              {Array.from({ length: isWildcard ? 1 : 4 }).map((_, i) => {
+                const qInPhase = isWildcard ? 0 : ((progress.index ?? 0) % 4);
+                const filled   = i < qInPhase || (i === qInPhase && feedback?.correct);
+                return (
+                  <div key={i} style={{
+                    width: 8, height: 8,
+                    borderRadius: '50%',
+                    background: filled ? '#C9A84C' : 'rgba(201,168,76,0.15)',
+                    border: `1px solid ${filled ? '#C9A84C' : 'rgba(201,168,76,0.3)'}`,
+                    transition: 'all 0.3s',
+                  }} />
+                );
+              })}
             </div>
           )}
         </div>
@@ -932,7 +996,7 @@ export default function Game() {
           background: '#080808',
         }}>
 
-          {/* Round label */}
+          {/* Phase label */}
           <div>
             <p style={{
               fontFamily: '"Cinzel", serif',
@@ -941,7 +1005,7 @@ export default function Game() {
               color: 'rgba(201,168,76,0.4)',
               marginBottom: 6,
             }}>
-              ROUND {roundNum}
+              PHASE {currentPhase} — {PHASE_LABELS[currentPhase] ?? ''}
             </p>
             <h2 style={{
               fontFamily: '"Cinzel Decorative", serif',
@@ -1014,39 +1078,33 @@ export default function Game() {
             )}
           </div>
 
-          {/* Hint display */}
+          {/* Exhausted tries message */}
           <AnimatePresence>
-            {hint && (
+            {showExhausted && (
               <motion.div
+                key="exhausted"
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 style={{
-                  background: 'rgba(201,168,76,0.06)',
-                  border: '1px solid rgba(201,168,76,0.2)',
+                  background: 'rgba(192,57,43,0.12)',
+                  border: '1px solid rgba(192,57,43,0.35)',
                   borderRadius: 2,
-                  padding: '14px 20px',
-                  display: 'flex',
-                  gap: 10,
-                  alignItems: 'flex-start',
+                  padding: '10px 18px',
+                  fontFamily: '"Cinzel", serif',
+                  fontSize: 10,
+                  letterSpacing: '0.2em',
+                  color: '#C0392B',
+                  textAlign: 'center',
                 }}
               >
-                <span style={{ fontSize: 16 }}>𓃒</span>
-                <p style={{
-                  fontFamily: '"IM Fell English", serif',
-                  fontStyle: 'italic',
-                  fontSize: 14,
-                  color: '#E8D5A0',
-                  lineHeight: 1.6,
-                }}>
-                  {hint}
-                </p>
+                TRIES EXHAUSTED — MOVING TO NEXT QUESTION
               </motion.div>
             )}
           </AnimatePresence>
 
           {/* Answer input */}
-          {question && (
+          {question && !showExhausted && (
             <EgyptianInput
               value={answer}
               onChange={e => setAnswer(e.target.value)}
@@ -1057,10 +1115,16 @@ export default function Game() {
             />
           )}
 
-          {/* 3-tries indicator */}
-          {question && <TriesIndicator triesLeft={triesLeft} />}
+          {/* Tries indicator — dynamic; wildcard shows red banner */}
+          {question && (
+            <TriesIndicator
+              triesLeft={triesLeft}
+              maxTries={maxTries}
+              isWildcard={isWildcard}
+            />
+          )}
 
-          {/* Status + actions */}
+          {/* Status */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -1069,67 +1133,6 @@ export default function Game() {
             gap: 12,
           }}>
             <StatusIndicator cardState={cardState} feedback={feedback} />
-
-            <div style={{ display: 'flex', gap: 10 }}>
-              {/* Hint button */}
-              <button
-                id="hint-btn"
-                type="button"
-                onClick={requestHint}
-                title="Request a hint"
-                style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(201,168,76,0.2)',
-                  borderRadius: 2,
-                  padding: '8px 16px',
-                  fontFamily: '"Cinzel", serif',
-                  fontSize: 9,
-                  letterSpacing: '0.15em',
-                  color: 'rgba(201,168,76,0.4)',
-                  cursor: 'none',
-                  transition: 'border-color 0.2s, color 0.2s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'rgba(201,168,76,0.5)';
-                  e.currentTarget.style.color = '#C9A84C';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'rgba(201,168,76,0.2)';
-                  e.currentTarget.style.color = 'rgba(201,168,76,0.4)';
-                }}
-              >
-                𓃒 HINT
-              </button>
-
-              {/* Skip button */}
-              <button
-                id="skip-btn"
-                type="button"
-                onClick={() => setShowSkipConfirm(true)}
-                style={{
-                  background: 'transparent',
-                  border: '1px solid rgba(192,57,43,0.3)',
-                  borderRadius: 2,
-                  padding: '8px 16px',
-                  fontFamily: '"Cinzel", serif',
-                  fontSize: 9,
-                  letterSpacing: '0.15em',
-                  color: 'rgba(192,57,43,0.5)',
-                  cursor: 'none',
-                  transition: 'border-color 0.2s, color 0.2s',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.borderColor = 'rgba(192,57,43,0.6)';
-                  e.currentTarget.style.color = '#C0392B';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.borderColor = 'rgba(192,57,43,0.3)';
-                  e.currentTarget.style.color = 'rgba(192,57,43,0.5)';
-                }}
-              >
-                SKIP −1pt
-              </button>
-            </div>
           </div>
 
           {error && (
@@ -1146,98 +1149,7 @@ export default function Game() {
         </div>
       </div>
 
-      {/* ── Skip Confirmation Modal ──────────────────────────────── */}
-      <AnimatePresence>
-        {showSkipConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed', inset: 0,
-              background: 'rgba(0,0,0,0.88)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              zIndex: 300,
-              backdropFilter: 'blur(8px)',
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.88, y: 16 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.88, y: 16 }}
-              style={{
-                background: '#0A0A0A',
-                border: '2px solid rgba(201,168,76,0.4)',
-                borderRadius: 4,
-                padding: '40px 36px',
-                maxWidth: 380,
-                width: '90%',
-                textAlign: 'center',
-                animation: 'goldPulse 3s ease-in-out infinite',
-                position: 'relative',
-              }}
-            >
-              {[
-                { top: 8, left: 8,    borderTop: '2px solid rgba(201,168,76,0.6)', borderLeft:  '2px solid rgba(201,168,76,0.6)' },
-                { top: 8, right: 8,   borderTop: '2px solid rgba(201,168,76,0.6)', borderRight: '2px solid rgba(201,168,76,0.6)' },
-                { bottom: 8, left: 8,  borderBottom: '2px solid rgba(201,168,76,0.6)', borderLeft:  '2px solid rgba(201,168,76,0.6)' },
-                { bottom: 8, right: 8, borderBottom: '2px solid rgba(201,168,76,0.6)', borderRight: '2px solid rgba(201,168,76,0.6)' },
-              ].map((s, i) => (
-                <div key={i} style={{ position: 'absolute', width: 16, height: 16, ...s }} />
-              ))}
-              <p style={{
-                fontFamily: '"Cinzel Decorative", serif',
-                fontSize: 16,
-                color: '#E8D5A0',
-                marginBottom: 12,
-                letterSpacing: '0.05em',
-              }}>
-                Abandon This Scroll?
-              </p>
-              <p style={{
-                fontFamily: '"IM Fell English", serif',
-                fontStyle: 'italic',
-                fontSize: 13,
-                color: 'rgba(192,57,43,0.7)',
-                marginBottom: 28,
-              }}>
-                The gods will deduct one point from your sacred tally.
-              </p>
-              <div style={{ display: 'flex', gap: 12 }}>
-                <button
-                  id="skip-cancel-btn"
-                  onClick={() => setShowSkipConfirm(false)}
-                  className="btn-ghost"
-                  style={{ flex: 1 }}
-                >
-                  RETREAT
-                </button>
-                <button
-                  id="skip-confirm-btn"
-                  onClick={handleSkip}
-                  style={{
-                    flex: 1,
-                    background: 'rgba(192,57,43,0.15)',
-                    border: '1px solid rgba(192,57,43,0.5)',
-                    color: '#C0392B',
-                    fontFamily: '"Cinzel", serif',
-                    fontSize: 10,
-                    letterSpacing: '0.2em',
-                    padding: '10px 20px',
-                    cursor: 'none',
-                    borderRadius: 2,
-                    transition: 'background 0.2s',
-                  }}
-                >
-                  SKIP −1pt
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ── Back Toast ──────────────────────────────────────────────── */}
+      {/* ── Back Toast ────────────────────────────────────────────── */}
       <AnimatePresence>
         {showBackToast && (
           <BackToast
@@ -1247,70 +1159,16 @@ export default function Game() {
         )}
       </AnimatePresence>
 
-      {/* ── Disqualification Modal ───────────────────────────────────── */}
+      {/* ── Phase Transition Overlay ──────────────────────────────── */}
       <AnimatePresence>
-        {disqualified && <DisqualificationModal onLogout={handleLogout} />}
-      </AnimatePresence>
-
-      {/* ── Timer Expired Overlay ────────────────────────────────────── */}
-      <AnimatePresence>
-        {gameExpired && !disqualified && <ExpiredModal onLogout={handleLogout} />}
-      </AnimatePresence>
-
-      {/* ── Round Complete Overlay ───────────────────────────────────── */}
-      <AnimatePresence>
-        {roundOverlay && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            style={{
-              position: 'fixed', inset: 0,
-              background: 'rgba(0,0,0,0.97)',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              zIndex: 400,
-            }}
-          >
-            <motion.div
-              initial={{ scale: 0.7, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 180, damping: 18 }}
-              style={{ textAlign: 'center' }}
-            >
-              <div style={{ fontSize: 56, marginBottom: 24, filter: 'drop-shadow(0 0 20px rgba(201,168,76,0.5))' }}>
-                𓂀
-              </div>
-              <p style={{
-                fontFamily: '"Cinzel", serif',
-                fontSize: 10,
-                letterSpacing: '0.4em',
-                color: 'rgba(201,168,76,0.5)',
-                marginBottom: 16,
-              }}>
-                {roundOverlay === 3 ? 'PREPARE THYSELF…' : 'THE GODS ARE PLEASED'}
-              </p>
-              <h2 style={{
-                fontFamily: '"Cinzel Decorative", serif',
-                fontSize: 'clamp(28px, 5vw, 42px)',
-                color: '#C9A84C',
-                textShadow: '0 0 40px rgba(201,168,76,0.4)',
-                letterSpacing: '0.1em',
-              }}>
-                ROUND {roundOverlay} COMPLETE
-              </h2>
-              <p style={{
-                fontFamily: '"IM Fell English", serif',
-                fontStyle: 'italic',
-                marginTop: 16,
-                color: 'rgba(232,213,160,0.5)',
-                fontSize: 15,
-              }}>
-                {roundOverlay === 3 ? 'The Rumbling of the Underworld awaits…' : `Entering Round ${roundOverlay + 1}`}
-              </p>
-            </motion.div>
-          </motion.div>
+        {phaseOverlay !== null && (
+          <PhaseOverlay phase={phaseOverlay} onDone={handlePhaseOverlayDone} />
         )}
+      </AnimatePresence>
+
+      {/* ── Timer Expired Overlay ────────────────────────────────── */}
+      <AnimatePresence>
+        {gameExpired && <ExpiredModal onLogout={handleLogout} />}
       </AnimatePresence>
     </div>
   );

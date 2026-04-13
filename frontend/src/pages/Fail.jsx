@@ -1,129 +1,162 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { useGame } from '../hooks/useGame';
-
-function formatTime(seconds) {
-  if (!seconds) return 'N/A';
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}m ${s}s`;
-}
 
 export default function Fail() {
   const { profile } = useAuth();
-  const { getResult } = useGame();
-  const [result, setResult] = useState(null);
-
-  useEffect(() => {
-    getResult().then(setResult);
-  }, []);
-
-  const phaseLabels = ['Round 1', 'Round 2', 'Round 3', 'Wildcard'];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden" style={{ background: 'var(--bg-base)' }}>
-      {/* Dark vignette */}
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '32px 16px',
+      position: 'relative',
+      overflow: 'hidden',
+      background: '#080808',
+    }}>
+      {/* Ambient glow */}
       <div style={{
         position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at 50% 20%, rgba(240,74,87,0.06) 0%, transparent 60%)',
+        background: 'radial-gradient(ellipse at 50% 20%, rgba(139,105,20,0.1) 0%, transparent 60%)',
       }} />
 
-      <div className="relative z-10 max-w-lg w-full flex flex-col items-center gap-8">
-        {/* Heading */}
+      <div style={{
+        position: 'relative', zIndex: 10, maxWidth: 512, width: '100%',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32,
+      }}>
+        {/* Main message */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="text-center"
+          initial={{ opacity: 0, scale: 0.8, rotateX: -20 }}
+          animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+          transition={{ type: 'spring', stiffness: 150, damping: 15 }}
+          style={{ textAlign: 'center' }}
         >
-          <div className="text-5xl mb-3 opacity-60">💀</div>
-          <h1 className="font-display font-extrabold" style={{
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 2, repeat: Infinity }}
+            style={{ fontSize: 64, marginBottom: 16 }}
+          >
+            ⚰️
+          </motion.div>
+
+          <h1 style={{
+            fontFamily: '"Cinzel Decorative", serif',
             fontSize: 'clamp(40px, 10vw, 72px)',
-            color: 'var(--danger)',
-            opacity: 0.85,
+            color: '#8B6914',
+            fontWeight: 900,
+            letterSpacing: '0.08em',
+            textShadow: '0 0 40px rgba(139,105,20,0.3)',
+            margin: 0,
+            marginBottom: 12,
           }}>
-            HUNT OVER
+            THE CURSE PREVAILS
           </h1>
-          <p className="font-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Better luck next time, {profile?.name || 'Hunter'}.
+
+          <p style={{
+            fontFamily: '"IM Fell English", Georgia, serif',
+            fontStyle: 'italic',
+            fontSize: 'clamp(16px, 3vw, 20px)',
+            color: 'rgba(232,213,160,0.5)',
+            margin: 0,
+            lineHeight: 1.6,
+          }}>
+            The ancient knowledge eludes you, {profile?.name || 'seeker'}.
           </p>
         </motion.div>
 
-        {/* Score */}
-        {result && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-center"
+        {/* Glyph sequence */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          style={{
+            fontSize: 24,
+            color: '#8B6914',
+            letterSpacing: '0.3em',
+            opacity: 0.6,
+          }}
+        >
+          𓂀 𓅓 𓆙 𓋴 𓇯 𓃒 𓏏
+        </motion.div>
+
+        {/* Failure message */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          style={{
+            background: 'rgba(139,105,20,0.08)',
+            border: '2px solid rgba(139,105,20,0.3)',
+            borderRadius: 8,
+            padding: '24px',
+            textAlign: 'center',
+          }}
+        >
+          <p style={{
+            fontFamily: '"IM Fell English", serif',
+            fontStyle: 'italic',
+            fontSize: 18,
+            color: '#E8D5A0',
+            margin: 0,
+            lineHeight: 1.8,
+          }}>
+            Though the curse has claimed you, your journey through the ancient chambers
+            has left its mark on history.
+          </p>
+        </motion.div>
+
+        {/* Leaderboard link */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.0 }}
+        >
+          <Link
+            to="/leaderboard"
+            style={{
+              display: 'inline-block',
+              background: 'rgba(139,105,20,0.12)',
+              border: '2px solid rgba(139,105,20,0.4)',
+              color: '#C9A84C',
+              padding: '14px 40px',
+              fontFamily: '"Cinzel", serif',
+              fontWeight: 700,
+              fontSize: 11,
+              letterSpacing: '0.25em',
+              textDecoration: 'none',
+              borderRadius: 2,
+              transition: 'background 0.2s, box-shadow 0.2s',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(139,105,20,0.22)';
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(139,105,20,0.3)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(139,105,20,0.12)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
-            <div className="font-display font-extrabold" style={{ fontSize: 80, color: 'var(--danger)', lineHeight: 1, opacity: 0.8 }}>
-              {result.score}
-            </div>
-            <div className="font-body text-sm mt-1" style={{ color: 'var(--text-faint)' }}>
-              final score / 20
-            </div>
-          </motion.div>
-        )}
-
-        {result?.rank && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="font-body text-sm"
-            style={{ color: 'var(--text-secondary)' }}
-          >
-            Ranked #{result.rank} on the leaderboard
-          </motion.div>
-        )}
-
-        {/* Stats */}
-        {result && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="w-full rounded-2xl overflow-hidden"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-          >
-            <div className="grid grid-cols-3 divide-x" style={{ borderColor: 'var(--border)' }}>
-              {[
-                { label: 'Score', value: `${result.score}/20` },
-                { label: 'Time', value: formatTime(result.timeSeconds) },
-                { label: 'Hints', value: result.hints_used ?? 0 },
-              ].map(({ label, value }) => (
-                <div key={label} className="p-4 text-center">
-                  <div className="font-display font-bold text-lg text-text-primary">{value}</div>
-                  <div className="font-body text-xs mt-1" style={{ color: 'var(--text-faint)' }}>{label}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="border-t" style={{ borderColor: 'var(--border)' }}>
-              <div className="p-4">
-                <p className="font-body text-xs mb-3" style={{ color: 'var(--text-faint)' }}>Round breakdown</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {(result.phaseScores || [0, 0, 0, 0]).map((s, i) => (
-                    <div key={i} className="text-center">
-                      <div className="font-display font-bold text-sm" style={{
-                        color: ['var(--accent)', 'var(--danger)', 'var(--gold)', 'var(--cyan)'][i]
-                      }}>{s}/5</div>
-                      <div className="font-body text-xs" style={{ color: 'var(--text-faint)' }}>{phaseLabels[i]}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        <Link to="/leaderboard" className="btn-ghost px-8 py-3 text-base" style={{ textDecoration: 'none', display: 'inline-block' }}>
-          View Leaderboard →
-        </Link>
+            VIEW LEADERBOARD →
+          </Link>
+        </motion.div>
       </div>
+
+      {/* Bottom glyph accent */}
+      <motion.div
+        animate={{ opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 3, repeat: Infinity }}
+        style={{
+          position: 'absolute',
+          bottom: 40,
+          fontSize: 48,
+          color: '#8B6914',
+        }}
+      >
+        𓋹
+      </motion.div>
     </div>
   );
 }
