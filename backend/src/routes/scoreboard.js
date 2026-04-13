@@ -1,26 +1,32 @@
 import express from 'express';
-import { supabase } from '../supabaseAdmin.js';
+import { db } from '../firebase.js';
 
 const router = express.Router();
 
 // GET /scoreboard — public leaderboard
 router.get('/', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, name, score, status, time_started, time_ended, hints_used')
-      .order('score', { ascending: false });
+    const snapshot = await db
+      .collection('profiles')
+      .orderBy('score', 'desc')
+      .get();
 
-    if (error) return res.status(500).json({ error: error.message });
-
-    // Compute rank and time_taken client-side
-    const ranked = data.map((p, i) => ({
-      ...p,
-      rank: i + 1,
-      time_taken_seconds: p.time_started && p.time_ended
-        ? Math.floor((new Date(p.time_ended) - new Date(p.time_started)) / 1000)
-        : null,
-    }));
+    const ranked = snapshot.docs.map((doc, i) => {
+      const p = doc.data();
+      return {
+        id: doc.id,
+        name: p.name,
+        score: p.score,
+        status: p.status,
+        time_started: p.timeStarted,
+        time_ended: p.timeEnded,
+        hints_used: p.hintsUsed,
+        rank: i + 1,
+        time_taken_seconds: p.timeStarted && p.timeEnded
+          ? Math.floor((new Date(p.timeEnded) - new Date(p.timeStarted)) / 1000)
+          : null,
+      };
+    });
 
     res.json(ranked);
   } catch (err) {

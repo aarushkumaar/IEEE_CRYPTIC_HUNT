@@ -7,7 +7,8 @@ import QuestionCard from '../components/QuestionCard';
 import ScoreBar from '../components/ScoreBar';
 import ProgressPips from '../components/ProgressPips';
 import api from '../lib/api';
-import { supabase } from '../lib/supabase';
+import { signOut } from 'firebase/auth';
+import { firebaseAuth } from '../lib/firebase';
 
 const ROUND_SUITS  = { 1: 'spades', 2: 'hearts', 3: 'diamonds', 4: 'clubs' };
 const SUIT_SYMBOLS = { spades: '♠', hearts: '♥', diamonds: '♦', clubs: '♣' };
@@ -681,19 +682,14 @@ export default function Game() {
   // ── Handle timer expiry ─────────────────────────────────────────
   const handleTimerExpire = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        await api.post('/game/expire', {}, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
-      }
+      await api.post('/game/expire');
     } catch { /* silent */ }
     setGameExpired(true);
   }, []);
 
   // ── Handle logout ───────────────────────────────────────────────
   async function handleLogout() {
-    await supabase.auth.signOut();
+    await signOut(firebaseAuth);
     navigate('/');
   }
 

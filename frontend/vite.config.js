@@ -6,7 +6,18 @@ export default defineConfig({
   base: '/',
   build: {
     outDir: 'dist',
-    emptyOutDir: true
+    emptyOutDir: true,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/database'],
+          framer: ['framer-motion'],
+          three: ['three', '@react-three/fiber', '@react-three/drei'],
+        }
+      }
+    }
   },
   resolve: {
     alias: {

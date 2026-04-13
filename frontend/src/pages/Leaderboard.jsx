@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../lib/supabase';
+import { ref, onValue, off } from 'firebase/database';
+import { rtdb } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import api from '../lib/api';
 
@@ -51,36 +52,21 @@ export default function Leaderboard() {
     fetchPlayers();
   }, []);
 
-  // Supabase Realtime
   useEffect(() => {
-    const channel = supabase
-      .channel('leaderboard-live')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
-        (payload) => {
-          const updated = payload.new;
-          if (!updated) return;
-
-          setPlayers(prev => {
-            const exists = prev.find(p => p.id === updated.id);
-            let next;
-            if (exists) {
-              next = prev.map(p => p.id === updated.id ? { ...p, ...updated } : p);
-            } else {
-              next = [...prev, updated];
-            }
-            // Re-sort
-            return sortPlayers(next);
+    const leaderboardRef = ref(rtdb, 'leaderboard');
+    onValue(leaderboardRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const players = Object.entries(data)
+          .map(([id, val]) => ({ id, ...val }))
+          .sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return (a.timeEnded || '') < (b.timeEnded || '') ? -1 : 1;
           });
-
-          setFlashId(updated.id);
-          setTimeout(() => setFlashId(null), 1500);
-        }
-      )
-      .subscribe();
-
-    return () => supabase.removeChannel(channel);
+        setPlayers(players);
+      }
+    });
+    return () => off(leaderboardRef);
   }, []);
 
   // Auto-scroll to current user
@@ -96,12 +82,8 @@ export default function Leaderboard() {
       const { data } = await api.get('/scoreboard');
       setPlayers(data || []);
     } catch {
-      // fallback: query Supabase directly (public leaderboard view)
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, name, score, status, time_started, time_ended, hints_used')
-        .order('score', { ascending: false });
-      setPlayers(sortPlayers(data || []));
+      console.error('Failed to fetch leaderboard from API.');
+      setPlayers([]);
     } finally {
       setLoading(false);
     }
@@ -277,7 +259,7 @@ export default function Leaderboard() {
         )}
 
         <p className="text-center mt-6 font-body text-xs" style={{ color: 'var(--text-faint)' }}>
-          Updates in real-time via Supabase · IEEE GTBIT Cryptic Hunt 2026
+          Updates in real-time via Firebase · IEEE GTBIT Cryptic Hunt 2026
         </p>
       </div>
 

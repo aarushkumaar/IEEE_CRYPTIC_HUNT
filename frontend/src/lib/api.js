@@ -1,15 +1,14 @@
 import axios from 'axios';
-import { auth } from './firebase';
+import { firebaseAuth } from './firebase';
 
-const api = axios.create({
+const api = axios.create({ 
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000',
 });
 
-// Auto-attach Firebase JWT to every request
 api.interceptors.request.use(async (config) => {
-  const user = auth.currentUser;
+  const user = firebaseAuth.currentUser;
   if (user) {
-    const token = await user.getIdToken();
+    const token = await user.getIdToken(true);
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

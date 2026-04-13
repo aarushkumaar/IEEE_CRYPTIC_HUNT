@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
 import api from '../lib/api';
-import { supabase } from '../lib/supabase';
 
 /* ── Confetti: loaded lazily only when needed ─────────────────────── */
 async function fireConfetti() {
@@ -320,12 +319,9 @@ export default function RoundsSelection() {
 
   useEffect(() => {
     async function loadSession() {
+      if (!user) return;
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { setLoading(false); return; }
-        const { data } = await api.get('/game/session', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
-        });
+        const { data } = await api.get('/game/session');
         setCurrentRound(data?.currentRound ?? 1);
       } catch {
         setCurrentRound(1);
@@ -333,8 +329,13 @@ export default function RoundsSelection() {
         setLoading(false);
       }
     }
-    loadSession();
-  }, []);
+    if (user) {
+      loadSession();
+    } else {
+      // If user isn't quite ready, loading stays true
+      // We rely on useAuth to handle top-level auth gate
+    }
+  }, [user]);
 
   // Fire confetti if we just completed a round
   useEffect(() => {

@@ -1,7 +1,15 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  updateProfile
+} from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { firebaseAuth, firestore } from '../lib/firebase';
 import api from '../lib/api';
 
 // Animated Lock SVG
@@ -59,33 +67,20 @@ export default function LoginModal({ onClose }) {
 
     try {
       if (tab === 'register') {
-        const { error: signUpErr } = await supabase.auth.signUp({
-          email, password,
-          options: { data: { name: name.trim() } },
+        const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+        await updateProfile(userCredential.user, { displayName: name.trim() });
+        await api.post('/auth/register', { 
+          name: name.trim(), 
+          email, 
+          uid: userCredential.user.uid 
         });
-        if (signUpErr) throw signUpErr;
         navigate('/welcome');
       } else {
-        const { data, error: signInErr } = await supabase.auth.signInWithPassword({ email, password });
-        if (signInErr) throw signInErr;
-
-        try {
-          const { data: session } = await api.get('/game/session', {
-            headers: { Authorization: `Bearer ${data.session.access_token}` }
-          });
-          if (session?.hasSession && !session.completed) {
-            const round = session.currentRound;
-            if (round >= 4) navigate('/wildcard');
-            else navigate(`/round/${round}`);
-          } else if (session?.completed) {
-            const { data: result } = await api.get('/game/result', {
-              headers: { Authorization: `Bearer ${data.session.access_token}` }
-            });
-            navigate(result?.status === 'passed' ? '/pass' : '/fail');
-          } else {
-            navigate('/welcome');
-          }
-        } catch {
+        const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
+        const docSnap = await getDoc(doc(firestore, 'profiles', userCredential.user.uid));
+        if (docSnap.exists() && docSnap.data().status !== 'waiting') {
+          navigate('/round/1');
+        } else {
           navigate('/welcome');
         }
       }
@@ -358,10 +353,25 @@ export default function LoginModal({ onClose }) {
               disabled={oauthLoading}
               onClick={async () => {
                 setOauthLoading(true);
-                await supabase.auth.signInWithOAuth({
-                  provider: 'google',
-                  options: { redirectTo: window.location.origin + '/auth/callback' },
-                });
+                try {
+                  const provider = new GoogleAuthProvider();
+                  const userCredential = await signInWithPopup(firebaseAuth, provider);
+                  const user = userCredential.user;
+                  const docSnap = await getDoc(doc(firestore, 'profiles', user.uid));
+                  if (!docSnap.exists()) {
+                    await api.post('/auth/register', {
+                      name: user.displayName || user.email,
+                      email: user.email,
+                      uid: user.uid
+                    });
+                    navigate('/welcome');
+                  } else {
+                    navigate(docSnap.data().status !== 'waiting' ? '/round/1' : '/welcome');
+                  }
+                } catch (err) {
+                  setError(err.message || 'Google login failed');
+                  setOauthLoading(false);
+                }
               }}
               style={{
                 display: 'flex',
