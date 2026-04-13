@@ -1,6 +1,3 @@
-import { createClient } from '@supabase/supabase-js';
-
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+// REMOVED — Supabase has been fully replaced by Firebase.
+// This file is intentionally left blank to avoid breaking any stale imports.
+// All auth and DB calls now go through ../lib/firebase.js

@@ -1,67 +1,50 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../lib/firebase';
 import api from '../lib/api';
 
 /**
- * AuthCallback — handles the redirect back from Google OAuth.
- * Supabase reads the URL hash/query params automatically via onAuthStateChange.
- * We just need to wait for the session, ensure a profile row exists, then redirect.
+ * AuthCallback — handles redirect after Firebase OAuth sign-in.
+ * Firebase Auth picks up the credential automatically from the URL.
+ * We wait for the auth state to resolve, then check the player's game session.
  */
 export default function AuthCallback() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Give Supabase a moment to pick up the OAuth tokens from the URL
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (event === 'SIGNED_IN' && session) {
-          try {
-            // Check if player already has a game session
-            const { data: gameSession } = await api.get('/game/session', {
-              headers: { Authorization: `Bearer ${session.access_token}` },
-            });
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) return; // still loading — wait
 
-            if (gameSession?.hasSession && !gameSession.completed) {
-              const round = gameSession.currentRound;
-              if (round >= 4) navigate('/wildcard', { replace: true });
-              else navigate(`/round/${round}`, { replace: true });
-            } else if (gameSession?.completed) {
-              navigate('/pass', { replace: true });
-            } else {
-              navigate('/welcome', { replace: true });
-            }
-          } catch {
-            navigate('/welcome', { replace: true });
-          }
-        }
-      }
-    );
+      unsubscribe(); // Stop listening once we have a user
 
-    // Also handle case where session is already available synchronously
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session) {
-        subscription.unsubscribe();
-        try {
-          const { data: gameSession } = await api.get('/game/session', {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-          });
-          if (gameSession?.hasSession && !gameSession.completed) {
-            const round = gameSession.currentRound;
-            if (round >= 4) navigate('/wildcard', { replace: true });
-            else navigate(`/round/${round}`, { replace: true });
-          } else if (gameSession?.completed) {
-            navigate('/pass', { replace: true });
-          } else {
-            navigate('/welcome', { replace: true });
-          }
-        } catch {
+      try {
+        const { data: gameSession } = await api.get('/game/session');
+
+        if (gameSession?.hasSession && !gameSession.completed) {
+          const round = gameSession.currentRound;
+          if (round >= 4) navigate('/wildcard', { replace: true });
+          else navigate(`/round/${round}`, { replace: true });
+        } else if (gameSession?.completed) {
+          navigate('/pass', { replace: true });
+        } else {
           navigate('/welcome', { replace: true });
         }
+      } catch {
+        navigate('/welcome', { replace: true });
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Fallback — if auth never fires within 5s, send to home
+    const timeout = setTimeout(() => {
+      unsubscribe();
+      navigate('/', { replace: true });
+    }, 5000);
+
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, [navigate]);
 
   return (

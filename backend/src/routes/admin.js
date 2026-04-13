@@ -1,83 +1,70 @@
 import express from 'express';
 import { adminAuth } from '../middleware/adminAuth.js';
-import { supabase } from '../supabaseAdmin.js';
+import { db } from '../firebase.js';
 
 const router = express.Router();
 router.use(adminAuth);
 
 // ── GET /admin/players — list all players with full data ─────────────────────
 router.get('/players', async (req, res) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('id, name, email, score, status, time_started, time_ended, hints_used, game_start_time, disqualified, game_finished, tries_remaining, created_at')
-    .order('score', { ascending: false });
+  try {
+    const snap = await db.collection('profiles').orderBy('score', 'desc').get();
+    const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-  if (error) return res.status(500).json({ error: error.message });
+    const enriched = data.map(p => ({
+      ...p,
+      time_taken_seconds: p.time_started && p.time_ended
+        ? Math.floor((new Date(p.time_ended) - new Date(p.time_started)) / 1000)
+        : null,
+    }));
 
-  const enriched = data.map(p => ({
-    ...p,
-    time_taken_seconds: p.time_started && p.time_ended
-      ? Math.floor((new Date(p.time_ended) - new Date(p.time_started)) / 1000)
-      : null,
-  }));
-
-  res.json(enriched);
+    res.json(enriched);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ── GET /admin/stats — live aggregate counts ─────────────────────────────────
 router.get('/stats', async (req, res) => {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('status, disqualified, game_finished');
+  try {
+    const snap = await db.collection('profiles').get();
+    const data = snap.docs.map(d => d.data());
 
-  if (error) return res.status(500).json({ error: error.message });
-
-  const counts = { total: data.length, playing: 0, passed: 0, failed: 0, waiting: 0, disqualified: 0, finished: 0 };
-  data.forEach(p => {
-    counts[p.status] = (counts[p.status] || 0) + 1;
-    if (p.disqualified) counts.disqualified++;
-    if (p.game_finished) counts.finished++;
-  });
-  res.json(counts);
+    const counts = { total: data.length, playing: 0, passed: 0, failed: 0, waiting: 0, disqualified: 0, finished: 0 };
+    data.forEach(p => {
+      counts[p.status] = (counts[p.status] || 0) + 1;
+      if (p.disqualified) counts.disqualified++;
+      if (p.game_finished) counts.finished++;
+    });
+    res.json(counts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // ── GET /admin/analytics — rich analytics with attempt data ──────────────────
 router.get('/analytics', async (req, res) => {
   try {
-    // Fetch all profiles
-    const { data: profiles, error: pErr } = await supabase
-      .from('profiles')
-      .select('id, name, email, score, status, time_started, time_ended, game_start_time, disqualified, game_finished, tries_remaining')
-      .order('score', { ascending: false });
+    const profilesSnap = await db.collection('profiles').orderBy('score', 'desc').get();
+    const profiles = profilesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    if (pErr) return res.status(500).json({ error: pErr.message });
+    const sessionsSnap = await db.collection('sessions').get();
+    const sessions = sessionsSnap.docs.map(d => d.data());
 
-    // Fetch all sessions
-    const { data: sessions } = await supabase
-      .from('sessions')
-      .select('user_id, current_round, current_index, phase_scores');
+    const attemptsSnap = await db.collection('question_attempts').get();
+    const attempts = attemptsSnap.docs.map(d => d.data());
 
-    // Fetch all question_attempts aggregated per user
-    const { data: attempts } = await supabase
-      .from('question_attempts')
-      .select('user_id, correct, time_taken_seconds');
+    const activitiesSnap = await db.collection('player_activity').orderBy('timestamp', 'desc').get();
+    const activities = activitiesSnap.docs.map(d => d.data());
 
-    // Fetch last activity per user
-    const { data: activities } = await supabase
-      .from('player_activity')
-      .select('user_id, timestamp')
-      .order('timestamp', { ascending: false });
-
-    // Build lookup maps
-    const sessionMap  = Object.fromEntries((sessions  ?? []).map(s => [s.user_id, s]));
+    const sessionMap  = Object.fromEntries(sessions.map(s => [s.user_id, s]));
     const activityMap = {};
-    (activities ?? []).forEach(a => {
+    activities.forEach(a => {
       if (!activityMap[a.user_id]) activityMap[a.user_id] = a.timestamp;
     });
 
-    // Aggregate attempts per user
     const attemptsMap = {};
-    (attempts ?? []).forEach(a => {
+    attempts.forEach(a => {
       if (!attemptsMap[a.user_id]) attemptsMap[a.user_id] = { total: 0, correct: 0, totalTime: 0 };
       attemptsMap[a.user_id].total++;
       if (a.correct) attemptsMap[a.user_id].correct++;
@@ -123,28 +110,106 @@ router.post('/log-activity', async (req, res) => {
     const { userId, page } = req.body;
     if (!userId || !page) return res.status(400).json({ error: 'userId and page are required.' });
 
-    await supabase.from('player_activity').insert({ user_id: userId, page });
+    await db.collection('player_activity').add({ user_id: userId, page, timestamp: new Date().toISOString() });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// Helper for resetting
+async function deleteCollection(collectionPath) {
+  const collectionRef = db.collection(collectionPath);
+  const query = collectionRef.limit(100);
+
+  return new Promise((resolve, reject) => {
+    deleteQueryBatch(db, query, resolve).catch(reject);
+  });
+}
+
+async function deleteQueryBatch(db, query, resolve) {
+  const snapshot = await query.get();
+
+  const batchSize = snapshot.size;
+  if (batchSize === 0) {
+    resolve();
+    return;
+  }
+
+  const batch = db.batch();
+  snapshot.docs.forEach((doc) => {
+    // protect the dummy id if necessary, or just delete all
+    if (doc.id !== '00000000-0000-0000-0000-000000000000') {
+      batch.delete(doc.ref);
+    }
+  });
+  await batch.commit();
+
+  process.nextTick(() => {
+    deleteQueryBatch(db, query, resolve);
+  });
+}
+
+
 // ── POST /admin/reset — reset ALL sessions and scores ────────────────────────
 router.post('/reset', async (req, res) => {
-  const { error: sessionErr } = await supabase
-    .from('sessions')
-    .delete()
-    .neq('id', '00000000-0000-0000-0000-000000000000');
+  try {
+    await deleteCollection('sessions');
+    await deleteCollection('question_attempts');
 
-  const { error: attemptsErr } = await supabase
-    .from('question_attempts')
-    .delete()
-    .neq('id', '00000000-0000-0000-0000-000000000000');
+    const profilesSnap = await db.collection('profiles').get();
+    const batch = db.batch();
+    profilesSnap.docs.forEach(doc => {
+      if (doc.id !== '00000000-0000-0000-0000-000000000000') {
+        batch.update(doc.ref, {
+          score: 0,
+          status: 'waiting',
+          time_started: null,
+          time_ended: null,
+          hints_used: 0,
+          game_start_time: null,
+          disqualified: false,
+          game_finished: false,
+          tries_remaining: 60,
+        });
+      }
+    });
+    await batch.commit();
 
-  const { error: profileErr } = await supabase
-    .from('profiles')
-    .update({
+    res.json({ success: true, message: 'All sessions and scores reset.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST /admin/player/:id/reset — reset one player ─────────────────────────
+router.post('/player/:id/reset', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await db.collection('sessions').doc(id).delete();
+    
+    const attemptsSnap = await db.collection('question_attempts').where('user_id', '==', id).get();
+    const batchList = [];
+    let currentBatch = db.batch();
+    attemptsSnap.docs.forEach((doc, idx) => {
+      currentBatch.delete(doc.ref);
+      if ((idx + 1) % 500 === 0) {
+        batchList.push(currentBatch.commit());
+        currentBatch = db.batch();
+      }
+    });
+    await currentBatch.commit();
+    await Promise.all(batchList);
+
+    const activitySnap = await db.collection('player_activity').where('user_id', '==', id).get();
+    currentBatch = db.batch();
+    activitySnap.docs.forEach((doc) => {
+      currentBatch.delete(doc.ref);
+    });
+    await currentBatch.commit();
+
+    await db.collection('profiles').doc(id).update({
       score: 0,
       status: 'waiting',
       time_started: null,
@@ -154,47 +219,37 @@ router.post('/reset', async (req, res) => {
       disqualified: false,
       game_finished: false,
       tries_remaining: 60,
-    })
-    .neq('id', '00000000-0000-0000-0000-000000000000');
+    });
 
-  if (sessionErr || profileErr || attemptsErr) {
-    return res.status(500).json({ error: sessionErr?.message || profileErr?.message || attemptsErr?.message });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
-  res.json({ success: true, message: 'All sessions and scores reset.' });
-});
-
-// ── POST /admin/player/:id/reset — reset one player ─────────────────────────
-router.post('/player/:id/reset', async (req, res) => {
-  const { id } = req.params;
-
-  await supabase.from('sessions').delete().eq('user_id', id);
-  await supabase.from('question_attempts').delete().eq('user_id', id);
-  await supabase.from('player_activity').delete().eq('user_id', id);
-
-  await supabase.from('profiles').update({
-    score: 0,
-    status: 'waiting',
-    time_started: null,
-    time_ended: null,
-    hints_used: 0,
-    game_start_time: null,
-    disqualified: false,
-    game_finished: false,
-    tries_remaining: 60,
-  }).eq('id', id);
-
-  res.json({ success: true });
 });
 
 // ── DELETE /admin/player/:id — remove player entirely ───────────────────────
 router.delete('/player/:id', async (req, res) => {
-  const { id } = req.params;
-  await supabase.from('sessions').delete().eq('user_id', id);
-  await supabase.from('question_attempts').delete().eq('user_id', id);
-  await supabase.from('player_activity').delete().eq('user_id', id);
-  const { error } = await supabase.from('profiles').delete().eq('id', id);
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ success: true });
+  try {
+    const { id } = req.params;
+    await db.collection('sessions').doc(id).delete();
+    
+    // delete attempts
+    const attemptsSnap = await db.collection('question_attempts').where('user_id', '==', id).get();
+    const batch = db.batch();
+    attemptsSnap.docs.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+
+    // delete activity
+    const activitySnap = await db.collection('player_activity').where('user_id', '==', id).get();
+    const actBatch = db.batch();
+    activitySnap.docs.forEach(doc => actBatch.delete(doc.ref));
+    await actBatch.commit();
+
+    await db.collection('profiles').doc(id).delete();
+    res.json({ success: true });
+  } catch(error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 export default router;

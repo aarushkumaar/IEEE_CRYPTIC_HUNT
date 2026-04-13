@@ -1,4 +1,4 @@
-import { supabase } from '../supabaseAdmin.js';
+import { db } from '../firebase.js';
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -9,17 +9,14 @@ function shuffle(arr) {
 }
 
 async function getRandomQuestions(round, count) {
-  const { data, error } = await supabase
-    .from('questions')
-    .select('id')
-    .eq('round', round);
+  const snap = await db.collection('questions').where('round', '==', round).get();
 
-  if (error) throw new Error(`DB error for round ${round}: ${error.message}`);
-  if (!data || data.length < count) {
-    throw new Error(`Not enough questions for round ${round}. Need ${count}, found ${data?.length ?? 0}.`);
+  if (snap.empty || snap.size < count) {
+    throw new Error(`Not enough questions for round ${round}. Need ${count}, found ${snap.size}.`);
   }
 
-  return shuffle(data).slice(0, count).map(q => q.id);
+  const ids = snap.docs.map(d => d.id);
+  return shuffle(ids).slice(0, count);
 }
 
 export async function buildQueue(userId) {
@@ -33,10 +30,14 @@ export async function buildQueue(userId) {
 
   const queue = [...r1, ...r2, ...r3, ...r4];
 
-  const { error } = await supabase
-    .from('sessions')
-    .upsert({ user_id: userId, queue, current_index: 0, current_round: 1 });
+  await db.collection('sessions').doc(userId).set({
+    user_id:       userId,
+    queue,
+    current_index: 0,
+    current_round: 1,
+    phase_scores:  [0, 0, 0, 0],
+    created_at:    new Date().toISOString(),
+  });
 
-  if (error) throw new Error(`Failed to create session: ${error.message}`);
   return queue;
 }

@@ -1,9 +1,2 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
-dotenv.config();
-
-// Uses SERVICE ROLE KEY — bypasses RLS — NEVER expose to client
-export const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// REMOVED — Supabase Admin has been fully replaced by Firebase Admin.
+// All DB calls now go through ../firebase.js which exports { db, rtdb, auth }

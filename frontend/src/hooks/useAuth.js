@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db } from '../lib/firebase';
 
 export function useAuth() {
   const [user, setUser]       = useState(null);
@@ -7,38 +9,70 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+    // Hard timeout — never hang the UI forever
+    const timeout = setTimeout(() => setLoading(false), 4000);
+
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        await fetchOrCreateProfile(firebaseUser);
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
+      clearTimeout(timeout);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-        }
-      }
-    );
-
-    return () => subscription.unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
-  async function fetchProfile(userId) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, name, score, status, hints_used, game_start_time, disqualified, game_finished, tries_remaining')
-      .eq('id', userId)
-      .single();
-    setProfile(data);
+  async function fetchOrCreateProfile(firebaseUser) {
+    try {
+      const profileRef  = doc(db, 'profiles', firebaseUser.uid);
+      const profileSnap = await getDoc(profileRef);
+
+      if (!profileSnap.exists()) {
+        // First-time login — create profile
+        const newProfile = {
+          id:              firebaseUser.uid,
+          email:           firebaseUser.email,
+          name:            firebaseUser.displayName || firebaseUser.email,
+          score:           0,
+          status:          'waiting',
+          hints_used:      0,
+          game_start_time: null,
+          disqualified:    false,
+          game_finished:   false,
+          tries_remaining: 60,
+          created_at:      new Date().toISOString(),
+        };
+        await setDoc(profileRef, newProfile);
+        setProfile(newProfile);
+      } else {
+        setProfile(profileSnap.data());
+      }
+    } catch (err) {
+      console.error('useAuth: profile fetch error', err);
+    }
+  }
+
+  async function refetchProfile() {
+    if (!user) return;
+    try {
+      const profileSnap = await getDoc(doc(db, 'profiles', user.uid));
+      if (profileSnap.exists()) setProfile(profileSnap.data());
+    } catch (err) {
+      console.error('useAuth: refetch error', err);
+    }
   }
 
   async function signOut() {
-    await supabase.auth.signOut();
+    await firebaseSignOut(auth);
   }
 
-  return { user, profile, loading, signOut, refetchProfile: () => user && fetchProfile(user.id) };
+  return { user, profile, loading, signOut, refetchProfile };
 }

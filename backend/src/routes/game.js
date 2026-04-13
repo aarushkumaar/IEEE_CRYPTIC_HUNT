@@ -2,7 +2,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { authMiddleware } from '../middleware/auth.js';
 import { buildQueue } from '../services/queueBuilder.js';
-import { supabase } from '../supabaseAdmin.js';
+import { db } from '../firebase.js';
 
 const router = express.Router();
 
@@ -25,19 +25,13 @@ async function checkExpiry(userId, profile) {
 
   // 12-hour hard limit
   if (elapsed >= GAME_DURATION_MS && !profile.game_finished) {
-    await supabase
-      .from('profiles')
-      .update({ game_finished: true, status: 'failed' })
-      .eq('id', userId);
+    await db.collection('profiles').doc(userId).update({ game_finished: true, status: 'failed' });
     return { expired: true, reason: '12-hour time limit reached.' };
   }
 
   // 2-hour zero-score DQ: if score is still 0 after 2h
   if (elapsed >= ZERO_SCORE_DQ_MS && (profile.score ?? 0) === 0 && !profile.disqualified && !profile.game_finished) {
-    await supabase
-      .from('profiles')
-      .update({ disqualified: true, status: 'failed' })
-      .eq('id', userId);
+    await db.collection('profiles').doc(userId).update({ disqualified: true, status: 'failed' });
     return { disqualified: true, reason: 'Zero score after 2 hours.' };
   }
 
@@ -50,27 +44,20 @@ router.post('/start', authMiddleware, async (req, res) => {
     const userId = req.user.id;
 
     // Prevent restart if session already exists
-    const { data: existing } = await supabase
-      .from('sessions')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
+    const existing = await db.collection('sessions').doc(userId).get();
 
-    if (existing) {
+    if (existing.exists) {
       return res.status(400).json({ error: 'Game already started. Refresh to continue.' });
     }
 
     await buildQueue(userId);
 
     const now = new Date().toISOString();
-    await supabase
-      .from('profiles')
-      .update({
-        time_started: now,
-        game_start_time: now,
-        status: 'playing',
-      })
-      .eq('id', userId);
+    await db.collection('profiles').doc(userId).update({
+      time_started: now,
+      game_start_time: now,
+      status: 'playing',
+    });
 
     res.json({ success: true, message: 'Game started. Good luck.' });
   } catch (err) {
@@ -84,12 +71,8 @@ router.get('/current', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Fetch profile for expiry/DQ checks
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, score, game_start_time, disqualified, game_finished, tries_remaining')
-      .eq('id', userId)
-      .single();
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const profile = profileDoc.data();
 
     if (profile?.disqualified) return res.json({ disqualified: true });
     if (profile?.game_finished) return res.json({ completed: true, gameFinished: true });
@@ -97,15 +80,11 @@ router.get('/current', authMiddleware, async (req, res) => {
     const expiryResult = await checkExpiry(userId, profile);
     if (expiryResult) return res.json(expiryResult);
 
-    const { data: session, error: sessErr } = await supabase
-      .from('sessions')
-      .select('queue, current_index, current_round, phase_scores')
-      .eq('user_id', userId)
-      .single();
-
-    if (sessErr || !session) {
+    const sessionDoc = await db.collection('sessions').doc(userId).get();
+    if (!sessionDoc.exists) {
       return res.status(404).json({ error: 'No active session found.' });
     }
+    const session = sessionDoc.data();
 
     if (session.current_index >= 20) {
       return res.json({ completed: true });
@@ -113,25 +92,22 @@ router.get('/current', authMiddleware, async (req, res) => {
 
     const questionId = session.queue[session.current_index];
 
-    // SECURITY: never select the "answers" field
-    const { data: question, error: qErr } = await supabase
-      .from('questions')
-      .select('id, suit, card_number, difficulty, round, is_wildcard, question, hints')
-      .eq('id', questionId)
-      .single();
-
-    if (qErr || !question) {
+    const questionDoc = await db.collection('questions').doc(questionId).get();
+    if (!questionDoc.exists) {
       return res.status(500).json({ error: 'Failed to load question.' });
     }
+    const question = questionDoc.data();
+    // Exclude the 'answers' array from the payload before sending to client
+    delete question.answers;
+    question.id = questionDoc.id; // ensure ID is preserved
 
     // Count attempts already made on this question by this user
-    const { count: attemptsCount } = await supabase
-      .from('question_attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('question_id', questionId);
+    const attemptsSnap = await db.collection('question_attempts')
+      .where('user_id', '==', userId)
+      .where('question_id', '==', questionId)
+      .get();
 
-    const triesUsed = attemptsCount ?? 0;
+    const triesUsed = attemptsSnap.size;
     const triesLeft = Math.max(0, MAX_TRIES - triesUsed);
 
     res.json({
@@ -163,12 +139,8 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
       return res.status(400).json({ error: 'A non-empty answer string is required.' });
     }
 
-    // Fetch profile for expiry/DQ checks
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, score, game_start_time, disqualified, game_finished, tries_remaining')
-      .eq('id', userId)
-      .single();
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const profile = profileDoc.data();
 
     if (profile?.disqualified) return res.json({ disqualified: true });
     if (profile?.game_finished) return res.json({ completed: true, gameFinished: true });
@@ -176,41 +148,28 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
     const expiryResult = await checkExpiry(userId, profile);
     if (expiryResult) return res.json(expiryResult);
 
-    const { data: session } = await supabase
-      .from('sessions')
-      .select('queue, current_index, current_round, phase_scores')
-      .eq('user_id', userId)
-      .single();
+    const sessionDoc = await db.collection('sessions').doc(userId).get();
+    if (!sessionDoc.exists) return res.status(404).json({ error: 'No active session.' });
+    const session = sessionDoc.data();
 
-    if (!session) return res.status(404).json({ error: 'No active session.' });
     if (session.current_index >= 20) return res.status(400).json({ error: 'Game already completed.' });
 
     const questionId = session.queue[session.current_index];
 
-    // Count attempts already made on this question
-    const { count: attemptsCount } = await supabase
-      .from('question_attempts')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('question_id', questionId);
-
-    const triesUsed = attemptsCount ?? 0;
+    const attemptsSnap = await db.collection('question_attempts')
+      .where('user_id', '==', userId)
+      .where('question_id', '==', questionId)
+      .get();
+    
+    const triesUsed = attemptsSnap.size;
 
     if (triesUsed >= MAX_TRIES) {
-      // Already out of tries — enforce DQ
-      await supabase
-        .from('profiles')
-        .update({ disqualified: true, status: 'failed' })
-        .eq('id', userId);
+      await db.collection('profiles').doc(userId).update({ disqualified: true, status: 'failed' });
       return res.json({ disqualified: true, reason: 'Maximum tries exceeded for this question.' });
     }
 
-    // Fetch correct answers (service role — not exposed to client)
-    const { data: question } = await supabase
-      .from('questions')
-      .select('answers, round')
-      .eq('id', questionId)
-      .single();
+    const questionDoc = await db.collection('questions').doc(questionId).get();
+    const question = questionDoc.data();
 
     const normalised = answer.trim().toLowerCase();
     const isCorrect  = question.answers.some(a => a.trim().toLowerCase() === normalised);
@@ -218,7 +177,7 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
     const attemptNumber = triesUsed + 1;
 
     // Record attempt
-    await supabase.from('question_attempts').insert({
+    await db.collection('question_attempts').add({
       user_id:       userId,
       question_id:   questionId,
       attempt_number: attemptNumber,
@@ -228,12 +187,8 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
     const newTriesUsed = attemptNumber;
     const triesLeft    = Math.max(0, MAX_TRIES - newTriesUsed);
 
-    // If wrong and this was the last try → disqualify
     if (!isCorrect && triesLeft === 0) {
-      await supabase
-        .from('profiles')
-        .update({ disqualified: true, status: 'failed' })
-        .eq('id', userId);
+      await db.collection('profiles').doc(userId).update({ disqualified: true, status: 'failed' });
       return res.json({
         correct: false,
         scoreDelta: 0,
@@ -253,7 +208,6 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
       });
     }
 
-    // Correct answer — advance session
     const scoreDelta    = 1;
     const newIndex      = session.current_index + 1;
     const newRound      = Math.min(Math.floor(newIndex / 5) + 1, 4);
@@ -262,12 +216,14 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
     const phaseScores = [...session.phase_scores];
     phaseScores[question.round - 1] += scoreDelta;
 
-    await supabase.from('sessions').update({
+    const sessionUpdates = {
       current_index: newIndex,
       current_round: newRound,
       phase_scores:  phaseScores,
-      ...(newIndex >= 20 ? { completed_at: new Date().toISOString() } : {}),
-    }).eq('user_id', userId);
+    };
+    if (newIndex >= 20) sessionUpdates.completed_at = new Date().toISOString();
+
+    await db.collection('sessions').doc(userId).update(sessionUpdates);
 
     const newScore = profile.score + scoreDelta;
     const profileUpdates = { score: newScore };
@@ -278,7 +234,7 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
       profileUpdates.status          = newScore >= PASS_THRESHOLD ? 'passed' : 'failed';
     }
 
-    await supabase.from('profiles').update(profileUpdates).eq('id', userId);
+    await db.collection('profiles').doc(userId).update(profileUpdates);
 
     res.json({
       correct: isCorrect,
@@ -300,11 +256,8 @@ router.post('/skip', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('score, game_start_time, disqualified, game_finished')
-      .eq('id', userId)
-      .single();
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const profile = profileDoc.data();
 
     if (profile?.disqualified) return res.json({ disqualified: true });
     if (profile?.game_finished) return res.json({ completed: true, gameFinished: true });
@@ -312,24 +265,23 @@ router.post('/skip', authMiddleware, async (req, res) => {
     const expiryResult = await checkExpiry(userId, profile);
     if (expiryResult) return res.json(expiryResult);
 
-    const { data: session } = await supabase
-      .from('sessions')
-      .select('queue, current_index, current_round, phase_scores')
-      .eq('user_id', userId)
-      .single();
+    const sessionDoc = await db.collection('sessions').doc(userId).get();
+    if (!sessionDoc.exists) return res.status(404).json({ error: 'No active session.' });
+    const session = sessionDoc.data();
 
-    if (!session) return res.status(404).json({ error: 'No active session.' });
     if (session.current_index >= 20) return res.status(400).json({ error: 'Game already completed.' });
 
     const newIndex      = session.current_index + 1;
     const newRound      = Math.min(Math.floor(newIndex / 5) + 1, 4);
     const roundComplete = newIndex % 5 === 0;
 
-    await supabase.from('sessions').update({
+    const sessionUpdates = {
       current_index: newIndex,
       current_round: newRound,
-      ...(newIndex >= 20 ? { completed_at: new Date().toISOString() } : {}),
-    }).eq('user_id', userId);
+    };
+    if (newIndex >= 20) sessionUpdates.completed_at = new Date().toISOString();
+
+    await db.collection('sessions').doc(userId).update(sessionUpdates);
 
     const newScore = Math.max(0, profile.score - 1);
     const profileUpdates = { score: newScore };
@@ -340,7 +292,7 @@ router.post('/skip', authMiddleware, async (req, res) => {
       profileUpdates.status        = newScore >= PASS_THRESHOLD ? 'passed' : 'failed';
     }
 
-    await supabase.from('profiles').update(profileUpdates).eq('id', userId);
+    await db.collection('profiles').doc(userId).update(profileUpdates);
 
     res.json({ skipped: true, newScore, completed: newIndex >= 20, roundComplete, newRound });
   } catch (err) {
@@ -354,10 +306,7 @@ router.post('/skip', authMiddleware, async (req, res) => {
 router.post('/expire', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
-    await supabase
-      .from('profiles')
-      .update({ game_finished: true, status: 'failed' })
-      .eq('id', userId);
+    await db.collection('profiles').doc(userId).update({ game_finished: true, status: 'failed' });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -369,26 +318,16 @@ router.post('/hint', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { data: session } = await supabase
-      .from('sessions')
-      .select('queue, current_index')
-      .eq('user_id', userId)
-      .single();
-
-    if (!session) return res.status(404).json({ error: 'No active session.' });
+    const sessionDoc = await db.collection('sessions').doc(userId).get();
+    if (!sessionDoc.exists) return res.status(404).json({ error: 'No active session.' });
+    const session = sessionDoc.data();
 
     const questionId = session.queue[session.current_index];
-    const { data: question } = await supabase
-      .from('questions')
-      .select('hints')
-      .eq('id', questionId)
-      .single();
+    const questionDoc = await db.collection('questions').doc(questionId).get();
+    const question = questionDoc.data();
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('hints_used')
-      .eq('id', userId)
-      .single();
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const profile = profileDoc.data();
 
     const hints = question.hints || [];
     if (!hints.length) return res.json({ hint: 'No hints available for this question.', hintsUsed: profile.hints_used });
@@ -396,9 +335,7 @@ router.post('/hint', authMiddleware, async (req, res) => {
     const hintIndex = profile.hints_used % hints.length;
     const hint = hints[hintIndex];
 
-    await supabase.from('profiles')
-      .update({ hints_used: profile.hints_used + 1 })
-      .eq('id', userId);
+    await db.collection('profiles').doc(userId).update({ hints_used: profile.hints_used + 1 });
 
     res.json({ hint, hintsUsed: profile.hints_used + 1, totalHints: hints.length });
   } catch (err) {
@@ -412,31 +349,28 @@ router.get('/result', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('name, score, status, time_started, time_ended, hints_used')
-      .eq('id', userId)
-      .single();
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const profile = profileDoc.data();
 
-    const { data: session } = await supabase
-      .from('sessions')
-      .select('phase_scores')
-      .eq('user_id', userId)
-      .single();
+    const sessionDoc = await db.collection('sessions').doc(userId).get();
+    const session = sessionDoc.exists ? sessionDoc.data() : null;
 
     const timeSeconds = profile.time_started && profile.time_ended
       ? Math.floor((new Date(profile.time_ended) - new Date(profile.time_started)) / 1000)
       : null;
 
-    const { data: all } = await supabase
-      .from('profiles')
-      .select('id, score, time_started, time_ended')
-      .order('score', { ascending: false });
+    const allProfilesSnap = await db.collection('profiles').orderBy('score', 'desc').get();
+    const all = allProfilesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     const rank = all.findIndex(p => p.id === userId) + 1;
 
     res.json({
-      ...profile,
+      name: profile.name,
+      score: profile.score,
+      status: profile.status,
+      time_started: profile.time_started,
+      time_ended: profile.time_ended,
+      hints_used: profile.hints_used,
       timeSeconds,
       phaseScores: session?.phase_scores ?? [0, 0, 0, 0],
       rank,
@@ -452,19 +386,12 @@ router.get('/session', authMiddleware, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { data: session } = await supabase
-      .from('sessions')
-      .select('current_index, current_round, phase_scores, completed_at')
-      .eq('user_id', userId)
-      .single();
+    const sessionDoc = await db.collection('sessions').doc(userId).get();
+    if (!sessionDoc.exists) return res.json({ hasSession: false });
+    const session = sessionDoc.data();
 
-    if (!session) return res.json({ hasSession: false });
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('game_start_time, disqualified, game_finished, score')
-      .eq('id', userId)
-      .single();
+    const profileDoc = await db.collection('profiles').doc(userId).get();
+    const profile = profileDoc.data();
 
     res.json({
       hasSession:     true,
