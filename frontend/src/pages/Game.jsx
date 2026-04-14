@@ -52,7 +52,7 @@ function GameTimer({ loginTime, warningActive, onExpire }) {
 
   return (
     <div style={{
-      fontFamily: '"Courier New", Courier, monospace',
+      fontFamily: '"Inter", system-ui, sans-serif',
       fontSize: 13,
       letterSpacing: '0.12em',
       color,
@@ -84,7 +84,7 @@ function WarningBanner() {
       }}
     >
       <span style={{
-        fontFamily: '"Cinzel", serif',
+        fontFamily: '"Inter", system-ui, sans-serif',
         fontSize: 10,
         letterSpacing: '0.2em',
         color: '#C0392B',
@@ -115,7 +115,7 @@ function EgyptianNav({ score, progress, loginTime, warningActive, onTimerExpire 
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: '0 0 auto' }}>
         <span style={{ fontSize: 20, filter: 'drop-shadow(0 0 6px rgba(201,168,76,0.5))' }}>𓂀</span>
         <span style={{
-          fontFamily: '"Cinzel Decorative", serif',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 12,
           color: '#C9A84C',
           letterSpacing: '0.1em',
@@ -129,7 +129,7 @@ function EgyptianNav({ score, progress, loginTime, warningActive, onTimerExpire 
         <GameTimer loginTime={loginTime} warningActive={warningActive} onExpire={onTimerExpire} />
 
         <div style={{
-          fontFamily: '"Cinzel", serif',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 10,
           letterSpacing: '0.2em',
           color: '#C9A84C',
@@ -140,7 +140,7 @@ function EgyptianNav({ score, progress, loginTime, warningActive, onTimerExpire 
           whiteSpace: 'nowrap',
         }}>
           SCORE&nbsp;
-          <span style={{ fontFamily: '"Cinzel Decorative", serif', fontSize: 13 }}>
+          <span style={{ fontFamily: '"Inter", system-ui, sans-serif', fontSize: 13 }}>
             {score}
           </span>
           {progress && (
@@ -158,8 +158,7 @@ function EgyptianNav({ score, progress, loginTime, warningActive, onTimerExpire 
 function UncopyableText({ text }) {
   return (
     <p style={{
-      fontFamily: '"IM Fell English", Georgia, serif',
-      fontStyle: 'italic',
+      fontFamily: '"Inter", system-ui, sans-serif',
       fontSize: 'clamp(15px, 1.8vw, 18px)',
       color: '#F5ECD0',
       lineHeight: 1.8,
@@ -190,17 +189,15 @@ function UncopyableText({ text }) {
 function CardBack() {
   return (
     <div style={{
-      width: 48, height: 72,
+      width: 32, height: 48,
       background: '#0D0B05',
       border: '1px solid #C9A84C44',
-      borderRadius: 6,
+      borderRadius: 4,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
-      <svg width="36" height="54" viewBox="0 0 36 54">
+      <svg width="24" height="36" viewBox="0 0 36 54">
         <rect x="2" y="2" width="32" height="50" rx="4"
           fill="none" stroke="#C9A84C" strokeWidth="0.5" opacity="0.4"/>
-        <rect x="6" y="6" width="24" height="42" rx="2"
-          fill="none" stroke="#C9A84C" strokeWidth="0.3" opacity="0.2"/>
         <text x="18" y="30" textAnchor="middle" dominantBaseline="central"
           fill="#C9A84C" fontSize="16" opacity="0.5">✦</text>
       </svg>
@@ -220,23 +217,23 @@ function CardFace({ suit, index, isCurrent, isAnswered }) {
 
   return (
     <div style={{
-      width: 48, height: 72,
+      width: 32, height: 48,
       background: isCurrent ? '#1A1408' : '#0D0B05',
       border: `1px solid ${isCurrent ? '#C9A84C' : color + '44'}`,
-      borderRadius: 6,
-      boxShadow: isCurrent ? '0 0 16px #C9A84C66' : 'none',
+      borderRadius: 4,
+      boxShadow: isCurrent ? '0 0 10px #C9A84C66' : 'none',
       display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center',
       position: 'relative', transition: 'all 0.3s',
     }}>
       <span style={{
-        fontSize: 8, color: '#C9A84C88',
-        fontFamily: '"Cinzel", serif',
-        position: 'absolute', top: 4, left: 4,
+        fontSize: 6, color: '#C9A84C88',
+        fontFamily: '"Inter", system-ui, sans-serif',
+        position: 'absolute', top: 2, left: 3,
       }}>
         {index + 1}
       </span>
-      <span style={{ fontSize: 22, color: isAnswered ? color : color + '66' }}>
+      <span style={{ fontSize: 14, color: isAnswered ? color : color + '66' }}>
         {symbol}
       </span>
     </div>
@@ -258,7 +255,7 @@ function JokerCard({ isCurrent }) {
       <span style={{ fontSize: 18, marginBottom: 2 }}>🃏</span>
       <span style={{
         fontSize: 6, color: '#F5C542',
-        fontFamily: '"Cinzel", serif', letterSpacing: '0.05em',
+        fontFamily: '"Inter", system-ui, sans-serif', letterSpacing: '0.05em',
       }}>WILD</span>
     </div>
   );
@@ -269,13 +266,12 @@ const PANEL_SUITS = [
   'spades', 'hearts', 'diamonds', 'clubs',
   'spades', 'hearts', 'diamonds', 'clubs',
   'spades', 'hearts', 'diamonds', 'clubs',
-  'wildcard',
 ];
 
 function CardPanel({ currentIndex }) {
   return (
     <div style={{
-      width: 80,
+      width: 52,
       minHeight: '100vh',
       background: '#080808',
       backgroundImage: [
@@ -287,24 +283,22 @@ function CardPanel({ currentIndex }) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: '16px 0',
-      gap: 6,
+      padding: '12px 0',
+      gap: 4,
       overflowY: 'auto',
       flexShrink: 0,
     }}>
       <p style={{
-        color: '#C9A84C44', fontSize: 8,
-        fontFamily: '"Cinzel", serif', letterSpacing: '0.1em',
-        marginBottom: 8, writingMode: 'vertical-rl',
+        color: '#C9A84C44', fontSize: 7,
+        fontFamily: '"Inter", system-ui, sans-serif', letterSpacing: '0.1em',
+        marginBottom: 6, writingMode: 'vertical-rl',
         textOrientation: 'mixed', transform: 'rotate(180deg)',
       }}>CARDS</p>
 
       {PANEL_SUITS.map((suit, i) => {
         const isCurrent  = i === currentIndex;
         const isAnswered = i < currentIndex;
-        const isWildcard = i === 12;
 
-        if (isWildcard)    return <JokerCard key={i} isCurrent={isCurrent} />;
         if (!isAnswered && !isCurrent) return <CardBack key={i} />;
         return (
           <CardFace
@@ -326,7 +320,7 @@ function EgyptianInput({ value, onChange, onSubmit, loading, disabled, inputRef 
     <form onSubmit={onSubmit} style={{ width: '100%' }}>
       <label style={{
         display: 'block',
-        fontFamily: '"Cinzel", serif',
+        fontFamily: '"Inter", system-ui, sans-serif',
         fontSize: 9,
         letterSpacing: '0.25em',
         color: 'rgba(201,168,76,0.5)',
@@ -359,8 +353,7 @@ function EgyptianInput({ value, onChange, onSubmit, loading, disabled, inputRef 
               border: '1px solid rgba(201,168,76,0.3)',
               borderRadius: 2,
               color: '#F5ECD0',
-              fontFamily: '"IM Fell English", serif',
-              fontStyle: 'italic',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 15,
               padding: '13px 16px 13px 40px',
               outline: 'none',
@@ -386,7 +379,7 @@ function EgyptianInput({ value, onChange, onSubmit, loading, disabled, inputRef 
             border: 'none',
             borderRadius: 2,
             padding: '13px 24px',
-            fontFamily: '"Cinzel", serif',
+            fontFamily: '"Inter", system-ui, sans-serif',
             fontWeight: 700,
             fontSize: 10,
             letterSpacing: '0.2em',
@@ -431,7 +424,7 @@ function TriesIndicator({ triesLeft, maxTries = 3, isWildcard = false }) {
       >
         <span style={{ fontSize: 16 }}>⚠</span>
         <span style={{
-          fontFamily: '"Cinzel", serif',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 9,
           letterSpacing: '0.22em',
           color: '#C0392B',
@@ -445,7 +438,7 @@ function TriesIndicator({ triesLeft, maxTries = 3, isWildcard = false }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       <span style={{
-        fontFamily: '"Cinzel", serif',
+        fontFamily: '"Inter", system-ui, sans-serif',
         fontSize: 9,
         letterSpacing: '0.2em',
         color: 'rgba(201,168,76,0.45)',
@@ -476,7 +469,7 @@ function TriesIndicator({ triesLeft, maxTries = 3, isWildcard = false }) {
       </div>
       {triesLeft === 1 && (
         <span style={{
-          fontFamily: '"Cinzel", serif',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 9,
           color: '#C0392B',
           letterSpacing: '0.15em',
@@ -515,7 +508,7 @@ function StatusIndicator({ cardState, feedback }) {
         boxShadow: `0 0 6px ${state.dot}`,
       }} />
       <span style={{
-        fontFamily: '"Cinzel", serif',
+        fontFamily: '"Inter", system-ui, sans-serif',
         fontSize: 9,
         letterSpacing: '0.2em',
         color: state.color,
@@ -558,7 +551,7 @@ function PhaseOverlay({ phase, onDone }) {
           𓂀
         </div>
         <p style={{
-          fontFamily: '"Cinzel", serif',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 10,
           letterSpacing: '0.4em',
           color: 'rgba(201,168,76,0.5)',
@@ -567,7 +560,7 @@ function PhaseOverlay({ phase, onDone }) {
           THE GODS ARE PLEASED
         </p>
         <h2 style={{
-          fontFamily: '"Cinzel Decorative", serif',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 'clamp(28px, 5vw, 42px)',
           color: '#C9A84C',
           textShadow: '0 0 40px rgba(201,168,76,0.4)',
@@ -576,8 +569,7 @@ function PhaseOverlay({ phase, onDone }) {
           {labels[phase] ?? 'PHASE COMPLETE'}
         </h2>
         <p style={{
-          fontFamily: '"IM Fell English", serif',
-          fontStyle: 'italic',
+          fontFamily: '"Inter", system-ui, sans-serif',
           marginTop: 16,
           color: 'rgba(232,213,160,0.5)',
           fontSize: 15,
@@ -620,7 +612,7 @@ function BackToast({ onStay, onLeave }) {
         }}
       >
         <p style={{
-          fontFamily: '"Cinzel Decorative", serif',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 15,
           color: '#E8D5A0',
           marginBottom: 10,
@@ -629,8 +621,7 @@ function BackToast({ onStay, onLeave }) {
           Leave the Chamber?
         </p>
         <p style={{
-          fontFamily: '"IM Fell English", serif',
-          fontStyle: 'italic',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 13,
           color: 'rgba(232,213,160,0.5)',
           marginBottom: 28,
@@ -648,7 +639,7 @@ function BackToast({ onStay, onLeave }) {
               border: '1px solid rgba(201,168,76,0.3)',
               color: 'rgba(201,168,76,0.6)',
               padding: '11px 16px',
-              fontFamily: '"Cinzel", serif',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 10,
               letterSpacing: '0.15em',
               cursor: 'none',
@@ -666,7 +657,7 @@ function BackToast({ onStay, onLeave }) {
               border: '1px solid rgba(201,168,76,0.5)',
               color: '#C9A84C',
               padding: '11px 16px',
-              fontFamily: '"Cinzel", serif',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontWeight: 700,
               fontSize: 10,
               letterSpacing: '0.15em',
@@ -699,7 +690,7 @@ function ExpiredModal({ onLogout }) {
       <div style={{ textAlign: 'center', maxWidth: 420, padding: '0 24px' }}>
         <div style={{ fontSize: 52, marginBottom: 24, filter: 'drop-shadow(0 0 20px rgba(201,168,76,0.4))' }}>⌛</div>
         <h2 style={{
-          fontFamily: '"Cinzel Decorative", serif',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 'clamp(18px, 3.5vw, 26px)',
           color: '#C9A84C',
           letterSpacing: '0.08em',
@@ -708,8 +699,7 @@ function ExpiredModal({ onLogout }) {
           Time Has Expired
         </h2>
         <p style={{
-          fontFamily: '"IM Fell English", serif',
-          fontStyle: 'italic',
+          fontFamily: '"Inter", system-ui, sans-serif',
           fontSize: 15,
           color: 'rgba(232,213,160,0.55)',
           lineHeight: 1.75,
@@ -725,7 +715,7 @@ function ExpiredModal({ onLogout }) {
             border: '2px solid rgba(201,168,76,0.5)',
             color: '#C9A84C',
             padding: '14px 48px',
-            fontFamily: '"Cinzel", serif',
+            fontFamily: '"Inter", system-ui, sans-serif',
             fontWeight: 700,
             fontSize: 12,
             letterSpacing: '0.3em',
@@ -758,7 +748,7 @@ export default function Game() {
   const [phaseOverlay, setPhaseOverlay] = useState(null); // phase number being completed
   const [gameExpired, setGameExpired]   = useState(false);
   const [showBackToast, setShowBackToast] = useState(false);
-  const [showFullscreenWarning, setShowFullscreenWarning] = useState(false);
+
 
   // Login-time based state (from /game/status polling)
   const [loginTime, setLoginTime]         = useState(null);
@@ -768,7 +758,7 @@ export default function Game() {
   const [showExhausted, setShowExhausted] = useState(false);
 
   const inputRef = useRef(null);
-  const fullscreenViolations = useRef(0);
+
 
   // Derive from progress
   const currentPhase  = progress ? (progress.phase ?? getPhaseFromIndex(progress.index ?? 0)) : 1;
@@ -800,47 +790,7 @@ export default function Game() {
     };
   }, []);
 
-  /* ── Fullscreen enforcement ───────────────────────────────────────── */
-  // NOTE: requestFullscreen is blocked on HTTP. This works after Vercel (HTTPS) deployment.
-  useEffect(() => {
-    const requestFS = async () => {
-      try {
-        await document.documentElement.requestFullscreen();
-      } catch (err) {
-        console.log('Fullscreen not available (HTTP or browser restriction)');
-      }
-    };
-    requestFS();
 
-    const handleFullscreenChange = async () => {
-      if (!document.fullscreenElement) {
-        fullscreenViolations.current += 1;
-
-        if (fullscreenViolations.current === 1) {
-          setShowFullscreenWarning(true);
-          setTimeout(async () => {
-            try {
-              await document.documentElement.requestFullscreen();
-            } catch {}
-          }, 3000);
-        }
-
-        if (fullscreenViolations.current >= 2) {
-          try {
-            await api.post('/game/eliminate-fullscreen');
-          } catch {}
-          navigate('/eliminated', {
-            state: { reason: 'Exited fullscreen twice during the hunt.' },
-          });
-        }
-      }
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, [navigate]);
 
   /* ── Initial load ─────────────────────────────────────────────── */
   useEffect(() => {
@@ -1021,32 +971,6 @@ export default function Game() {
         flexDirection: 'column',
       }}
     >
-      {/* Fullscreen violation warning */}
-      {showFullscreenWarning && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            position: 'fixed', top: 20, left: '50%',
-            transform: 'translateX(-50%)',
-            background: '#1A0A0A',
-            border: '2px solid #F04A57',
-            color: '#F04A57',
-            padding: '16px 32px',
-            zIndex: 99999,
-            fontFamily: '"Cinzel", serif',
-            fontSize: 13,
-            letterSpacing: '0.1em',
-            textAlign: 'center',
-          }}
-        >
-          ⚠ WARNING: FULLSCREEN VIOLATION 1/2
-          <br />
-          <span style={{ fontSize: 10, color: '#E8D5A0' }}>
-            Exit again and you will be eliminated from the hunt.
-          </span>
-        </motion.div>
-      )}
 
       {/* Egyptian Nav */}
       <EgyptianNav
@@ -1108,7 +1032,7 @@ export default function Game() {
           {/* Challenge label */}
           <div style={{ textAlign: 'center', zIndex: 1 }}>
             <p style={{
-              fontFamily: '"Cinzel", serif',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 9,
               letterSpacing: '0.3em',
               color: 'rgba(201,168,76,0.4)',
@@ -1117,7 +1041,7 @@ export default function Game() {
               CHALLENGE
             </p>
             <p style={{
-              fontFamily: '"Cinzel Decorative", serif',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 22,
               color: '#C9A84C',
               textShadow: '0 0 20px rgba(201,168,76,0.4)',
@@ -1133,7 +1057,7 @@ export default function Game() {
           <div style={{ position: 'relative', zIndex: 1 }}>
             {question ? (
               <>
-                <QuestionCard question={question} cardState={cardState} />
+                <QuestionCard question={question} cardState={cardState} isWildcard={isWildcard} />
                 {/* Feedback flash */}
                 <AnimatePresence>
                   {feedback && (
@@ -1154,7 +1078,7 @@ export default function Game() {
                       }}
                     >
                       <span style={{
-                        fontFamily: '"Cinzel Decorative", serif',
+                        fontFamily: '"Inter", system-ui, sans-serif',
                         fontSize: 36,
                         color: feedback.correct ? '#27AE60' : '#C0392B',
                         textShadow: `0 0 30px ${feedback.correct ? '#27AE60' : '#C0392B'}`,
@@ -1169,7 +1093,7 @@ export default function Game() {
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
                 <span className="spinner" />
                 <span style={{
-                  fontFamily: '"Cinzel", serif',
+                  fontFamily: '"Inter", system-ui, sans-serif',
                   fontSize: 9,
                   letterSpacing: '0.25em',
                   color: 'rgba(201,168,76,0.4)',
@@ -1184,7 +1108,7 @@ export default function Game() {
           {question && (
             <div style={{ textAlign: 'center', zIndex: 1 }}>
               <p style={{
-                fontFamily: '"Cinzel", serif',
+                fontFamily: '"Inter", system-ui, sans-serif',
                 fontSize: 9,
                 letterSpacing: '0.2em',
                 color: 'rgba(201,168,76,0.4)',
@@ -1193,7 +1117,7 @@ export default function Game() {
                 PHASE {currentPhase} · {PHASE_LABELS[currentPhase] ?? ''}
               </p>
               <p style={{
-                fontFamily: '"Cinzel", serif',
+                fontFamily: '"Inter", system-ui, sans-serif',
                 fontSize: 9,
                 letterSpacing: '0.2em',
                 color: 'rgba(201,168,76,0.4)',
@@ -1235,7 +1159,7 @@ export default function Game() {
           {/* Phase label */}
           <div>
             <p style={{
-              fontFamily: '"Cinzel", serif',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 10,
               letterSpacing: '0.3em',
               color: 'rgba(201,168,76,0.4)',
@@ -1244,7 +1168,7 @@ export default function Game() {
               PHASE {currentPhase} — {PHASE_LABELS[currentPhase] ?? ''}
             </p>
             <h2 style={{
-              fontFamily: '"Cinzel Decorative", serif',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 'clamp(18px, 2.5vw, 26px)',
               color: '#C9A84C',
               letterSpacing: '0.08em',
@@ -1262,9 +1186,9 @@ export default function Game() {
           <div style={{ height: 1, background: 'linear-gradient(to right, rgba(201,168,76,0.3), transparent)' }} />
 
           {/* PROBLEM section */}
-          <div style={{ flex: 1 }}>
+          <div>
             <p style={{
-              fontFamily: '"Cinzel", serif',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 9,
               letterSpacing: '0.3em',
               color: 'rgba(201,168,76,0.4)',
@@ -1314,7 +1238,7 @@ export default function Game() {
                 padding: '40px',
                 textAlign: 'center',
               }}>
-                <span style={{ color: 'rgba(201,168,76,0.2)', fontFamily: '"Cinzel", serif', fontSize: 11, letterSpacing: '0.2em' }}>
+                <span style={{ color: 'rgba(201,168,76,0.2)', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 11, letterSpacing: '0.2em' }}>
                   AWAITING SCROLL…
                 </span>
               </div>
@@ -1334,7 +1258,7 @@ export default function Game() {
                   border: '1px solid rgba(192,57,43,0.35)',
                   borderRadius: 2,
                   padding: '10px 18px',
-                  fontFamily: '"Cinzel", serif',
+                  fontFamily: '"Inter", system-ui, sans-serif',
                   fontSize: 10,
                   letterSpacing: '0.2em',
                   color: '#C0392B',
@@ -1380,8 +1304,7 @@ export default function Game() {
 
           {error && (
             <p style={{
-              fontFamily: '"IM Fell English", serif',
-              fontStyle: 'italic',
+              fontFamily: '"Inter", system-ui, sans-serif',
               fontSize: 13,
               color: '#C0392B',
               textAlign: 'center',

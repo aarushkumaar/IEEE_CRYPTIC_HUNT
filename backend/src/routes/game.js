@@ -150,7 +150,7 @@ router.post('/start', authMiddleware, async (req, res) => {
 
       // Build and write the question queue into the session
       await buildQueue(userId);
-
+      
       // Set loginTime / gameStartTime only on first start
       const freshProfileDoc = await profileRef.get();
       const currentProfile  = freshProfileDoc.data();
@@ -210,6 +210,11 @@ router.get('/current', authMiddleware, async (req, res) => {
       });
     }
     const session = sessionDoc.data();
+    if (!session.queue || !Array.isArray(session.queue)) {
+  return res.status(500).json({
+    error: "Queue not initialized. Please restart game."
+  });
+}
 
     if (session.currentIndex >= TOTAL_QUESTIONS) {
       return res.json({ completed: true });

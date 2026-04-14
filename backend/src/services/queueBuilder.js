@@ -10,15 +10,15 @@ function shuffle(arr) {
 }
 
 /* ── Fetch questions by difficulty (Firestore) ───────────────────── */
-async function getByDifficulty(difficulty, isWildcard, needed) {
+async function getByDifficulty(difficulty, is_wildcard, needed) {
   const snapshot = await db.collection('questions')
     .where('difficulty', '==', difficulty)
-    .where('isWildcard', '==', isWildcard)
+    .where('isWildcard', '==', is_wildcard)
     .get();
 
   if (snapshot.empty || snapshot.docs.length < needed) {
     throw new Error(
-      `Not enough ${difficulty} questions (wildcard=${isWildcard}). ` +
+      `Not enough ${difficulty} questions (wildcard=${is_wildcard}). ` +
       `Need ${needed}, found ${snapshot.docs.length}.`
     );
   }

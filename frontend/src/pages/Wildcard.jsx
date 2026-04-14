@@ -41,9 +41,7 @@ export default function Wildcard() {
   const [score, setScore]             = useState(profile?.score ?? 0);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [feedback, setFeedback]       = useState(null);
-  const [showFullscreenWarning, setShowFullscreenWarning] = useState(false);
   const inputRef = useRef(null);
-  const fullscreenViolations = useRef(0);
 
   useEffect(() => {
     (async () => {
@@ -77,47 +75,7 @@ export default function Wildcard() {
     };
   }, []);
 
-  /* ── Fullscreen enforcement ────────────────────────────────── */
-  // NOTE: requestFullscreen is blocked on HTTP. Works after Vercel (HTTPS) deployment.
-  useEffect(() => {
-    const requestFS = async () => {
-      try {
-        await document.documentElement.requestFullscreen();
-      } catch (err) {
-        console.log('Fullscreen not available (HTTP or browser restriction)');
-      }
-    };
-    requestFS();
 
-    const handleFullscreenChange = async () => {
-      if (!document.fullscreenElement) {
-        fullscreenViolations.current += 1;
-
-        if (fullscreenViolations.current === 1) {
-          setShowFullscreenWarning(true);
-          setTimeout(async () => {
-            try {
-              await document.documentElement.requestFullscreen();
-            } catch {}
-          }, 3000);
-        }
-
-        if (fullscreenViolations.current >= 2) {
-          try {
-            await api.post('/game/eliminate-fullscreen');
-          } catch {}
-          navigate('/eliminated', {
-            state: { reason: 'Exited fullscreen twice during the hunt.' },
-          });
-        }
-      }
-    };
-
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-    };
-  }, [navigate]);
 
   useEffect(() => {
     if (profile?.score !== undefined) setScore(profile.score);
@@ -164,54 +122,26 @@ export default function Wildcard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#080808', color: '#F5ECD0' }}>
-      {/* Fullscreen violation warning */}
-      {showFullscreenWarning && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            position: 'fixed', top: 20, left: '50%',
-            transform: 'translateX(-50%)',
-            background: '#1A0A0A',
-            border: '2px solid #F04A57',
-            color: '#F04A57',
-            padding: '16px 32px',
-            zIndex: 99999,
-            fontFamily: '"Cinzel", serif',
-            fontSize: 13,
-            letterSpacing: '0.1em',
-            textAlign: 'center',
-          }}
-        >
-          ⚠ WARNING: FULLSCREEN VIOLATION 1/2
-          <br />
-          <span style={{ fontSize: 10, color: '#E8D5A0' }}>
-            Exit again and you will be eliminated from the hunt.
-          </span>
-        </motion.div>
-      )}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#080808', color: '#F5ECD0' }}>
 
-      {/* Special Wildcard ScoreBar */}
+      {/* Wildcard ScoreBar */}
       <div
-        className="w-full flex items-center justify-between px-4 md:px-8 py-3"
         style={{
-          background: 'rgba(8,8,14,0.9)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0 24px', height: 56,
+          background: 'rgba(8,8,14,0.92)',
           borderBottom: '1px solid rgba(245,197,66,0.3)',
           backdropFilter: 'blur(12px)',
           position: 'sticky', top: 0, zIndex: 50,
         }}
       >
-        <div className="font-display font-bold text-sm" style={{ color: '#C9A84C' }}>
-          ♠♥♦♣ WILDCARD ROUND
+        <div style={{ fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 700, fontSize: 13, color: '#C9A84C', letterSpacing: '0.1em' }}>
+          ✦ WILDCARD ROUND
         </div>
-        <div className="flex items-center gap-1">
-          <span style={{ fontSize: 12, color: 'rgba(201,168,76,0.6)' }}>Score</span>
-          <span style={{ fontFamily: '"Cinzel", serif', fontWeight: 'bold', fontSize: 18, color: '#C9A84C' }}>{score}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11, color: 'rgba(201,168,76,0.6)', fontFamily: '"Inter", system-ui, sans-serif' }}>SCORE</span>
+          <span style={{ fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 700, fontSize: 18, color: '#C9A84C' }}>{score}</span>
         </div>
-        <span style={{ fontFamily: '"Courier New", monospace', fontSize: 12, color: 'rgba(201,168,76,0.5)' }}>
-          Q1/1
-        </span>
       </div>
 
       {/* Ambient glow */}
@@ -220,89 +150,156 @@ export default function Wildcard() {
         background: 'radial-gradient(ellipse at 50% 40%, rgba(201,168,76,0.04) 0%, transparent 60%)',
       }} />
 
+      {/* Main content — card + question + answer */}
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-        padding: '32px 16px', gap: 24, position: 'relative', zIndex: 10
+        padding: '32px 16px', gap: 28, position: 'relative', zIndex: 10,
       }}>
         {!question && !loading && (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ color: '#C9A84C', fontFamily: '"Cinzel", serif', fontSize: 14, marginBottom: 16 }}>
+            <p style={{ color: '#C9A84C', fontFamily: '"Inter", system-ui, sans-serif', fontSize: 14 }}>
               Loading Wildcard Question...
             </p>
           </div>
         )}
-        
+
         {question && (
-          <div style={{ position: 'relative' }}>
-            {/* Wildcard badge */}
-            <div
+          <>
+            {/* Card with hidden jokers */}
+            <div style={{ position: 'relative' }}>
+              <QuestionCard
+                question={question}
+                cardState={cardState}
+                isWildcard
+              />
+              <AnimatePresence>
+                {feedback && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    style={{
+                      position: 'absolute', inset: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: 16,
+                      background: feedback.correct ? 'rgba(34,215,123,0.15)' : 'rgba(240,74,87,0.15)',
+                      pointerEvents: 'none', zIndex: 10,
+                    }}
+                  >
+                    <span style={{
+                      fontFamily: '"Inter", system-ui, sans-serif', fontWeight: 700, fontSize: 36,
+                      color: feedback.correct ? '#27AE60' : '#C0392B',
+                    }}>
+                      {feedback.correct ? '✓ +1' : '✗'}
+                    </span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Question text (displayed on the page, not on the card) */}
+            <motion.div
+              key={question.id}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
               style={{
-                position: 'absolute', top: -24, left: '50%', transform: 'translateX(-50%)',
-                fontFamily: '"Courier New", monospace', fontSize: 12, paddingX: 12, paddingY: 4, borderRadius: '50%', zIndex: 10,
-                background: 'rgba(201,168,76,0.12)',
-                border: '1px solid rgba(201,168,76,0.3)',
-                color: '#C9A84C',
+                width: '100%',
+                maxWidth: 520,
+                background: 'rgba(201,168,76,0.03)',
+                border: '1px solid rgba(201,168,76,0.1)',
+                borderLeft: '3px solid rgba(201,168,76,0.4)',
+                padding: '24px 28px',
+                borderRadius: 2,
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
               }}
             >
-              ✦ WILDCARD
-            </div>
-            <QuestionCard
-              question={question}
-              cardState={cardState}
-              isWildcard
-            />
-            <AnimatePresence>
-              {feedback && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0 }}
-                  style={{
-                    position: 'absolute', inset: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    borderRadius: 16,
-                    background: feedback.correct ? 'rgba(34,215,123,0.15)' : 'rgba(240,74,87,0.15)',
-                    pointerEvents: 'none', zIndex: 10,
-                  }}
-                >
-                  <span style={{
-                    fontFamily: '"Cinzel Decorative", serif', fontWeight: 700, fontSize: 36,
-                    color: feedback.correct ? '#27AE60' : '#C0392B',
-                  }}>
-                    {feedback.correct ? '✓ +1' : '✗'}
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
+              <p style={{
+                fontFamily: '"Inter", system-ui, sans-serif',
+                fontSize: 9,
+                letterSpacing: '0.3em',
+                color: 'rgba(201,168,76,0.4)',
+                marginBottom: 12,
+              }}>
+                PROBLEM
+              </p>
+              <UncopyableText
+                text={`"${question.question}"`}
+                style={{
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontSize: 'clamp(14px, 1.8vw, 17px)',
+                  color: '#F5ECD0',
+                  lineHeight: 1.8,
+                }}
+              />
+            </motion.div>
 
-
-
-        {question && (
-          <form onSubmit={handleAnswer} style={{ width: '100%', maxWidth: 448, display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <input
-              ref={inputRef}
-              id="wildcard-answer-input"
-              type="text"
-              placeholder="Type your answer…"
-              value={answer}
-              onChange={e => setAnswer(e.target.value)}
-              autoComplete="off"
-              autoFocus
-              style={{
-                padding: '12px', borderRadius: 4, fontFamily: '"IM Fell English", serif', fontSize: 14,
-                background: '#0A0A08', border: '1px solid rgba(201,168,76,0.3)', color: '#F5ECD0',
-                outline: 'none',
-              }}
-            />
-            <div style={{ display: 'flex', gap: 12 }}>
-              <button id="wildcard-submit-btn" type="submit" disabled={loading || !answer.trim()} 
-                style={{ flex: 1, background: '#C9A84C', color: '#08080E', border: 'none', padding: '12px 16px', borderRadius: 4, fontFamily: '"Cinzel", serif', fontWeight: 700, cursor: 'pointer', opacity: loading || !answer.trim() ? 0.5 : 1 }}>
-                {loading ? '...' : 'Submit'}
+            {/* Answer form */}
+            <form onSubmit={handleAnswer} style={{ width: '100%', maxWidth: 520, display: 'flex', gap: 10 }}>
+              <input
+                ref={inputRef}
+                id="wildcard-answer-input"
+                type="text"
+                placeholder="Type your answer…"
+                value={answer}
+                onChange={e => setAnswer(e.target.value)}
+                autoComplete="off"
+                autoFocus
+                style={{
+                  flex: 1,
+                  padding: '13px 16px',
+                  borderRadius: 2,
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontSize: 15,
+                  background: '#0A0A08',
+                  border: '1px solid rgba(201,168,76,0.3)',
+                  color: '#F5ECD0',
+                  outline: 'none',
+                }}
+              />
+              <button
+                id="wildcard-submit-btn"
+                type="submit"
+                disabled={loading || !answer.trim()}
+                style={{
+                  background: '#C9A84C',
+                  color: '#080808',
+                  border: 'none',
+                  padding: '13px 24px',
+                  borderRadius: 2,
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontWeight: 700,
+                  fontSize: 10,
+                  letterSpacing: '0.2em',
+                  cursor: loading || !answer.trim() ? 'not-allowed' : 'pointer',
+                  opacity: loading || !answer.trim() ? 0.5 : 1,
+                  minWidth: 90,
+                }}
+              >
+                {loading ? '...' : 'SUBMIT'}
               </button>
+            </form>
+
+            {/* One-attempt warning */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              background: 'rgba(192,57,43,0.12)',
+              border: '2px solid rgba(192,57,43,0.5)',
+              borderRadius: 2,
+              padding: '10px 18px',
+            }}>
+              <span style={{ fontSize: 16 }}>⚠</span>
+              <span style={{
+                fontFamily: '"Inter", system-ui, sans-serif',
+                fontSize: 9,
+                letterSpacing: '0.22em',
+                color: '#C0392B',
+              }}>
+                ONE ATTEMPT. NO SECOND CHANCE.
+              </span>
             </div>
-          </form>
+          </>
         )}
       </div>
 
