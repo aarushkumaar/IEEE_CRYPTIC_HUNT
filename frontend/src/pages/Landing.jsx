@@ -101,7 +101,7 @@ function SandParticles() {
 const getFrameUrl = (frameIndex) => {
   const frameNumber = 87054 + frameIndex
   const padded = String(frameNumber).padStart(8, '0')
-  return `/assets/tomb_opening_1/Timeline 1_${padded}.jpg`
+  return `/assets/tomb_opening/tomb${padded}.jpg`
 }
 
 // Tomb opening: 170 frames
