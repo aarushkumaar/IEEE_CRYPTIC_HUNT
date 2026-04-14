@@ -9,35 +9,52 @@ function shuffle(arr) {
   return arr;
 }
 
-/* ── Fetch questions by difficulty (Firestore) ───────────────────── */
-async function getByDifficulty(difficulty, is_wildcard, needed) {
+const SUITS = ['spades', 'hearts', 'diamonds', 'clubs'];
+
+/* ── Pick 1 random question for a specific difficulty + suit ─────── */
+async function getOneBySuit(difficulty, suit) {
   const snapshot = await db.collection('questions')
     .where('difficulty', '==', difficulty)
-    .where('isWildcard', '==', is_wildcard)
+    .where('isWildcard', '==', false)
+    .where('suit', '==', suit)
     .get();
 
-  if (snapshot.empty || snapshot.docs.length < needed) {
-    throw new Error(
-      `Not enough ${difficulty} questions (wildcard=${is_wildcard}). ` +
-      `Need ${needed}, found ${snapshot.docs.length}.`
-    );
+  if (snapshot.empty) {
+    throw new Error(`No ${difficulty} questions found for suit "${suit}".`);
   }
 
   const ids = snapshot.docs.map(doc => doc.id);
-  return shuffle(ids).slice(0, needed);
-
+  return shuffle(ids)[0]; // pick 1 at random
 }
 
-/* ── Build 13-element queue: 4 easy + 4 medium + 4 hard + 1 wildcard ─ */
+/* ── Pick 1 random wildcard question ────────────────────────────── */
+async function getOneWildcard() {
+  const snapshot = await db.collection('questions')
+    .where('isWildcard', '==', true)
+    .get();
+
+  if (snapshot.empty) {
+    throw new Error('No wildcard questions found.');
+  }
+
+  const ids = snapshot.docs.map(doc => doc.id);
+  return shuffle(ids)[0];
+}
+
+/* ── Build 13-element queue: 4 easy + 4 medium + 4 hard + 1 wildcard ─
+   Selection: 1 random per suit per difficulty phase,
+              1 random from the full wildcard pool.              ──── */
 export async function buildQueue(userId) {
-  const [easy, medium, hard, wildcard] = await Promise.all([
-    getByDifficulty('easy',   false, 4),
-    getByDifficulty('medium', false, 4),
-    getByDifficulty('hard',   false, 4),
-    getByDifficulty('hard',   true,  1),  // wildcard questions have difficulty=hard
+  // Fire all suit queries for every phase in parallel
+  const [easyIds, mediumIds, hardIds, wildcardId] = await Promise.all([
+    Promise.all(SUITS.map(suit => getOneBySuit('easy', suit))),
+    Promise.all(SUITS.map(suit => getOneBySuit('medium', suit))),
+    Promise.all(SUITS.map(suit => getOneBySuit('hard', suit))),
+    getOneWildcard(),
   ]);
 
-  const queue     = [...easy, ...medium, ...hard, ...wildcard];
+  // Order: easy(♠♥♦♣) → medium(♠♥♦♣) → hard(♠♥♦♣) → wildcard
+  const queue = [...easyIds, ...mediumIds, ...hardIds, wildcardId];
   const triesUsed = new Array(13).fill(0);
 
   await db.collection('sessions').doc(userId).set({
@@ -47,7 +64,6 @@ export async function buildQueue(userId) {
     triesUsed,
     phaseScores: [0, 0, 0, 0],
   }, { merge: true });
-
 
   return queue;
 }
