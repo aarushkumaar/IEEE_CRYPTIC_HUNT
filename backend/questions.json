@@ -1,376 +1,43 @@
 [
   {
-    "suit": "spades",
-    "card_number": 1,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "Given an empty stack, perform: push(3), push(5), pop(), push(2), push(8), pop(), push(1). What are the final contents of the stack from bottom to top?",
-    "answers": [
-      "3 2 1",
-      "321",
-      "3, 2, 1"
-    ],
-    "hints": [
-      "A stack is LIFO — last in, first out.",
-      "Track each operation one by one."
-    ]
-  },
-  {
-    "suit": "spades",
-    "card_number": 2,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "What is the output?\n#include<iostream>\nusing namespace std;\nint main(){\n  int x = 10;\n  int y = ~x;\n  cout << y;\n}",
-    "answers": [
-      "-11"
-    ],
-    "hints": [
-      "~ is the bitwise NOT operator.",
-      "~x = -(x+1) for integers."
-    ]
-  },
-  {
-    "suit": "hearts",
-    "card_number": 1,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "What is the output?\nint n=6, count=0;\nfor(int i=1;i<=n;i++)\n  for(int j=i;j<=n;j+=i)\n    count++;\ncout<<count;",
-    "answers": [
-      "14"
-    ],
-    "hints": [
-      "This counts the number of divisor pairs.",
-      "For each i, count how many multiples of i are <= 6."
-    ]
-  },
-  {
-    "suit": "hearts",
-    "card_number": 2,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "What property must a problem have for Binary Search to be applicable?",
-    "answers": [
-      "monotonicity",
-      "monotonic",
-      "sorted",
-      "sorted order"
-    ],
-    "hints": [
-      "Think about what the search space must look like.",
-      "The elements must be arranged in a specific order."
-    ]
-  },
-  {
-    "suit": "diamonds",
-    "card_number": 1,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "Complete the phrase: 'Mujhe hurt ho raha hai _____ _____'",
-    "answers": [
-      "big boss",
-      "bigg boss"
-    ],
-    "hints": [
-      "It is a famous Indian reality TV show.",
-      "Hosted by Salman Khan."
-    ]
-  },
-  {
     "suit": "diamonds",
     "card_number": 2,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "What is the longest-running animated television show in the United States?",
-    "answers": [
-      "the simpsons",
-      "simpsons"
-    ],
-    "hints": [
-      "Set in a town called Springfield.",
-      "First aired in 1989."
-    ]
-  },
-  {
-    "suit": "clubs",
-    "card_number": 1,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "What is the original name of the first Harry Potter book (not the American version)?",
-    "answers": [
-      "harry potter and the philosopher's stone",
-      "harry potter and the philosophers stone",
-      "philosopher's stone",
-      "philosophers stone"
-    ],
-    "hints": [
-      "The American version changed one word.",
-      "It involves an ancient alchemical object."
-    ]
-  },
-  {
-    "suit": "clubs",
-    "card_number": 2,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "In the movie Up, where did Ellie and Carl always want to go?",
-    "answers": [
-      "paradise falls"
-    ],
-    "hints": [
-      "It is a waterfall in South America.",
-      "Inspired by Angel Falls in Venezuela."
-    ]
-  },
-  {
-    "suit": "spades",
-    "card_number": 3,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "[CYBERSECURITY — EASY]\nHow many times does the letter 'E' appear in this ciphertext?\n\nWKLV LV D VHFUHW PHVVDJH",
-    "answers": [
-      "3"
-    ],
-    "hints": [
-      "Count only the capital letter E.",
-      "Do not count lowercase or the letter in the question itself."
-    ]
-  },
-  {
-    "suit": "hearts",
-    "card_number": 3,
     "difficulty": "easy",
     "round": 1,
     "is_wildcard": false,
     "max_tries": 2,
     "question": "[CYBERSECURITY — EASY]\nSome specific cryptographic techniques used to protect data include ____ and hashing.\n\nFill in the blank (one word).",
-    "answers": [
-      "encryption"
-    ],
-    "hints": [
-      "It converts plaintext into an unreadable format.",
-      "Used alongside hashing to protect data at rest and in transit."
-    ]
-  },
-  {
-    "suit": "diamonds",
-    "card_number": 3,
-    "difficulty": "easy",
-    "round": 1,
-    "is_wildcard": false,
-    "max_tries": 2,
-    "question": "[CYBERSECURITY — EASY]\nAlice encrypts a message by shifting each letter forward by the number of vowels in \"EDUCATION\", then reverses the result.\n\nEncrypted message: URYYB DLROW\n\nWhat is the original plaintext phrase?",
-    "answers": [
-      "hello world"
-    ],
-    "hints": [
-      "Count the distinct vowels in EDUCATION: E, U, A, I, O = 5 vowels.",
-      "Shift each letter of the encrypted text BACK by 5 positions, then reverse."
-    ]
+    "answers": ["encryption"]
   },
   {
     "suit": "clubs",
-    "card_number": 3,
+    "card_number": 2,
     "difficulty": "easy",
     "round": 1,
     "is_wildcard": false,
     "max_tries": 2,
     "question": "[CYBERSECURITY — EASY]\n\"HELLO\" becomes \"KHOOR\". What type of cipher is this?",
-    "answers": [
-      "caesar cipher",
-      "caesar",
-      "caesar's cipher"
-    ],
-    "hints": [
-      "Each letter is shifted by a fixed number of positions.",
-      "Julius Caesar used it to encode his messages."
-    ]
-  },
-  {
-    "suit": "spades",
-    "card_number": 7,
-    "difficulty": "medium",
-    "round": 2,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "In the linked list reverse function below, what is the missing line?\nNode* prev=NULL; Node* curr=head;\nwhile(curr!=NULL){\n  Node* next=curr->next;\n  curr->next=prev;\n  prev=curr;\n  // missing line\n}\nreturn prev;",
-    "answers": [
-      "curr=next",
-      "curr = next"
-    ],
-    "hints": [
-      "You need to advance the current pointer.",
-      "Without this line, the loop never moves forward."
-    ]
-  },
-  {
-    "suit": "spades",
-    "card_number": 8,
-    "difficulty": "medium",
-    "round": 2,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "In this binary search implementation, which line number has the bug?\nint bs(vector<int>&v,int target){\n  int l=0,r=v.size()-1;    //line 1\n  while(l<r){               //line 2\n    int mid=(l+r)/2;        //line 3\n    if(v[mid]==target) return mid; //line 4\n    else if(v[mid]<target) l=mid;  //line 5\n    else r=mid-1;           //line 6\n  }\n  return -1;\n}",
-    "answers": [
-      "5",
-      "line 5"
-    ],
-    "hints": [
-      "The bug causes an infinite loop.",
-      "When v[mid] < target, l should move past mid."
-    ]
-  },
-  {
-    "suit": "hearts",
-    "card_number": 7,
-    "difficulty": "medium",
-    "round": 2,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "What is the output?\nint a=10;\ncout<<(a<<1)+(a>>1);",
-    "answers": [
-      "25"
-    ],
-    "hints": [
-      "<< 1 multiplies by 2, >> 1 divides by 2.",
-      "10*2 = 20, 10/2 = 5."
-    ]
-  },
-  {
-    "suit": "hearts",
-    "card_number": 8,
-    "difficulty": "medium",
-    "round": 2,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "What is the output?\nvector<int> v={-2,-3,-1,-5};\nint sum=0, maxi=INT_MIN;\nfor(int x:v){\n  sum+=x;\n  maxi=max(maxi,sum);\n  if(sum<0) sum=0;\n}\ncout<<maxi;",
-    "answers": [
-      "-1"
-    ],
-    "hints": [
-      "This is Kadane's algorithm.",
-      "The subarray [-1] gives the maximum sum."
-    ]
-  },
-  {
-    "suit": "diamonds",
-    "card_number": 7,
-    "difficulty": "medium",
-    "round": 2,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "'One man's ______ is another man's ______.' A best-selling author wrote a book with these two words in its title, adapted into a movie set in a famous place of worship, starring an Academy Award winner who was one of the first Hollywood stars to publicly acknowledge contracting COVID-19. Name the book.",
-    "answers": [
-      "angels and demons",
-      "angels & demons"
-    ],
-    "hints": [
-      "The author also wrote The Da Vinci Code.",
-      "The movie stars Tom Hanks and is set in the Vatican."
-    ]
-  },
-  {
-    "suit": "diamonds",
-    "card_number": 8,
-    "difficulty": "medium",
-    "round": 2,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "In A Good Girl's Guide to Murder, who was actually responsible for Andie Bell's initial disappearance?",
-    "answers": [
-      "elliot ward",
-      "elliot"
-    ],
-    "hints": [
-      "It was not Sal Singh.",
-      "He had a secret involving Andie."
-    ]
+    "answers": ["caesar cipher", "caesar", "caesar's cipher"]
   },
   {
     "suit": "clubs",
-    "card_number": 7,
-    "difficulty": "medium",
-    "round": 2,
+    "card_number": 1,
+    "difficulty": "easy",
+    "round": 1,
     "is_wildcard": false,
-    "max_tries": 3,
-    "question": "This MCU character kills villains but is still seen as a hero by some. He is ______.",
-    "answers": [
-      "deadpool",
-      "wade wilson"
-    ],
-    "hints": [
-      "He breaks the fourth wall.",
-      "He wears red and heals from any wound."
-    ]
+    "max_tries": 2,
+    "question": "[CYBERSECURITY — EASY]\nAlice encrypts a message by shifting each letter forward by the number of vowels in \"EDUCATION\", then reverses the result.\n\nEncrypted message: URYYB DLROW\n\nWhat is the original plaintext phrase?",
+    "answers": ["hello world"]
   },
   {
-    "suit": "clubs",
-    "card_number": 8,
-    "difficulty": "medium",
-    "round": 2,
+    "suit": "diamonds",
+    "card_number": 1,
+    "difficulty": "easy",
+    "round": 1,
     "is_wildcard": false,
-    "max_tries": 3,
-    "question": "In Brooklyn Nine-Nine, who never won the Halloween Heist?",
-    "answers": [
-      "charles boyle",
-      "boyle",
-      "charles"
-    ],
-    "hints": [
-      "He is Jake's best friend.",
-      "He is obsessed with food."
-    ]
-  },
-  {
-    "suit": "spades",
-    "card_number": 9,
-    "difficulty": "medium",
-    "round": 2,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "[CYBERSECURITY — MEDIUM]\nCiphertext: NEMKLLPIFJSKWRK\nKey length: 3. The key is a common English word.\nThe plaintext is 15 letters long with exactly 6 vowels.\n\nFind the plaintext and the key. Answer in format: PLAINTEXT / KEY",
-    "answers": [
-      "revolutionstart / war",
-      "revolution start / war"
-    ],
-    "hints": [
-      "Try common 3-letter words as Vigenère keys.",
-      "The key 'WAR' applied to the ciphertext gives the answer."
-    ]
-  },
-  {
-    "suit": "hearts",
-    "card_number": 9,
-    "difficulty": "medium",
-    "round": 2,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "[CYBERSECURITY — MEDIUM]\nCiphertext: ZPVUI — Vigenère cipher with a 2-letter keyword of identical letters.\nThe plaintext is a common 5-letter word with exactly one vowel.\n\nFind the keyword and plaintext. Answer in format: KEYWORD / PLAINTEXT",
-    "answers": [
-      "bb / youth",
-      "BB / YOUTH"
-    ],
-    "hints": [
-      "Two identical letters as key — think of a repeated single character.",
-      "The key 'BB' (shift by 1) decodes the ciphertext."
-    ]
+    "max_tries": 2,
+    "question": "[CYBERSECURITY — EASY]\nHow many times does the letter 'E' appear in this ciphertext?\n\nWKLV LV D VHFUHW PHVVDJH",
+    "answers": ["3"]
   },
   {
     "suit": "diamonds",
@@ -379,15 +46,8 @@
     "round": 2,
     "is_wildcard": false,
     "max_tries": 3,
-    "question": "[CYBERSECURITY — MEDIUM]\nA message was encrypted using: f(x) = (x+7) mod 26, then a Caesar shift of +3.\nCiphertext: DRSXU\n\nThe plaintext is a 5-letter word relating to mental activity with exactly 1 vowel.\nWhat is the plaintext?",
-    "answers": [
-      "think",
-      "THINK"
-    ],
-    "hints": [
-      "Reverse the Caesar +3 shift first, then reverse the affine f(x)=(x+7) mod 26.",
-      "The combined shift is +10 total. Reverse by subtracting 10 from each letter."
-    ]
+    "question": "[CYBERSECURITY — MEDIUM]\nVisit the site www.youtube.com and find its SSL certificate public key fingerprint/hash.",
+    "answers": ["50f24b2fe0fd7e361732c91855e002fc2c1f9baa40f49fd62fc28f17764fdb77"]
   },
   {
     "suit": "clubs",
@@ -396,14 +56,470 @@
     "round": 2,
     "is_wildcard": false,
     "max_tries": 3,
-    "question": "[CYBERSECURITY — MEDIUM — API ENDPOINT CHALLENGE]\nAnalyze this API response from api.shadow-corp.io/v1/auth/status:\n\n{\n  \"status\": \"authenticated\",\n  \"token\": \"N51_99_W000_74\",\n  \"access\": \"RESTRICTED\"\n}\n\nThe token value N51_99_W000_74 encodes geographic coordinates of a real-world location.\nFind the significant year associated with that location.\n\nHint: Parse N 51°99' W 000°74' and find the closest landmark.",
-    "answers": [
-      "1877"
-    ],
+    "question": "[CYBERSECURITY — MEDIUM]\nA 5-letter word is encrypted using:\nStep 1 — Letter to Number: A=1, B=2 … Z=26\nStep 2 — f(x) = (x + 7) mod 26 (if result = 0, take as 26)\nStep 3 — Caesar Cipher with shift of +3\nCiphertext: DRSXU\n\nConstraints:\n1. The plaintext is a 5-letter English word\n2. Relates to mental activity\n3. Contains exactly 1 vowel\n4. No letters repeat\n5. Sum of letter positions = 62\n\nFind the original plaintext.",
+    "answers": ["think", "THINK"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 9,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[CYBERSECURITY — MEDIUM — API ENDPOINT CHALLENGE]\nAnalyze this API response from api.shadow-corp.io/v1/auth/status:\n\n{\n  \"status\": \"authenticated\",\n  \"token\": \"N51_99_W000_74\",\n  \"access\": \"RESTRICTED\"\n}\n\nThe token value encodes geographic coordinates of a real-world location.\nFind the significant year associated with that location.",
+    "answers": ["1877"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 9,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[CYBERSECURITY — MEDIUM]\nCiphertext: ZPVUI — Vigenère cipher with a 2-letter keyword of identical letters.\nThe plaintext is a common 5-letter word with exactly one vowel.\nThe sum of alphabetical positions of the plaintext letters is a prime number.\n\nFind the keyword and plaintext. Answer in format: KEYWORD / PLAINTEXT",
+    "answers": ["bb / youth", "BB / YOUTH"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 5,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[CYBERSECURITY — HARD]\nCiphertext ASCII: [2, 23, 8, 25, 19, 4]\nKey ASCII: [5, 10, 1, 8, 15, 12]\n\nXOR the ciphertext with the key to recover the plaintext letters. What 7-letter English word do you get?",
+    "answers": ["cryptic", "CRYPTIC"],
     "hints": [
-      "The coordinates point to a location in the UK.",
-      "Look up what significant event happened at those coordinates in the 1800s."
+      "XOR each pair of values.",
+      "Convert the results to ASCII characters."
     ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 5,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[CYBERSECURITY — HARD]\nCiphertext: XLUWBWHFKLHSFQH\n\nConstraints:\n1. Plaintext is 15 letters (no spaces)\n2. Contains exactly 6 vowels\n3. Uses Caesar Cipher with shift of +3\n4. Related to this competition\n5. The ciphertext is jumbled\n\nFind the plaintext.",
+    "answers": ["cryptichuntieee", "CRYPTICHUNTIEEE"],
+    "hints": [
+      "Try reversing the Caesar shift.",
+      "Look for a phrase related to the competition theme."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 5,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[CYBERSECURITY — HARD]\nYou are exploring the Vegathon post on Instagram at: https://www.instagram.com/ieeegtbit\n\nThe post contains a Morse code message. Your task:\n1. Decode the Morse code from the post\n2. The decoded message is a sentence with multiple words\n3. Identify the third word in the decoded message",
+    "answers": ["stay", "STAY"],
+    "hints": [
+      "Morse code uses dots and dashes.",
+      "Look carefully at the post content."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 5,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[CYBERSECURITY — HARD]\nA secret passkey has been hidden in this game's HTML source code.\n\nInspect the page source (right-click → View Page Source, or press Ctrl+U in your browser) and search for the hidden passkey string.\n\nIt will appear as a data attribute on the game container element.\n\nWhat is the hidden passkey?",
+    "answers": ["GREAT_HUNT_IT_IS", "great_hunt_it_is"],
+    "hints": [
+      "Look for data attributes in HTML tags.",
+      "Search for 'data-' attributes in the source."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "max_tries": 1,
+    "question": "[CYBERSECURITY — WILDCARD HARD — THE VOLTAIC GAMBIT]\nScenario: Alice is sending a sensitive system override command to Bob. You have intercepted the public parameters and the encrypted packet. Break through three distinct layers of modern cryptography.\n\nLayer 1: The Key Exchange (X25519)\n- Curve: Curve25519 over Fp where p = 2^255 - 19\n- Alice's Private Key (a): 3\n- Bob's Public Key (K_B x-coordinate): 9\n- Task: Compute the shared secret S_x using Montgomery scalar multiplication\n\nLayer 2: Key Derivation (HKDF-SHA256)\n- IKM: S_x (as 32-byte little-endian)\n- Salt: ASCII string 'VOLT'\n- Info: ASCII string 'CMD-ENCRYPT'\n- Extract: PRK = HMAC-SHA256(Salt, IKM)\n- Expand: OKM = HMAC-SHA256(PRK, Info + 0x01)\n- Final Key: First 128 bits (16 bytes) of OKM\n\nLayer 3: Authenticated Encryption (AES-128-GCM)\n- Nonce (96-bit): DEADBEEF0000111122223333 (Hex)\n- AAD: v1.0.4\n- Ciphertext (Hex): a3d9f18c2b5e7d9a\n- Auth Tag (Hex): 5f6a8b9c0d1e2f3a4b5c6d7e8f9a0b1c\n\nWhat is the 8-letter uppercase English word used as the override command?",
+    "answers": ["shutdown", "SHUTDOWN", "JOKR-AMTX-9261"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 4,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[APTITUDE — EASY]\nA clock strikes once at 1 o'clock, twice at 2 o'clock, thrice at 3 o'clock, and so on. If it takes 12 seconds to strike at 3 o'clock, what is the time taken to strike at 6 o'clock?",
+    "answers": ["24 seconds", "24 sec", "24"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 4,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[APTITUDE — EASY]\nYou have a standard 8×8 chessboard where each square is 1×1 unit. You drop a circular coin with diameter 1 unit randomly. What is the probability that the coin covers parts of exactly 4 different squares?",
+    "answers": ["0", "0.0"]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 4,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[APTITUDE — EASY]\nA runner runs 2 km at 10 km/h, rests for 10 minutes, then runs 3 km at 15 km/h. Find the average speed for the entire journey.",
+    "answers": ["10 km/h", "10 kmh", "10"]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 4,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[APTITUDE — EASY]\nA can do a work in 10 days, B in 15 days. They work together for 2 days, then A leaves. Remaining work is done by B. Find total days to complete the work.",
+    "answers": ["8 days", "8"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 6,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — MEDIUM]\nCount the eyes that never blink on the bridge where Gandhi walked, but now the weavers weep. The number leads to the spice that burns without fire.",
+    "answers": ["7"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 6,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — MEDIUM]\nA standard 52-card deck is shuffled. You are told the top two cards are not both Red. What is the probability that both cards are Black?\n\nOptions: A) 25/102  B) 26/102  C) 26/77  D) 25/77",
+    "answers": ["c", "26/77"]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 6,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — MEDIUM]\nIf 9X6=45, 6X4=30, and 7X4=33, then what is the value of 5X3?",
+    "answers": ["16"]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 6,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — MEDIUM]\nA number leaves remainder 1 when divided by 2, 3, 4, and 5, and leaves remainder 0 when divided by 6. The smallest such number is ______.",
+    "answers": ["61"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 10,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nThree people A, B, C:\n- A says: \"B is lying\"\n- B says: \"C is lying\"\n- C says: \"A and B both are lying\"\n\nWho is telling the truth?",
+    "answers": ["c"],
+    "hints": [
+      "Assume each person tells either truth or lies consistently.",
+      "Test each possibility and check for contradictions."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 10,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nA can complete a work in 12 days, B in 18 days, C in 24 days. They start together, but A leaves after 3 days and B leaves 2 days before completion. In how many days is the work completed?",
+    "answers": ["27 days", "27"],
+    "hints": [
+      "Calculate work rates for each person.",
+      "Set up equation: work done by A + B + C = 1 (complete work)"
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 10,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\n\"In this sentence, the number of occurrences of the letter 'e' is __________.\"\n\nFill in the blank with a word (not a numeral) that makes the sentence perfectly true.",
+    "answers": ["twelve", "12"],
+    "hints": [
+      "Count the letter 'e' in different word options.",
+      "The word itself contains some 'e's, so count carefully."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 10,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nThere are three individuals: A truthteller, a liar, and a Mirror.\nMirror's rule: If the previous person told the truth, Mirror lies. If the previous person lied, Mirror tells the truth. (Mirror acts as a liar if first).\n\nJudge asks:\nTo A: \"Is B the Knave?\" → A: \"Yes\"\nTo B: \"Is A the Knight?\" → B: \"Yes\"\nTo C: \"Is B the Knave?\" → C: \"Yes\"\n\nWho is the Mirror?",
+    "answers": ["c"],
+    "hints": [
+      "Track whether each response is truth or lie.",
+      "Apply Mirror's rule to determine identity."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 14,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nNumber of solutions of: |x| = x²",
+    "answers": ["2"],
+    "hints": [
+      "Consider both positive and negative x.",
+      "Sketch both functions and find intersections."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 14,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nA car travels uphill at 50 km/h for 2 hours, then downhill at 100 km/h for 1 hour. Calculate the true average speed over the entire 3-hour trip, round to nearest integer, then add 1.",
+    "answers": ["68"],
+    "hints": [
+      "Average speed = total distance / total time.",
+      "Distance = 50×2 + 100×1 = 200 km."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 14,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nGiven: f(x) = x² - 7x + 12 and g(x) = f(x+1).\nFind g(3), then subtract the largest prime factor of the result from it.\nWhat integer do you get?",
+    "answers": ["2"],
+    "hints": [
+      "First, find g(x) = f(x+1).",
+      "Then calculate g(3) and its prime factors."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 14,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nIs there a deterministic strategy that guarantees at least two correct guesses in every possible hat configuration for three people (A sees B and C, B sees only C, C sees no one) who must simultaneously guess their own hat color (black or white)?\n\nIf yes, describe it precisely; if no, prove it is impossible.",
+    "answers": ["no"],
+    "hints": [
+      "Consider all possible hat configurations.",
+      "Check if any strategy can guarantee 2 correct guesses in all cases."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 19,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nA particle's motion:\n- Travels first 60 m with speed increasing uniformly from 0 to 12 m/s\n- Continues at constant speed 12 m/s for 10 seconds\n- Decelerates uniformly to rest in 6 seconds\n- Reverses direction and moves back at constant speed = half of max speed for 8 seconds\n\nNet displacement from starting point = ______ m",
+    "answers": ["168"],
+    "hints": [
+      "Calculate each phase separately.",
+      "Sum displacements, noting direction changes."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 19,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nSix logicians sit around a circular table. Each whispers to the next (clockwise): \"At least one of us is wearing a black hat.\" All wear black or white hats. After hearing the chain, the first deduces his hat color correctly.\n\nAssuming perfect logicians, what pattern of hat colors (clockwise from first) satisfies this?",
+    "answers": ["white black white black white black", "alternating", "black white black white black white"],
+    "hints": [
+      "Consider statements about existence of black hats.",
+      "Check which patterns allow the first to deduce."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 19,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nIf 'PQRS' stands for 'move', which of the following stands for 'stone'?\n\nOptions: A) TUVW  B) RSTU  C) UVWX  D) QRST",
+    "answers": ["tuvw", "TUVW", "a"],
+    "hints": [
+      "Look at the pattern between letters and words.",
+      "Each letter is shifted by a fixed amount."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 19,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nIn a certain code, COMPUTER is written as RFUVQNPC. How will PROCESSOR be written in that code?",
+    "answers": ["oqpdfsspq", "OQPDFSSPQ"],
+    "hints": [
+      "Find the encoding pattern used for COMPUTER.",
+      "Apply the same pattern to PROCESSOR."
+    ]
+  },
+  {
+    "suit": "spades",
+    "card_number": 20,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nA manufacturing unit produces two components X and Y.\nX requires 2 units of raw material A and 1 unit of B.\nY requires 1 unit of A and 3 units of B.\nInitial stock: A = 100 units, B = 120 units.\nAt least 20 units of X must be produced.\nAfter producing 20 units of X, 20 units of A are lost due to damage.\nRemaining resources used optimally to maximize total production (X + Y).\n\nFinal total production = ______",
+    "answers": ["53"],
+    "hints": [
+      "Calculate remaining resources after mandatory X production and damage.",
+      "Maximize X + Y subject to resource constraints."
+    ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 20,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[APTITUDE — HARD]\nThe village matriarch hid her fortune. The verse lists her children with numbers:\nAbel (5), Kain (12), Seth (3), Enosh (8), Mahalalel (2), Jared (15), Enoch (1), Methuselah (21).\n\nShe whispers: \"The deepest root that bears no fruit. Carry only the weight that ascends from the middle child. What is the sum of my grief?\"",
+    "answers": ["29"],
+    "hints": [
+      "Identify which children she outlived.",
+      "Find the middle child and sum accordingly."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 13,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "max_tries": 1,
+    "question": "[APTITUDE — WILDCARD HARD]\nA number is such that:\n- When divided by 2, 3, 4, 5, 6 it leaves remainder 1\n- When divided by 7 it leaves remainder 0\n- The number is less than 200\n\nThe number is ______",
+    "answers": ["JOKR-AMTX-9261"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 1,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[DSA — EASY]\nint bs(vector<int>& v, int target){\n  int l=0, r=v.size()-1;    //line 1\n  while(l < r){              //line 2\n    int mid=(l+r)/2;         //line 3\n    if(v[mid]==target) return mid; //line 4\n    else if(v[mid]<target) l=mid;  //line 5\n    else r=mid-1;            //line 6\n  }\n  return -1;\n}\nIn which line is the bug?",
+    "answers": ["5", "line 5"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 2,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[DSA — EASY]\nIn a \"Shy Graph\", a node hides (becomes invisible) if it has more than 2 neighbors. Hidden nodes still count as neighbors for others.\nGraph edges: 1-2, 1-3, 1-4, 2-3.\nWhich nodes hide?",
+    "answers": ["1 and 2", "1,2", "2 and 1", "nodes 1 and 2"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 1,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[DSA — EASY]\nA \"Reverse Queue\" flips itself every time its size becomes even.\nEnqueue 1, 2, 3, 4, 5 one by one.\nWhat is the final queue from front to back?",
+    "answers": ["4 2 1 3 5", "[4, 2, 1, 3, 5]", "4,2,1,3,5"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 2,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[DSA — EASY]\nEvery dawn, the High Scribe places the new parchment directly on top of the golden tray. When the Emperor demands a record, the Scribe finds the last item he placed — the one sitting undisturbed longest — on top. He can only remove the topmost layer.\n\nWhat is the only order in which the Scribe can remove records?",
+    "answers": ["lifo", "last in first out", "LIFO"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 7,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[DSA — MEDIUM]\nRules for Mirror Stack:\n- Stack grows upward (top = last pushed)\n- When a prime is pushed, after pushing it the entire stack is read bottom to top, reversed, and that reversed copy is pushed on top (excluding bottom element to avoid duplication)\n- Non-prime pushes work normally\n- Pop always removes from top\n\nPush 2, 3, 5. What does the stack look like top to bottom?",
+    "answers": ["5,3,2,2,2,2,3,3,2,2,2,2,3,5", "5 3 2 2 2 2 3 3 2 2 2 2 3 5", "[5,3,2,2,2,2,3,3,2,2,2,2,3,5]"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 8,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[DSA — MEDIUM]\nint riddle(int n) {\n  if (n == 0) return 1;\n  if (n == 1) return 1;\n  if (n % 2 == 0) return riddle(n/2) + riddle(n/2 - 1);\n  return riddle((n-1)/2) + riddle((n+1)/2);\n}\nA student claims riddle(6) = 13. Her professor says riddle(6) = 5. The TA says riddle(6) = 8.\nWhat is riddle(6)?",
+    "answers": ["8"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 7,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[DSA — MEDIUM]\nA complete binary tree with exactly 2026 nodes is stored in a 1-indexed array. Node at index k is colored black if the number of set bits in k is even, else red.\nHow many black nodes does the root-to-deepest-rightmost-leaf path contain? (The path includes both endpoints.)",
+    "answers": ["5"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 8,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[DSA — MEDIUM]\nA recursive function is called on a perfect binary tree of height 4 (height 0 = single node). It returns 0 for null nodes, and for any non-null node returns: left_result XOR right_result XOR (1 if node value is prime else 0). Node values are assigned level-by-level left-to-right starting from 2, incrementing by 1.\nWhat is the return value of the root call?",
+    "answers": ["0"]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 7,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[DSA — MEDIUM]\nIn a \"Jealous Graph\", a node deletes itself if more than half its neighbors get visited before it in BFS. Starting BFS from node 1 on a cycle of 6 nodes.\nHow many nodes remain after BFS?",
+    "answers": ["4"]
   },
   {
     "suit": "spades",
@@ -412,61 +528,22 @@
     "round": 3,
     "is_wildcard": false,
     "max_tries": 3,
-    "question": "What is the output of this function on an empty tree (root = NULL)?\nint height(Node* root){\n  if(!root) return -1;\n  return 1+max(height(root->left),height(root->right));\n}",
-    "answers": [
-      "-1"
-    ],
+    "question": "[DSA — HARD]\nWhat is the output of this function on an empty tree (root = NULL)?\nint height(Node* root){\n  if(!root) return -1;\n  return 1+max(height(root->left),height(root->right));\n}",
+    "answers": ["-1"],
     "hints": [
       "The function handles the base case first.",
       "What does it return when root is NULL?"
     ]
   },
   {
-    "suit": "spades",
-    "card_number": 12,
-    "difficulty": "hard",
-    "round": 3,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "What is the output?\nvector<int> v={1,2,3,4,5};\nfor(int i=0;i<v.size();i++){\n  reverse(v.begin(),v.begin()+i);\n}\nfor(int x:v) cout<<x<<' ';",
-    "answers": [
-      "4 2 1 3 5",
-      "4 2 1 3 5 "
-    ],
-    "hints": [
-      "Trace i=0,1,2,3,4 one by one.",
-      "i=0 reverses nothing, i=1 reverses first 1 element..."
-    ]
-  },
-  {
     "suit": "hearts",
     "card_number": 11,
     "difficulty": "hard",
     "round": 3,
     "is_wildcard": false,
     "max_tries": 3,
-    "question": "What is the output?\nint x=1;\ncout<<(x-- - --x);",
-    "answers": [
-      "undefined",
-      "undefined behavior",
-      "ub"
-    ],
-    "hints": [
-      "Multiple modifications of x in one expression.",
-      "This violates sequence point rules in C++."
-    ]
-  },
-  {
-    "suit": "hearts",
-    "card_number": 12,
-    "difficulty": "hard",
-    "round": 3,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "What is the output?\nint a=10;\nint& f(int& x){ x+=5; return x; }\nint main(){\n  int b=f(a)+f(a);\n  cout<<a<<' '<<b;\n}",
-    "answers": [
-      "20 35"
-    ],
+    "question": "[DSA — HARD]\nint a = 10;\nint& f(int& x) {\n  x += 5;\n  return x;\n}\nint main() {\n  int b = f(a) + f(a);\n  cout << a << \" \" << b;\n}\n\nFind the output.",
+    "answers": ["20 35"],
     "hints": [
       "f modifies a directly via reference.",
       "The order of evaluation of f(a)+f(a) matters."
@@ -479,32 +556,11 @@
     "round": 3,
     "is_wildcard": false,
     "max_tries": 3,
-    "question": "What is the currency used in Skypiea in One Piece?",
-    "answers": [
-      "extol"
-    ],
+    "question": "[DSA — HARD]\nA \"Forgetful Recursion\" forgets every 3rd call it makes (returns 0 instead).\nf(n) = f(n-1) + f(n-2), f(1)=1, f(0)=1.\nCalls are counted globally.\nWhat is f(4)?",
+    "answers": ["3"],
     "hints": [
-      "Skypiea is an island in the sky.",
-      "The currency is ring-shaped."
-    ]
-  },
-  {
-    "suit": "diamonds",
-    "card_number": 12,
-    "difficulty": "hard",
-    "round": 3,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "If Harry only casts the Patronus in Prisoner of Azkaban because he already saw it happen — a closed time loop — who cast the Patronus the very first time?",
-    "answers": [
-      "no one",
-      "nobody",
-      "no one did",
-      "paradox"
-    ],
-    "hints": [
-      "This is a bootstrap paradox.",
-      "There is no first time in a closed causal loop."
+      "Track call count globally across all recursive calls.",
+      "Every 3rd call returns 0 regardless of n."
     ]
   },
   {
@@ -514,96 +570,39 @@
     "round": 3,
     "is_wildcard": false,
     "max_tries": 3,
-    "question": "Who was the first person to ever play Spider-Man on screen?",
-    "answers": [
-      "nicholas hammond",
-      "nick hammond"
-    ],
+    "question": "[DSA — HARD]\nYou push integers 1 through 8 one at a time (in order) onto a stack, but you are allowed to pop and enqueue into a queue at any moment before the next push. After all pushes and some pops-to-queue, you dequeue all elements from the queue.\n\nWhich of the following output sequences from the queue is impossible?\nA) 1 2 3 4 5 6 7 8\nB) 8 7 6 5 4 3 2 1\nC) 1 3 5 7 8 6 4 2\nD) 4 3 2 1 5 6 7 8",
+    "answers": ["b", "8 7 6 5 4 3 2 1"],
     "hints": [
-      "It was a 1970s live-action TV series, not a film.",
-      "It was an American television show."
+      "Think about what orderings are achievable with stack+queue.",
+      "Consider what happens when you push all then pop all."
     ]
   },
   {
-    "suit": "clubs",
+    "suit": "spades",
     "card_number": 12,
     "difficulty": "hard",
     "round": 3,
     "is_wildcard": false,
     "max_tries": 3,
-    "question": "When was the son of the actor who played Vito Corleone's youngest son in The Godfather born? Answer in format DD/MM/YYYY.",
-    "answers": [
-      "25/01/2001"
-    ],
+    "question": "[DSA — HARD]\nYou are managing a social media platform.\nEach user follows some influencers. Every day a user copies the most frequent post type from influencers they follow. If multiple types have same frequency, choose lexicographically smallest.\nQueries:\nUPDATE_POST user type\nFOLLOW u v\nUNFOLLOW u v\nQUERY u\n\nFor three consecutive QUERY operations on a user who follows influencers all posting 'fashion', what is the output?",
+    "answers": ["fashion\nfashion\nfashion", "fashion"],
     "hints": [
-      "Identify which son is the youngest in The Godfather.",
-      "Then find who played him and look up his son's birth date."
-    ]
-  },
-  {
-    "suit": "spades",
-    "card_number": 5,
-    "difficulty": "hard",
-    "round": 3,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "[CYBERSECURITY — HARD — THE INSIDER LEAK]\nYou have intercepted 4 fragments. Combine them to find one English word.\n\nFragment 1 (Caesar +1): Decode: \"Uifsf jt op tfdsfu jo uijt nfttbhf. Cvu uifsf jt b lfz. Lfz jt tijgufe cz 1.\"\n\nFragment 2 (HEX): 4A:6F:68:6E\n\nFragment 3 (Number code, NOT A=1): 19-7-3-20\n\nFragment 4 (Access log, read in reverse): NHOJ\n\nAll four fragments point to the same English word. What is it?",
-    "answers": [
-      "john"
-    ],
-    "hints": [
-      "Fragment 2: convert each hex byte to ASCII.",
-      "All fragments encode the same 4-letter name."
+      "Find the most frequent post type among followed influencers.",
+      "Lexicographically smallest breaks ties."
     ]
   },
   {
     "suit": "hearts",
-    "card_number": 5,
+    "card_number": 12,
     "difficulty": "hard",
     "round": 3,
     "is_wildcard": false,
     "max_tries": 3,
-    "question": "[CYBERSECURITY — HARD — THE VOLTAIC GAMBIT]\nPerform 3-layer decryption:\n\nLayer 1 — Diffie-Hellman simplified:\na = 3, public_key_B = 9. Compute shared_secret = a × public_key_B mod 26.\n\nLayer 2 — Shift cipher:\nApply shared_secret as a reverse Caesar shift to the ciphertext.\n\nLayer 3 — AES hint:\nThe decrypted command is an 8-letter word that means 'power off'.\n\nWhat is the command?",
-    "answers": [
-      "shutdown",
-      "SHUTDOWN"
-    ],
+    "question": "[DSA — HARD]\nAn assassin runs this algorithm:\nfor (i = n; i > 1; i = i/2)    // Loop A\n  for (j = 0; j < i; j++)      // Loop B\n    for (k = 0; k < n; k += j+1) // Loop C\n      work();\n\nHe claims O(n log n). His rival claims O(n log² n). A third party claims O(n²).\nWhat is the correct time complexity?",
+    "answers": ["O(n log n H(n))", "o(n log n h(n))", "O(n logn H(n))"],
     "hints": [
-      "3 × 9 = 27. 27 mod 26 = 1.",
-      "Reverse shift by 1 gives you a common 8-letter power command."
-    ]
-  },
-  {
-    "suit": "diamonds",
-    "card_number": 5,
-    "difficulty": "hard",
-    "round": 3,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "[CYBERSECURITY — HARD — SOURCE CODE HUNT]\nA secret passkey has been hidden in this game's HTML source code.\n\nInspect the page source (right-click → View Page Source, or press Ctrl+U in your browser) and search for the hidden passkey string.\n\nIt will appear as a data attribute on the game container element.\n\nWhat is the hidden passkey?",
-    "answers": [
-      "GREAT_HUNT_IT_IS"
-    ],
-    "hints": [
-      "Use Ctrl+U to view page source, or right click → View Page Source.",
-      "Search for 'GREAT' in the page source."
-    ]
-  },
-  {
-    "suit": "clubs",
-    "card_number": 5,
-    "difficulty": "hard",
-    "round": 3,
-    "is_wildcard": false,
-    "max_tries": 3,
-    "question": "[CYBERSECURITY — HARD — FORENSIC GOV ID]\nA government ID's expiry date is 31 March 2030.\n\nPerform the following:\n1. Convert to YYYYMMDD: 20300331\n2. Apply digit-wise complement (9 - d): 79699668\n3. Take last 6 digits: 699668\n4. Prefix with 76 on the last two digits: 697668\n5. Interpret as coordinates pointing to a city in India.\n\nName the city.",
-    "answers": [
-      "mandi",
-      "Mandi"
-    ],
-    "hints": [
-      "The digit-wise complement of 2 is 7, of 0 is 9, etc.",
-      "The resulting coordinates point to a city in Himachal Pradesh, India."
+      "Analyze each loop's contribution carefully.",
+      "H(n) is the harmonic number — appears from the inner sum."
     ]
   },
   {
@@ -613,14 +612,8 @@
     "round": 4,
     "is_wildcard": true,
     "max_tries": 1,
-    "question": "This character creates the problem he later tries to fix. He is ______. (Pop Culture)\n\nOR\n\nWhat is the output?\nint arr[]={10,20,30,40};\nint* p=arr;\ncout<<(p+*(p+1)/10);\n(DSA)\n\nYou will receive one of these. Answer whichever appears.",
-    "answers": [
-      "barry allen",
-      "flash",
-      "the flash",
-      "30"
-    ],
-    "hints": []
+    "question": "[DSA — WILDCARD HARD]\nYou are trapped in a hallway that loops back on itself. The floor whispers: Enter, Turn, March, About, Face, Stop.\n\nGhost rules:\n1. Every time you hear \"March\", the next step is the same as the step two whispers ago.\n2. \"About\" and \"Face\" are a pair — they cancel each other out and also silence the command spoken between them.\n3. If a command is silenced, it cannot be used in Rule 1.\n\nAfter applying the ghost's logic, the true path of whispers is: Enter, Turn, ____, Stop.\nWhat single word fills the blank?",
+    "answers": ["turn", "Turn", "TURN", "JOKR-AMTX-9261"]
   },
   {
     "suit": "clubs",
@@ -629,14 +622,183 @@
     "round": 4,
     "is_wildcard": true,
     "max_tries": 1,
-    "question": "[CYBERSECURITY — WILDCARD BONUS]\nA message was encrypted using a custom repeating-key XOR cipher with a 3-byte seed PRNG.\n\nGeneration rule:\n  k_i = (s0*7 + s1*3 + s2*5) mod 256\n  Then rotate seed: (s0, s1, s2) → (s1, s2, k_i)\n\nEncrypted ciphertext (hex): 1a 0b 3f 25 4d 1c 7e 2f 10 6b 5a 33 2d\n\nYou know the seed is 3 bytes and the plaintext contains only ASCII uppercase letters and underscores.\n\nFind the decrypted plaintext.",
-    "answers": [
-      "goat_you_got_it",
-      "GOAT_YOU_GOT_IT"
-    ],
+    "question": "[DSA — WILDCARD HARD]\nMeera has a circular singly linked list: A → B → C → D → E → (back to A).\nShe runs Floyd's cycle detection (slow moves 1 step, fast moves 2 steps, both start at A).\n\nAfter confirming a cycle, she finds the cycle start: reset one pointer to head, keep the other at meeting point (C), advance both one step at a time.\n\nSince this is a fully circular list with NO \"before cycle\" segment, where do pointer1 and pointer2 first meet?",
+    "answers": ["a", "A", "node a", "Node A", "JOKR-AMTX-9261"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 15,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[POP CULTURE — EASY]\nFor how long have Rocky and his mate been together in the movie Project Hail Mary?",
+    "answers": ["186.3 years", "186.3"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 15,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[POP CULTURE — EASY]\nWho protected Harry Potter the most?",
+    "answers": ["albus dumbledore", "dumbledore", "severus snape", "snape"]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 15,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[POP CULTURE — EASY]\nWho helped Spider-Man erase everyone's memory?",
+    "answers": ["mephisto", "the one above all"]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 15,
+    "difficulty": "easy",
+    "round": 1,
+    "is_wildcard": false,
+    "max_tries": 2,
+    "question": "[POP CULTURE — EASY]\nWhat song did Karan Aujla perform on The Tonight Show?",
+    "answers": ["boyfriend"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 16,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — MEDIUM]\nWhich is the only Marvel film featuring Iron Man that doesn't feature his partner, Pepper?",
+    "answers": ["age of ultron", "avengers age of ultron"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 16,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — MEDIUM]\nHow many times has Goku died in all the timelines (Dragon Ball)?",
+    "answers": ["6"]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 16,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — MEDIUM]\nHow many Grammy Award nominations has Eminem received?",
+    "answers": ["391"]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 16,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — MEDIUM]\nHow many songs are there in Eminem's discography?",
+    "answers": ["1865"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 17,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — MEDIUM]\nWhich Marvel project took the longest to adapt from comic to screen?",
+    "answers": ["doctor strange", "dr strange"]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 17,
+    "difficulty": "medium",
+    "round": 2,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — MEDIUM]\nWhat is the name of the main character in the latest K-drama released on Netflix (as of April 14, 2026)?",
+    "answers": ["kim geon-woo"]
+  },
+  {
+    "suit": "spades",
+    "card_number": 18,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — HARD]\nWhat was the Obuwan originally called in Dandadan?",
+    "answers": ["old man crying"],
     "hints": [
-      "Try seed 0x12 0x34 0x56 and compute the keystream.",
-      "XOR the keystream with the ciphertext bytes to get ASCII plaintext."
+      "It's a character from the anime/manga.",
+      "The original name has a descriptive meaning in Japanese."
     ]
+  },
+  {
+    "suit": "hearts",
+    "card_number": 18,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — HARD]\nWho was the first person to ever play Spider-Man on screen?",
+    "answers": ["nicholas hammond", "nick hammond"],
+    "hints": [
+      "It was before the MCU films.",
+      "Look for 1970s live-action television."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 18,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — HARD]\nHow many Avengers are there (including dead) in the MCU until the movie Thunderbolts?",
+    "answers": ["24"],
+    "hints": [
+      "Count all official Avengers ever.",
+      "Include those who died and came back."
+    ]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 18,
+    "difficulty": "hard",
+    "round": 3,
+    "is_wildcard": false,
+    "max_tries": 3,
+    "question": "[POP CULTURE — HARD]\nTo create practical light streaks in the \"Tesseract\" sequence without relying solely on CGI, cinematographer Hoyte van Hoytema used a high-powered laser refracted through a physical shard of ________.",
+    "answers": ["quartz"],
+    "hints": [
+      "It's a common crystal used in optics.",
+      "Often used in scientific instruments."
+    ]
+  },
+  {
+    "suit": "diamonds",
+    "card_number": 20,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "max_tries": 1,
+    "question": "[POP CULTURE — WILDCARD HARD]\nThis character creates the problem he later tries to fix. In the TV series, he is ______.",
+    "answers": ["barry allen", "the flash", "flash", "Barry Allen", "JOKR-AMTX-9261"]
+  },
+  {
+    "suit": "clubs",
+    "card_number": 20,
+    "difficulty": "hard",
+    "round": 4,
+    "is_wildcard": true,
+    "max_tries": 1,
+    "question": "[POP CULTURE — WILDCARD HARD]\nTo give the Hulkbuster 2.0 (Mark 48) in Infinity War a sense of \"struggling\" weight compared to the first version, sound designers mixed mechanical servos with the distorted, low-frequency vocalizations of a ________.",
+    "answers": ["hippo", "hippopotamus", "JOKR-AMTX-9261"]
   }
 ]

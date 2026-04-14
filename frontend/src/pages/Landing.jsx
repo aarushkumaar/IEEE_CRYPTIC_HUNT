@@ -112,12 +112,14 @@ const tombFrames = Array.from({ length: 170 }, (_, i) => getFrameUrl(i));
 const pyramidFrames = [];
 
 const GUIDELINES = [
-  'The hunt unfolds across three phases, each more challenging than the last.',
-  'Each phase includes one question from every suit — logic, tech, cryptography, and more.',
-  "You'll face 12 questions in total, evenly divided across all phases.",
-  'Every question must be answered to move forward. You cannot skip.',
-  'Every correct answer gives you +1 point. Aim to score as high as possible.',
-  'If you do not score at least 5 points within the first 5 hours, you will be eliminated.',
+  'The Hunt shall unfold across three sacred phases, each ordained to surpass the trials that came before.',
+  'Within each phase, you shall face one challenge from every domain -DSA, Technology, Cryptography, and the arts beyond.',
+  'Twelve questions in total await you — four per phase, balanced across all domains, a complete and perfect reckoning.',
+  'Every question must be answered before you may advance. The path forward is sealed until you have faced what lies before you.',
+  'Each correct answer bestows upon you one point of merit. Your glory shall be measured by the height of your final score.',
+  'The gates of the Hunt open at the stroke of noon and seal themselves at midnight — twelve hours granted to the worthy.',
+  'Once you step forth and begin your trial, the sands of time shall run for ninety minutes. When they empty, your journey ends.',
+  'Should you spy the Joker lurking within the realm, enter the sacred code they carry — one hard question shall be pardoned, and a point of merit bestowed upon you. Keep your eyes open, for the Joker appears but once.(JOKR-AMTX-9261) ',
 ];
 
 /* ── Decorative hieroglyph strip ─────────────────────────────────── */
