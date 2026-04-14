@@ -26,7 +26,7 @@ function GameTimer({ loginTime, warningActive, onExpire }) {
 
   useEffect(() => {
     if (!loginTime) return;
-    const GAME_MS = 12 * 60 * 60 * 1000;
+    const GAME_MS = 2 * 60 * 60 * 1000;
 
     function tick() {
       const elapsed = Date.now() - new Date(loginTime).getTime();
@@ -730,6 +730,95 @@ function ExpiredModal({ onLogout }) {
   );
 }
 
+/* ── Skip Modal ─────────────────────────────────────────────────── */
+function SkipModal({ onConfirm, onCancel }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      style={{
+        position: 'fixed', inset: 0,
+        background: 'rgba(0,0,0,0.85)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 500,
+        backdropFilter: 'blur(6px)',
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 12 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 12 }}
+        style={{
+          background: '#0A0A0A',
+          border: '2px solid rgba(201,168,76,0.4)',
+          borderRadius: 4,
+          padding: '36px 36px 28px',
+          maxWidth: 360,
+          width: '90%',
+          textAlign: 'center',
+        }}
+      >
+        <p style={{
+          fontFamily: '"Inter", system-ui, sans-serif',
+          fontSize: 15,
+          color: '#E8D5A0',
+          marginBottom: 10,
+          letterSpacing: '0.05em',
+        }}>
+          Skip Question?
+        </p>
+        <p style={{
+          fontFamily: '"Inter", system-ui, sans-serif',
+          fontSize: 13,
+          color: 'rgba(232,213,160,0.5)',
+          marginBottom: 28,
+          lineHeight: 1.6,
+        }}>
+          Are you sure you want to skip? You cannot return to this question.
+        </p>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button
+            onClick={onCancel}
+            style={{
+              flex: 1,
+              background: 'transparent',
+              border: '1px solid rgba(201,168,76,0.3)',
+              color: 'rgba(201,168,76,0.6)',
+              padding: '11px 16px',
+              fontFamily: '"Inter", system-ui, sans-serif',
+              fontSize: 10,
+              letterSpacing: '0.15em',
+              cursor: 'pointer',
+              borderRadius: 2,
+            }}
+          >
+            STAY
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{
+              flex: 1,
+              background: 'rgba(201,168,76,0.1)',
+              border: '1px solid rgba(201,168,76,0.5)',
+              color: '#C9A84C',
+              padding: '11px 16px',
+              fontFamily: '"Inter", system-ui, sans-serif',
+              fontWeight: 700,
+              fontSize: 10,
+              letterSpacing: '0.15em',
+              cursor: 'pointer',
+              borderRadius: 2,
+            }}
+          >
+            YES, SKIP
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 /* ══ Main Game component ══════════════════════════════════════════════ */
 export default function Game() {
   const { n } = useParams();
@@ -748,6 +837,7 @@ export default function Game() {
   const [phaseOverlay, setPhaseOverlay] = useState(null); // phase number being completed
   const [gameExpired, setGameExpired]   = useState(false);
   const [showBackToast, setShowBackToast] = useState(false);
+  const [showSkipModal, setShowSkipModal] = useState(false);
 
 
   // Login-time based state (from /game/status polling)
@@ -888,7 +978,7 @@ export default function Game() {
     const result = await submitAnswer(normAnswer);
     if (!result) return;
 
-    // FIX 2: Handle 12-hour expiry returned from /game/answer
+    // FIX 2: Handle 2-hour expiry returned from /game/answer
     if (result.error === 'GAME_EXPIRED') { setGameExpired(true); return; }
 
     // Eliminated response (wildcard wrong or time-based)
@@ -936,6 +1026,23 @@ export default function Game() {
     } else {
       await fetchCurrent();
       inputRef.current?.focus();
+    }
+  }
+
+  async function handleSkipConfirm() {
+    setShowSkipModal(false);
+    try {
+      const { data } = await api.post('/game/skip');
+      if (data.error) throw new Error(data.error);
+
+      if (data.completed || data.gameFinished) {
+        handleCompletion(data);
+      } else {
+        await fetchCurrent();
+        inputRef.current?.focus();
+      }
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -1272,14 +1379,45 @@ export default function Game() {
 
           {/* Answer input */}
           {question && !showExhausted && (
-            <EgyptianInput
-              value={answer}
-              onChange={e => setAnswer(e.target.value)}
-              onSubmit={handleAnswer}
-              loading={loading}
-              disabled={loading}
-              inputRef={inputRef}
-            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <EgyptianInput
+                value={answer}
+                onChange={e => setAnswer(e.target.value)}
+                onSubmit={handleAnswer}
+                loading={loading}
+                disabled={loading}
+                inputRef={inputRef}
+              />
+              <button
+                type="button"
+                onClick={() => setShowSkipModal(true)}
+                title="Skipping will cost you this question"
+                style={{
+                  alignSelf: 'flex-start',
+                  background: 'transparent',
+                  border: '1px solid #C9A84C',
+                  color: '#C9A84C',
+                  padding: '6px 14px',
+                  borderRadius: 2,
+                  fontFamily: '"Inter", system-ui, sans-serif',
+                  fontSize: 10,
+                  letterSpacing: '0.1em',
+                  cursor: 'pointer',
+                  opacity: 0.8,
+                  transition: 'opacity 0.2s, background 0.2s'
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.opacity = 1;
+                  e.currentTarget.style.background = 'rgba(201,168,76,0.1)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.opacity = 0.8;
+                  e.currentTarget.style.background = 'transparent';
+                }}
+              >
+                Skip Question &rarr;
+              </button>
+            </div>
           )}
 
           {/* Tries indicator — dynamic; wildcard shows red banner */}
@@ -1330,6 +1468,16 @@ export default function Game() {
       <AnimatePresence>
         {phaseOverlay !== null && (
           <PhaseOverlay phase={phaseOverlay} onDone={handlePhaseOverlayDone} />
+        )}
+      </AnimatePresence>
+
+      {/* ── Skip Modal ────────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showSkipModal && (
+          <SkipModal
+            onConfirm={handleSkipConfirm}
+            onCancel={() => setShowSkipModal(false)}
+          />
         )}
       </AnimatePresence>
 

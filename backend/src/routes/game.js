@@ -11,7 +11,7 @@ const PASS_THRESHOLD   = parseInt(process.env.PASS_THRESHOLD || '8', 10);
 const WARN_HOURS       = 1.75;
 const DQ_HOURS         = 2;
 const DQ_MIN_SCORE     = 5;
-const TWELVE_HOURS_MS  = 12 * 60 * 60 * 1000;
+const TWELVE_HOURS_MS  = 2 * 60 * 60 * 1000;
 
 const answerLimit = rateLimit({
   windowMs: 2000,
@@ -72,7 +72,7 @@ async function checkTimeElimination(userId, loginTime, score) {
   return false;
 }
 
-/* ── 12-hour game expiry check ─────────────────────────────────────── */
+/* ── 2-hour game expiry check ─────────────────────────────────────── */
 async function checkTwelveHourExpiry(userId, loginTime, gameFinished) {
   if (!loginTime || gameFinished) return false;
   const elapsed = Date.now() - new Date(loginTime).getTime();
@@ -191,7 +191,7 @@ router.get('/current', authMiddleware, async (req, res) => {
     if (expired) {
       return res.status(403).json({
         error:   'GAME_EXPIRED',
-        message: 'Your 12-hour session has ended. The tomb has sealed.',
+        message: 'Your 2-hour session has ended. The tomb has sealed.',
       });
     }
 
@@ -298,7 +298,7 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
     if (expired) {
       return res.status(403).json({
         error:   'GAME_EXPIRED',
-        message: 'Your 12-hour session has ended. The tomb has sealed.',
+        message: 'Your 2-hour session has ended. The tomb has sealed.',
       });
     }
 
@@ -425,6 +425,43 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
   }
 });
 
+/* ══ POST /game/skip ═════════════════════════════════════════════════ */
+router.post('/skip', authMiddleware, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const sessionDoc = await db.collection('sessions').doc(userId).get();
+    if (!sessionDoc.exists) return res.status(404).json({ error: 'No active session.' });
+    const session = sessionDoc.data();
+
+    if (session.currentIndex >= TOTAL_QUESTIONS) {
+      return res.status(400).json({ error: 'Game already completed.' });
+    }
+
+    const newIndex = session.currentIndex + 1;
+    const gameComplete = newIndex >= TOTAL_QUESTIONS;
+    const now = new Date().toISOString();
+
+    await db.collection('sessions').doc(userId).update({
+      currentIndex: newIndex,
+      currentRound: Math.min(getPhase(newIndex), 4),
+    });
+
+    if (gameComplete) {
+      await db.collection('profiles').doc(userId).update({
+        gameFinished: true,
+        timeEnded: now,
+        logoutTime: now,
+        status: 'failed'
+      });
+    }
+
+    res.json({ skipped: true, newIndex, completed: gameComplete });
+  } catch (err) {
+    console.error('/game/skip error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /* ══ POST /game/hint ═════════════════════════════════════════════════ */
 router.post('/hint', authMiddleware, async (req, res) => {
   try {
@@ -510,7 +547,7 @@ router.get('/status', authMiddleware, async (req, res) => {
 
     const timeInfo = buildTimeInfo(profile?.loginTime, profile?.score);
 
-    // Also check 12h expiry on status poll
+    // Also check 2h expiry on status poll
     if (profile?.loginTime && !profile?.gameFinished) {
       const elapsed = Date.now() - new Date(profile.loginTime).getTime();
       if (elapsed > TWELVE_HOURS_MS) {

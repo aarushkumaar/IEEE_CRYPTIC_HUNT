@@ -1,163 +1,153 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import confetti from 'canvas-confetti';
-import { useAuth } from '../hooks/useAuth';
-import { useGame } from '../hooks/useGame';
-
-function CountUp({ target, duration = 1500 }) {
-  const [val, setVal] = useState(0);
-  useEffect(() => {
-    let start = null;
-    const step = (ts) => {
-      if (!start) start = ts;
-      const progress = Math.min((ts - start) / duration, 1);
-      setVal(Math.floor(progress * target));
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-  }, [target, duration]);
-  return <>{val}</>;
-}
-
-function formatTime(seconds) {
-  if (!seconds) return 'N/A';
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}m ${s}s`;
-}
+import { Link } from 'react-router-dom';
 
 export default function Pass() {
-  const navigate = useNavigate();
-  const { profile } = useAuth();
-  const { getResult } = useGame();
-  const [result, setResult] = useState(null);
-  const fired = useRef(false);
-
-  useEffect(() => {
-    getResult().then(setResult);
-  }, []);
-
-  useEffect(() => {
-    if (result && !fired.current) {
-      fired.current = true;
-      // Launch confetti
-      const end = Date.now() + 3000;
-      const frame = () => {
-        confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#7B6EF6', '#F5C542', '#1BE0D4', '#22D77B'] });
-        confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#7B6EF6', '#F5C542', '#1BE0D4', '#22D77B'] });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      };
-      frame();
-    }
-  }, [result]);
-
-  const phaseLabels = ['Round 1', 'Round 2', 'Round 3', 'Wildcard'];
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden" style={{ background: 'var(--bg-base)' }}>
-      {/* Glow */}
-      <div style={{
-        position: 'absolute', inset: 0, pointerEvents: 'none',
-        background: 'radial-gradient(ellipse at 50% 20%, rgba(34,215,123,0.08) 0%, transparent 60%)',
-      }} />
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '32px 16px',
+      position: 'relative',
+      overflow: 'hidden',
+      background: '#000000',
+    }}>
+      <style>{`
+        @keyframes glow {
+          from { text-shadow: 0 0 10px #D4AF37, 0 0 20px #D4AF37; }
+          to   { text-shadow: 0 0 30px #D4AF37, 0 0 60px #B8860B, 0 0 100px #8B6914; }
+        }
+        @keyframes shimmer {
+          0% { opacity: 0.1; transform: translateY(0px); }
+          50% { opacity: 0.3; transform: translateY(-10px); }
+          100% { opacity: 0.1; transform: translateY(0px); }
+        }
+        .particle {
+          position: absolute;
+          background: #D4AF37;
+          border-radius: 50%;
+          animation: shimmer 4s infinite linear;
+        }
+        .hieroglyph-border {
+          position: absolute;
+          inset: 16px;
+          border: 2px solid #D4AF37;
+          pointer-events: none;
+        }
+        .hieroglyph-border::before {
+          content: "";
+          position: absolute;
+          inset: 6px;
+          border: 1px solid rgba(212, 175, 55, 0.4);
+        }
+      `}</style>
+      
+      {/* Ambient particles */}
+      <div className="particle" style={{ width: 4, height: 4, top: '20%', left: '30%', animationDelay: '0s' }} />
+      <div className="particle" style={{ width: 3, height: 3, top: '40%', left: '70%', animationDelay: '1s' }} />
+      <div className="particle" style={{ width: 4, height: 4, top: '70%', left: '20%', animationDelay: '2s' }} />
+      <div className="particle" style={{ width: 5, height: 5, top: '80%', left: '80%', animationDelay: '3s' }} />
+      <div className="particle" style={{ width: 3, height: 3, top: '10%', left: '80%', animationDelay: '0.5s' }} />
+      
+      <div className="hieroglyph-border" />
 
-      <div className="relative z-10 max-w-lg w-full flex flex-col items-center gap-8">
-        {/* Heading */}
+      <div style={{
+        position: 'relative', zIndex: 10, maxWidth: 640, width: '100%',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 32,
+      }}>
+        {/* Eye of Horus SVG */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200 }}
-          className="text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5 }}
+          style={{ width: 64, height: 64, marginBottom: 16 }}
         >
-          <div className="text-5xl mb-2">🎉</div>
-          <h1 className="font-display font-extrabold" style={{ fontSize: 'clamp(40px, 10vw, 72px)', color: 'var(--gold)' }}>
-            YOU PASSED
-          </h1>
-          <p className="font-body mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Congratulations, {profile?.name || 'Hunter'}. You made it through.
-          </p>
+          <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 50 Q 50 10 90 50 Q 50 90 10 50 Z" stroke="#D4AF37" strokeWidth="4" />
+            <circle cx="50" cy="50" r="15" fill="#D4AF37" />
+            <path d="M50 65 L 50 90" stroke="#D4AF37" strokeWidth="6" />
+            <path d="M35 50 Q 20 80 15 90" stroke="#D4AF37" strokeWidth="4" />
+          </svg>
         </motion.div>
 
-        {/* Score counter */}
-        {result && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-center"
-          >
-            <div className="font-display font-extrabold" style={{ fontSize: 80, color: 'var(--success)', lineHeight: 1 }}>
-              <CountUp target={result.score} />
-            </div>
-            <div className="font-body text-sm mt-1" style={{ color: 'var(--text-faint)' }}>
-              final score / 20
-            </div>
-          </motion.div>
-        )}
+        <motion.h1
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.5 }}
+          style={{
+            fontFamily: 'serif',
+            fontSize: 'clamp(28px, 6vw, 48px)',
+            color: '#D4AF37',
+            fontWeight: 'bold',
+            letterSpacing: '0.2em',
+            margin: 0,
+            animation: 'glow 3s ease-in-out infinite alternate',
+            textAlign: 'center',
+          }}
+        >
+          THE TOMB HAS SPOKEN.
+        </motion.h1>
 
-        {/* Rank badge */}
-        {result?.rank && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.5 }}
-            className="px-6 py-3 rounded-full font-display font-bold text-lg"
+        <div style={{
+          fontFamily: 'serif',
+          fontSize: 'clamp(16px, 3vw, 20px)',
+          color: 'rgba(212, 175, 55, 0.85)',
+          lineHeight: 1.8,
+          textAlign: 'center',
+          maxWidth: '80%',
+        }}>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5, duration: 1 }} style={{ marginBottom: '1.5em' }}>
+            You have walked where few dare tread — through the chambers of logic, 
+            the halls of cipher, and the abyss of the unknown.
+          </motion.p>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.0, duration: 1 }} style={{ marginBottom: '1.5em' }}>
+            The ancient ones have witnessed your descent. They have measured your mind 
+            against the weight of a feather, and found you worthy.
+          </motion.p>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.5, duration: 1 }} style={{ marginBottom: '1.5em' }}>
+            Your name is now etched in gold upon the Scroll of Honor — immortalised 
+            within these walls, spoken in silence by the stones themselves.
+          </motion.p>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.0, duration: 1 }} style={{ marginBottom: '2.5em' }}>
+            The hunt is over. The seeker has become the found.
+          </motion.p>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.5, duration: 1 }}
+        >
+          <Link
+            to="/"
             style={{
-              background: result.rank === 1 ? 'rgba(245,197,66,0.15)' : 'rgba(123,110,246,0.12)',
-              border: `1px solid ${result.rank === 1 ? 'var(--gold)' : 'var(--accent)'}`,
-              color: result.rank === 1 ? 'var(--gold)' : 'var(--accent)',
+              display: 'inline-block',
+              background: '#000000',
+              border: '1px solid #D4AF37',
+              color: '#D4AF37',
+              padding: '16px 40px',
+              fontFamily: 'sans-serif',
+              fontWeight: 700,
+              fontSize: 14,
+              letterSpacing: '0.15em',
+              textDecoration: 'none',
+              transition: 'all 0.3s',
+              textTransform: 'uppercase'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.boxShadow = '0 0 20px rgba(212, 175, 55, 0.6)';
+              e.currentTarget.style.textShadow = '0 0 10px #D4AF37';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.textShadow = 'none';
             }}
           >
-            {result.rank === 1 && '👑 '} #{result.rank} on the Leaderboard
-          </motion.div>
-        )}
-
-        {/* Stats */}
-        {result && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="w-full rounded-2xl overflow-hidden"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-          >
-            <div className="grid grid-cols-3 divide-x" style={{ borderColor: 'var(--border)' }}>
-              {[
-                { label: 'Score', value: `${result.score}/20` },
-                { label: 'Time', value: formatTime(result.timeSeconds) },
-                { label: 'Hints', value: result.hints_used ?? 0 },
-              ].map(({ label, value }) => (
-                <div key={label} className="p-4 text-center">
-                  <div className="font-display font-bold text-lg text-text-primary">{value}</div>
-                  <div className="font-body text-xs mt-1" style={{ color: 'var(--text-faint)' }}>{label}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* Phase scores */}
-            <div className="border-t" style={{ borderColor: 'var(--border)' }}>
-              <div className="p-4">
-                <p className="font-body text-xs mb-3" style={{ color: 'var(--text-faint)' }}>Round breakdown</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {(result.phaseScores || [0, 0, 0, 0]).map((s, i) => (
-                    <div key={i} className="text-center">
-                      <div className="font-display font-bold text-sm" style={{
-                        color: ['var(--accent)', 'var(--danger)', 'var(--gold)', 'var(--cyan)'][i]
-                      }}>{s}/5</div>
-                      <div className="font-body text-xs" style={{ color: 'var(--text-faint)' }}>{phaseLabels[i]}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* CTA */}
-        <Link to="/leaderboard" className="btn-primary px-8 py-3 text-base" style={{ textDecoration: 'none', display: 'inline-block' }}>
-          View Leaderboard →
-        </Link>
+            Return to the Surface
+          </Link>
+        </motion.div>
       </div>
     </div>
   );
