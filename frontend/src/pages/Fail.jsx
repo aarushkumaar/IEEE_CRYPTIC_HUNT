@@ -204,24 +204,23 @@ export default function Fail() {
     getResult().then(setResult);
   }, []);
 
+  // Run GSAP timeline once on mount — elements start at opacity:0 via inline style
   useEffect(() => {
-    const refs = [scrollBodyRef, titleRef, para1Ref, para2Ref, para3Ref, para4Ref, para5Ref, para6Ref, scoreRef, bottomRef, sealRef, btnRef];
-    if (refs.some(r => !r.current)) return;
-
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
     tl.from(scrollBodyRef.current, { scaleY: 0, duration: 1.5, ease: 'power3.out', transformOrigin: 'top center' })
-      .from(titleRef.current,      { opacity: 0, scale: 0.8, duration: 1, ease: 'back.out(1.4)' }, '-=0.3')
-      .from(para1Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.2')
-      .from(para2Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.35')
-      .from(para3Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.35')
-      .from(para4Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.35')
-      .from(para5Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.35')
-      .from(para6Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.35')
-      .from(scoreRef.current,      { opacity: 0, scale: 0.9, duration: 0.8 }, '+=0.3')
-      .from(bottomRef.current,     { opacity: 0, letterSpacing: '0.05em', duration: 1.0 }, '+=0.3')
-      .from(sealRef.current,       { opacity: 0, scale: 0, rotation: -180, duration: 0.8, ease: 'back.out(1.4)' }, '+=0.2')
-      .from(btnRef.current,        { opacity: 0, y: 10, duration: 0.6 }, '+=0.3');
-  }, [result]);
+      .to(titleRef.current,        { opacity: 1, scale: 1, duration: 1, ease: 'back.out(1.4)', clearProps: 'scale' }, '-=0.3')
+      .to(para1Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.2')
+      .to(para2Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.35')
+      .to(para3Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.35')
+      .to(para4Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.35')
+      .to(para5Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.35')
+      .to(para6Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.35')
+      .to(scoreRef.current,        { opacity: 1, scale: 1, duration: 0.8, clearProps: 'scale' }, '+=0.3')
+      .to(bottomRef.current,       { opacity: 1, duration: 1.0 }, '+=0.3')
+      .to(sealRef.current,         { opacity: 1, scale: 1, rotation: 0, duration: 0.8, ease: 'back.out(1.4)', clearProps: 'scale,rotation', onComplete: () => { if (sealRef.current) sealRef.current.style.animation = 'sealSpin 20s linear infinite'; } }, '+=0.2')
+      .to(btnRef.current,          { opacity: 1, y: 0, duration: 0.6 }, '+=0.3');
+    return () => tl.kill();
+  }, []);
 
   return (
     <div style={{
@@ -289,7 +288,7 @@ export default function Fail() {
       <Cobra />
 
       {/* LAYER 3 — Central Scroll */}
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 760, margin: '0 auto', padding: '0 180px' }}>
+      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 760, margin: '0 auto', padding: '0 clamp(20px, 12vw, 160px)' }}>
 
         {/* Top roller */}
         <div style={{
@@ -342,6 +341,8 @@ export default function Fail() {
                 margin: '0 0 8px',
                 textShadow: '0 2px 8px rgba(0,0,0,0.4), 0 0 16px rgba(139,0,0,0.3)',
                 lineHeight: 1.2,
+                opacity: 0,
+                transform: 'scale(0.8)',
               }}
             >
               THE TOMB HAS JUDGED.
@@ -352,24 +353,24 @@ export default function Fail() {
 
             {/* Paragraphs */}
             <div style={{ fontFamily: '"Cinzel", serif', fontSize: 'clamp(11px, 1.5vw, 14px)', color: '#362000', lineHeight: 1.85, textAlign: 'center' }}>
-              <p ref={para1Ref} style={{ margin: '0 0 14px', fontStyle: 'italic' }}>
+              <p ref={para1Ref} style={{ margin: '0 0 14px', fontStyle: 'italic', opacity: 0, transform: 'translateY(15px)' }}>
                 You have stepped into the depths — through shadows of logic,
                 fragments of cipher, and paths that twist beyond reason.
               </p>
-              <p ref={para2Ref} style={{ margin: '0 0 14px', fontStyle: 'italic' }}>
+              <p ref={para2Ref} style={{ margin: '0 0 14px', fontStyle: 'italic', opacity: 0, transform: 'translateY(15px)' }}>
                 But not all who enter are meant to emerge victorious.
               </p>
-              <p ref={para3Ref} style={{ margin: '0 0 14px', fontStyle: 'italic' }}>
+              <p ref={para3Ref} style={{ margin: '0 0 14px', fontStyle: 'italic', opacity: 0, transform: 'translateY(15px)' }}>
                 The ancient ones have watched in silence. They have weighed your mind
                 against the eternal scale… and this time, the balance faltered.
               </p>
-              <p ref={para4Ref} style={{ margin: '0 0 14px', fontStyle: 'italic' }}>
+              <p ref={para4Ref} style={{ margin: '0 0 14px', fontStyle: 'italic', opacity: 0, transform: 'translateY(15px)' }}>
                 Your journey ends here — not in glory, but in echo.
               </p>
-              <p ref={para5Ref} style={{ margin: '0 0 14px', fontStyle: 'italic' }}>
+              <p ref={para5Ref} style={{ margin: '0 0 14px', fontStyle: 'italic', opacity: 0, transform: 'translateY(15px)' }}>
                 The walls remember your attempt. The silence records your fall.
               </p>
-              <p ref={para6Ref} style={{ margin: '0 0 0', fontWeight: 600 }}>
+              <p ref={para6Ref} style={{ margin: '0 0 0', fontWeight: 600, opacity: 0, transform: 'translateY(15px)' }}>
                 The tomb remains unconquered. The hunt continues… without you.
               </p>
             </div>
@@ -378,7 +379,7 @@ export default function Fail() {
             <div style={{ height: 1, background: 'linear-gradient(to right, transparent, #6B3010, transparent)', margin: '24px 0' }} />
 
             {/* Score / Time Box */}
-            <div ref={scoreRef} style={{ display: 'flex', justifyContent: 'center', gap: 4, margin: '0 0 24px' }}>
+            <div ref={scoreRef} style={{ display: 'flex', justifyContent: 'center', gap: 4, margin: '0 0 24px', opacity: 0, transform: 'scale(0.9)' }}>
               <div style={{
                 flex: 1,
                 background: 'linear-gradient(135deg, #120800, #1e0f00, #120800)',
@@ -427,6 +428,7 @@ export default function Fail() {
                 color: '#4A2500',
                 margin: '0 0 24px',
                 animation: 'redPulse 3s ease-in-out infinite',
+                opacity: 0,
               }}
             >
               THE TOMB REMAINS UNCONQUERED.
@@ -444,7 +446,8 @@ export default function Fail() {
                 background: 'radial-gradient(circle at 35% 35%, #8B0000, #5a0000, #2d0000)',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.7), inset 0 2px 4px rgba(255,100,100,0.08)',
                 margin: '0 0 28px',
-                animation: 'sealSpin 20s linear infinite',
+                opacity: 0,
+                transform: 'scale(0) rotate(-180deg)',
               }}
             >
               <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
@@ -457,7 +460,7 @@ export default function Fail() {
             </div>
 
             {/* Return button */}
-            <div ref={btnRef}>
+            <div ref={btnRef} style={{ opacity: 0, transform: 'translateY(10px)' }}>
               <button
                 onClick={() => navigate('/')}
                 style={{

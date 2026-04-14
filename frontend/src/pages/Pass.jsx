@@ -224,23 +224,21 @@ export default function Pass() {
     getResult().then(setResult);
   }, []);
 
+  // Run GSAP timeline once on mount — elements start at opacity:0 via inline style
   useEffect(() => {
-    // Run GSAP timeline once scroll body is mounted
-    const refs = [scrollBodyRef, titleRef, para1Ref, para2Ref, para3Ref, para4Ref, scoreRef, bottomRef, sealRef, btnRef];
-    if (refs.some(r => !r.current)) return;
-
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
     tl.from(scrollBodyRef.current, { scaleY: 0, duration: 1.5, ease: 'power3.out', transformOrigin: 'top center' })
-      .from(titleRef.current,      { opacity: 0, scale: 0.8, duration: 1, ease: 'back.out(1.4)' }, '-=0.3')
-      .from(para1Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.2')
-      .from(para2Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.4')
-      .from(para3Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.4')
-      .from(para4Ref.current,      { opacity: 0, y: 15, duration: 0.6 }, '+=0.4')
-      .from(scoreRef.current,      { opacity: 0, scale: 0.9, duration: 0.8 }, '+=0.3')
-      .from(bottomRef.current,     { opacity: 0, letterSpacing: '0.05em', duration: 1.0 }, '+=0.3')
-      .from(sealRef.current,       { opacity: 0, scale: 0, rotation: -180, duration: 0.8, ease: 'back.out(1.4)' }, '+=0.2')
-      .from(btnRef.current,        { opacity: 0, y: 10, duration: 0.6 }, '+=0.3');
-  }, [result]); // re-run when result loads so score box animates too
+      .to(titleRef.current,        { opacity: 1, scale: 1, duration: 1, ease: 'back.out(1.4)', clearProps: 'scale' }, '-=0.3')
+      .to(para1Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.2')
+      .to(para2Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.4')
+      .to(para3Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.4')
+      .to(para4Ref.current,        { opacity: 1, y: 0, duration: 0.6 }, '+=0.4')
+      .to(scoreRef.current,        { opacity: 1, scale: 1, duration: 0.8, clearProps: 'scale' }, '+=0.3')
+      .to(bottomRef.current,       { opacity: 1, duration: 1.0 }, '+=0.3')
+      .to(sealRef.current,         { opacity: 1, scale: 1, rotation: 0, duration: 0.8, ease: 'back.out(1.4)', clearProps: 'scale,rotation', onComplete: () => { if (sealRef.current) sealRef.current.style.animation = 'sealSpin 20s linear infinite'; } }, '+=0.2')
+      .to(btnRef.current,          { opacity: 1, y: 0, duration: 0.6 }, '+=0.3');
+    return () => tl.kill();
+  }, []);
 
   return (
     <div style={{
@@ -315,7 +313,7 @@ export default function Pass() {
       <Cobra />
 
       {/* LAYER 3 — Central Scroll */}
-      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 760, margin: '0 auto', padding: '0 180px' }}>
+      <div style={{ position: 'relative', zIndex: 10, width: '100%', maxWidth: 760, margin: '0 auto', padding: '0 clamp(20px, 12vw, 160px)' }}>
 
         {/* Top roller */}
         <div style={{
@@ -370,6 +368,8 @@ export default function Pass() {
                 margin: '0 0 8px',
                 textShadow: '0 2px 8px rgba(0,0,0,0.3), 0 0 20px rgba(212,175,55,0.4)',
                 lineHeight: 1.2,
+                opacity: 0,
+                transform: 'scale(0.8)',
               }}
             >
               THE TOMB HAS SPOKEN
@@ -380,19 +380,19 @@ export default function Pass() {
 
             {/* Paragraphs */}
             <div style={{ fontFamily: '"Cinzel", serif', fontSize: 'clamp(12px, 1.6vw, 15px)', color: '#3A2000', lineHeight: 1.85, textAlign: 'center' }}>
-              <p ref={para1Ref} style={{ margin: '0 0 18px', fontStyle: 'italic' }}>
+              <p ref={para1Ref} style={{ margin: '0 0 18px', fontStyle: 'italic', opacity: 0, transform: 'translateY(15px)' }}>
                 You have walked where few dare tread — through the chambers of logic,
                 the halls of cipher, and the abyss of the unknown.
               </p>
-              <p ref={para2Ref} style={{ margin: '0 0 18px', fontStyle: 'italic' }}>
+              <p ref={para2Ref} style={{ margin: '0 0 18px', fontStyle: 'italic', opacity: 0, transform: 'translateY(15px)' }}>
                 The ancient ones have witnessed your descent. They have measured your
                 mind against the weight of a feather, and found you worthy.
               </p>
-              <p ref={para3Ref} style={{ margin: '0 0 18px', fontStyle: 'italic' }}>
+              <p ref={para3Ref} style={{ margin: '0 0 18px', fontStyle: 'italic', opacity: 0, transform: 'translateY(15px)' }}>
                 Your name is now etched in gold upon the Scroll of Honor — immortalised
                 within these walls, spoken in silence by the stones themselves.
               </p>
-              <p ref={para4Ref} style={{ margin: '0 0 0', fontWeight: 600 }}>
+              <p ref={para4Ref} style={{ margin: '0 0 0', fontWeight: 600, opacity: 0, transform: 'translateY(15px)' }}>
                 The hunt is over. The seeker has become the found.
               </p>
             </div>
@@ -408,6 +408,8 @@ export default function Pass() {
                 justifyContent: 'center',
                 gap: 4,
                 margin: '0 0 28px',
+                opacity: 0,
+                transform: 'scale(0.9)',
               }}
             >
               {/* Score cell */}
@@ -462,6 +464,7 @@ export default function Pass() {
                 margin: '0 0 24px',
                 animation: 'goldPulse 3s ease-in-out infinite',
                 textShadow: '0 0 20px rgba(212,175,55,0.5)',
+                opacity: 0,
               }}
             >
               AMENTIS REMEMBERS YOUR NAME.
@@ -479,7 +482,8 @@ export default function Pass() {
                 background: 'radial-gradient(circle at 35% 35%, #C0392B, #8B0000, #5a0000)',
                 boxShadow: '0 4px 20px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.1)',
                 margin: '0 0 28px',
-                animation: 'sealSpin 20s linear infinite',
+                opacity: 0,
+                transform: 'scale(0) rotate(-180deg)',
               }}
             >
               <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
@@ -492,7 +496,7 @@ export default function Pass() {
             </div>
 
             {/* Return button */}
-            <div ref={btnRef}>
+            <div ref={btnRef} style={{ opacity: 0, transform: 'translateY(10px)' }}>
               <button
                 onClick={() => navigate('/')}
                 style={{
