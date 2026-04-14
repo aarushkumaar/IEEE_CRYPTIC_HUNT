@@ -119,7 +119,7 @@ const GUIDELINES = [
   'Each correct answer bestows upon you one point of merit. Your glory shall be measured by the height of your final score.',
   'The gates of the Hunt open at the stroke of noon and seal themselves at midnight — twelve hours granted to the worthy.',
   'Once you step forth and begin your trial, the sands of time shall run for ninety minutes. When they empty, your journey ends.',
-  'Should you spy the Joker lurking within the realm, enter the sacred code they carry — one hard question shall be pardoned, and a point of merit bestowed upon you. Keep your eyes open, for the Joker appears but once.(JOKR-AMTX-9261) ',
+  'Should you spy the Joker lurking within the realm, enter the sacred code they carry — one question shall be pardoned, and a point of merit bestowed upon you. Keep your eyes open, for the Joker appears but once.(JOKR-AMTX-9261) ',
 ];
 
 /* ── Decorative hieroglyph strip ─────────────────────────────────── */
