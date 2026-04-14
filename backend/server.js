@@ -12,27 +12,20 @@ dotenv.config();
 const app = express();
 
 app.use(helmet());
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://ieee-cryptic-hunt.vercel.app"
-];
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://ieee-cryptic-hunt.vercel.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, x-admin-secret"
+  );
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow Postman / curl
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      return callback(new Error("CORS not allowed for this origin"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-admin-secret"],
-  credentials: true
-}));
-
-app.options("*", cors());
+  next();
+});
 
 app.use(express.json({ limit: '10kb' }));
 
