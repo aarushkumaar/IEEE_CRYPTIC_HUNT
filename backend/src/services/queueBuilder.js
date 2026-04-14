@@ -9,17 +9,6 @@ function shuffle(arr) {
   return arr;
 }
 
-<<<<<<< Updated upstream
-async function getRandomQuestions(round, count) {
-  const snap = await db.collection('questions').where('round', '==', round).get();
-
-  if (snap.empty || snap.size < count) {
-    throw new Error(`Not enough questions for round ${round}. Need ${count}, found ${snap.size}.`);
-  }
-
-  const ids = snap.docs.map(d => d.id);
-  return shuffle(ids).slice(0, count);
-=======
 /* ── Fetch questions by difficulty (Firestore) ───────────────────── */
 async function getByDifficulty(difficulty, isWildcard, needed) {
   const snapshot = await db.collection('questions')
@@ -36,7 +25,7 @@ async function getByDifficulty(difficulty, isWildcard, needed) {
 
   const ids = snapshot.docs.map(doc => doc.id);
   return shuffle(ids).slice(0, needed);
->>>>>>> Stashed changes
+
 }
 
 /* ── Build 13-element queue: 4 easy + 4 medium + 4 hard + 1 wildcard ─ */
@@ -52,22 +41,14 @@ export async function buildQueue(userId) {
   const triesUsed = new Array(13).fill(0);
 
   await db.collection('sessions').doc(userId).set({
-<<<<<<< Updated upstream
-    user_id:       userId,
-    queue,
-    current_index: 0,
-    current_round: 1,
-    phase_scores:  [0, 0, 0, 0],
-    created_at:    new Date().toISOString(),
-  });
-=======
     queue,
     currentIndex: 0,
     currentRound: 1,
     triesUsed,
     phaseScores: [0, 0, 0, 0],
   }, { merge: true });
->>>>>>> Stashed changes
+
 
   return queue;
 }
+

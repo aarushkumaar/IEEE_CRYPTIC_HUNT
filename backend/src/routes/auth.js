@@ -3,10 +3,6 @@ import { db, rtdb, auth } from '../firebase.js';
 
 const router = express.Router();
 
-<<<<<<< Updated upstream
-// Auth is handled entirely by Firebase SDK on the frontend.
-// This route exists for health-check purposes.
-=======
 /* ── POST /auth/register ─────────────────────────────────────────────
    Call this after Firebase client-side sign-up OR first Google sign-in.
    Creates the Firestore profile doc + RTDB leaderboard entry if needed.
@@ -88,9 +84,10 @@ router.post('/login', async (req, res) => {
 /* ── GET /auth/status ────────────────────────────────────────────────
    Health-check / info endpoint.
 ──────────────────────────────────────────────────────────────────── */
->>>>>>> Stashed changes
+
 router.get('/status', (req, res) => {
   res.json({ message: 'Auth is managed by Firebase. Use the frontend SDK.' });
 });
 
 export default router;
+
