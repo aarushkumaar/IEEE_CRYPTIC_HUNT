@@ -1,20 +1,11 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-<<<<<<< Updated upstream
-import { 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword,
-  signInWithPopup,
-  GoogleAuthProvider,
-  updateProfile
-=======
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
   GoogleAuthProvider,
->>>>>>> Stashed changes
 } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { firebaseAuth, firestore } from '../lib/firebase';
@@ -113,24 +104,6 @@ export default function LoginModal({ onClose }) {
 
     try {
       if (tab === 'register') {
-<<<<<<< Updated upstream
-        const userCredential = await createUserWithEmailAndPassword(firebaseAuth, email, password);
-        await updateProfile(userCredential.user, { displayName: name.trim() });
-        await api.post('/auth/register', { 
-          name: name.trim(), 
-          email, 
-          uid: userCredential.user.uid 
-        });
-        navigate('/welcome');
-      } else {
-        const userCredential = await signInWithEmailAndPassword(firebaseAuth, email, password);
-        const docSnap = await getDoc(doc(firestore, 'profiles', userCredential.user.uid));
-        if (docSnap.exists() && docSnap.data().status !== 'waiting') {
-          navigate('/round/1');
-        } else {
-          navigate('/welcome');
-        }
-=======
         // Create Firebase Auth user
         const { user } = await createUserWithEmailAndPassword(firebaseAuth, email, password);
         // Create Firestore profile
@@ -144,7 +117,6 @@ export default function LoginModal({ onClose }) {
         // Sign in with Firebase
         const { user } = await signInWithEmailAndPassword(firebaseAuth, email, password);
         await ensureProfileAndRoute(user, null);
->>>>>>> Stashed changes
       }
     } catch (err) {
       setError(err.message || 'The ritual has failed. Try again.');
@@ -429,32 +401,7 @@ export default function LoginModal({ onClose }) {
               id="modal-google-btn"
               type="button"
               disabled={oauthLoading}
-<<<<<<< Updated upstream
-              onClick={async () => {
-                setOauthLoading(true);
-                try {
-                  const provider = new GoogleAuthProvider();
-                  const userCredential = await signInWithPopup(firebaseAuth, provider);
-                  const user = userCredential.user;
-                  const docSnap = await getDoc(doc(firestore, 'profiles', user.uid));
-                  if (!docSnap.exists()) {
-                    await api.post('/auth/register', {
-                      name: user.displayName || user.email,
-                      email: user.email,
-                      uid: user.uid
-                    });
-                    navigate('/welcome');
-                  } else {
-                    navigate(docSnap.data().status !== 'waiting' ? '/round/1' : '/welcome');
-                  }
-                } catch (err) {
-                  setError(err.message || 'Google login failed');
-                  setOauthLoading(false);
-                }
-              }}
-=======
               onClick={handleGoogleSignIn}
->>>>>>> Stashed changes
               style={{
                 display: 'flex',
                 alignItems: 'center',

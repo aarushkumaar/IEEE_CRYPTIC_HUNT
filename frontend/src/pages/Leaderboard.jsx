@@ -52,22 +52,6 @@ export default function Leaderboard() {
     fetchPlayers();
   }, []);
 
-<<<<<<< Updated upstream
-  useEffect(() => {
-    const leaderboardRef = ref(rtdb, 'leaderboard');
-    onValue(leaderboardRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const players = Object.entries(data)
-          .map(([id, val]) => ({ id, ...val }))
-          .sort((a, b) => {
-            if (b.score !== a.score) return b.score - a.score;
-            return (a.timeEnded || '') < (b.timeEnded || '') ? -1 : 1;
-          });
-        setPlayers(players);
-      }
-    });
-=======
   // Firebase Realtime Database live listener
   useEffect(() => {
     const leaderboardRef = ref(rtdb, 'leaderboard');
@@ -103,7 +87,6 @@ export default function Leaderboard() {
     });
 
     // Cleanup RTDB listener on unmount
->>>>>>> Stashed changes
     return () => off(leaderboardRef);
   }, []);
 
@@ -118,16 +101,9 @@ export default function Leaderboard() {
     setLoading(true);
     try {
       const { data } = await api.get('/scoreboard');
-<<<<<<< Updated upstream
-      setPlayers(data || []);
-    } catch {
-      console.error('Failed to fetch leaderboard from API.');
-      setPlayers([]);
-=======
       setPlayers(sortPlayers(data || []));
     } catch {
       // RTDB listener will populate once it fires
->>>>>>> Stashed changes
     } finally {
       setLoading(false);
     }

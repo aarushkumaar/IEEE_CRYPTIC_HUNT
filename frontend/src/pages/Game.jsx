@@ -710,12 +710,8 @@ export default function Game() {
   /* ── Handle timer expiry ──────────────────────────────────────── */
   const handleTimerExpire = useCallback(async () => {
     try {
-<<<<<<< Updated upstream
-      await api.post('/game/expire');
-=======
       // api interceptor auto-attaches the Firebase token
       await api.post('/game/expire', {});
->>>>>>> Stashed changes
     } catch { /* silent */ }
     setGameExpired(true);
   }, []);

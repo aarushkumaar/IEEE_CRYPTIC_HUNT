@@ -1,16 +1,5 @@
 import axios from 'axios';
 import { firebaseAuth } from './firebase';
-<<<<<<< Updated upstream
-
-const api = axios.create({ 
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000',
-});
-
-api.interceptors.request.use(async (config) => {
-  const user = firebaseAuth.currentUser;
-  if (user) {
-    const token = await user.getIdToken(true);
-=======
 import * as mockApiLib from './mockApi';
 
 const MOCK_MODE = import.meta.env.VITE_MOCK_MODE === 'true';
@@ -29,7 +18,6 @@ realApi.interceptors.request.use(async (config) => {
   const currentUser = firebaseAuth.currentUser;
   if (currentUser) {
     const token = await currentUser.getIdToken(true); // true = force refresh if expired
->>>>>>> Stashed changes
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;

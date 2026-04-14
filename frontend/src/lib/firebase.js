@@ -4,7 +4,6 @@ import { getFirestore } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
-<<<<<<< Updated upstream
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || "AIzaSyAGI_GSzOTBiVO9tLf8RvUWOtncUf0cy3E",
   authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN        || "cryptichunt-9f97c.firebaseapp.com",
   projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID         || "cryptichunt-9f97c",
@@ -12,32 +11,17 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "460303612317",
   appId:             import.meta.env.VITE_FIREBASE_APP_ID             || "1:460303612317:web:bbc795adc5b64616715774",
   databaseURL:       import.meta.env.VITE_FIREBASE_DATABASE_URL       || "https://cryptichunt-9f97c-default-rtdb.firebaseio.com",
-=======
-  apiKey:            "AIzaSyAGI_GSzOTBiVO9tLf8RvUWOtncUf0cy3E",
-  authDomain:        "cryptichunt-9f97c.firebaseapp.com",
-  projectId:         "cryptichunt-9f97c",
-  storageBucket:     "cryptichunt-9f97c.firebasestorage.app",
-  messagingSenderId: "460303612317",
-  appId:             "1:460303612317:web:bbc795adc5b64616715774",
-  databaseURL:       "https://cryptichunt-9f97c-default-rtdb.firebaseio.com",
->>>>>>> Stashed changes
 };
 
 const app = initializeApp(firebaseConfig);
 
-<<<<<<< Updated upstream
-export const auth        = getAuth(app);
-export const db          = getFirestore(app);
-export const realtimeDb  = getDatabase(app);
-
-// Legacy aliases kept for any older imports
-export const firebaseAuth = auth;
-export const firestore    = db;
-export const rtdb         = realtimeDb;
-
-=======
 export const firebaseAuth = getAuth(app);
 export const firestore    = getFirestore(app);
 export const rtdb         = getDatabase(app);
->>>>>>> Stashed changes
+
+// Aliases for any files that use the shorter names
+export const auth       = firebaseAuth;
+export const db         = firestore;
+export const realtimeDb = rtdb;
+
 export default app;

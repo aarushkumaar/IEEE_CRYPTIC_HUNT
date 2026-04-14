@@ -5,10 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useGame } from '../hooks/useGame';
 import SuitCard from '../components/SuitCard';
 import api from '../lib/api';
-<<<<<<< Updated upstream
-=======
 import { firebaseAuth } from '../lib/firebase';
->>>>>>> Stashed changes
 
 const SUITS  = ['hearts', 'diamonds', 'spades', 'clubs'];
 const LABELS = {
@@ -44,26 +41,6 @@ export default function RoundsSelection() {
 
   /* ── Check for existing session on mount ─────────────────────── */
   useEffect(() => {
-<<<<<<< Updated upstream
-    async function loadSession() {
-      if (!user) return;
-      try {
-        const { data } = await api.get('/game/session');
-        setCurrentRound(data?.currentRound ?? 1);
-      } catch {
-        setCurrentRound(1);
-      } finally {
-        setLoading(false);
-      }
-    }
-    if (user) {
-      loadSession();
-    } else {
-      // If user isn't quite ready, loading stays true
-      // We rely on useAuth to handle top-level auth gate
-    }
-  }, [user]);
-=======
     (async () => {
       try {
         const currentUser = firebaseAuth.currentUser;
@@ -78,7 +55,6 @@ export default function RoundsSelection() {
       setChecking(false);
     })();
   }, [navigate]);
->>>>>>> Stashed changes
 
   /* ── Card click handler ─────────────────────────────────────────
      Full sequence:

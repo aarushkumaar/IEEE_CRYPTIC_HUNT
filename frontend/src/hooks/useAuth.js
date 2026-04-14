@@ -1,9 +1,4 @@
 import { useState, useEffect } from 'react';
-<<<<<<< Updated upstream
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { firebaseAuth, firestore } from '../lib/firebase';
-=======
 import {
   onAuthStateChanged,
   signOut as firebaseSignOut,
@@ -11,7 +6,6 @@ import {
 import { doc, getDoc } from 'firebase/firestore';
 import { firebaseAuth, firestore } from '../lib/firebase';
 import api from '../lib/api';
->>>>>>> Stashed changes
 
 export function useAuth() {
   const [user, setUser]           = useState(null);
@@ -20,22 +14,6 @@ export function useAuth() {
   const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
-<<<<<<< Updated upstream
-    const unsub = onAuthStateChanged(firebaseAuth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        const docSnap = await getDoc(doc(firestore, 'profiles', firebaseUser.uid));
-        if (docSnap.exists()) setProfile({ id: docSnap.id, ...docSnap.data() });
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-    return () => unsub();
-  }, []);
-
-  return { user, profile, loading };
-=======
     let settled = false;
 
     // Hard timeout: if auth check takes > 4 seconds, unblock the UI
@@ -116,5 +94,4 @@ export function useAuth() {
     signOut,
     refetchProfile: () => user && fetchAndUpsertProfile(user),
   };
->>>>>>> Stashed changes
 }
