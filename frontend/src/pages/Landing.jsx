@@ -419,33 +419,25 @@ function HeroRevealSection() {
   );
 }
 
-/* ── Sponsor Carousel ──────────────────────────────────────────── */
-const SPONSOR_SLIDES = [
-  [
-    { label: 'SPONSOR I' },
-    { label: 'SPONSOR II' },
-    { label: 'SPONSOR III' },
-  ],
-  [
-    { label: 'SPONSOR IV' },
-    { label: 'SPONSOR V' },
-    { label: 'SPONSOR VI' },
-  ],
+/* ── Static Patrons Section (2 containers with image support) ───── */
+const PATRONS = [
+  { label: 'PATRON I', image: '/patrons/patron1.png' },
+  { label: 'PATRON II', image: '/patrons/patron2.png' },
 ];
 
-function PatronCard({ label, index }) {
+function PatronCard({ label, image, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.12, duration: 0.55, ease: 'easeOut' }}
+      transition={{ delay: index * 0.15, duration: 0.55, ease: 'easeOut' }}
       viewport={{ once: true }}
       whileHover={{ borderColor: 'rgba(201,168,76,0.8)', scale: 1.025 }}
       style={{
-        flex: '1 1 0',
-        minWidth: 0,
-        aspectRatio: '4/3',
-        background: 'rgba(5,3,0,0.75)',
+        width: '100%',
+        maxWidth: 360,
+        aspectRatio: '16/9',
+        background: 'rgba(5,3,0,0.85)',
         border: '1px solid rgba(201,168,76,0.22)',
         display: 'flex',
         alignItems: 'center',
@@ -465,45 +457,55 @@ function PatronCard({ label, index }) {
           inset: 0,
           background: 'linear-gradient(105deg, transparent 35%, rgba(201,168,76,0.09) 50%, transparent 65%)',
           pointerEvents: 'none',
+          zIndex: 2,
         }}
       />
       {/* corner brackets */}
       {[{ top: 6, left: 6, bt: 'borderTop', bl: 'borderLeft' }, { top: 6, right: 6, bt: 'borderTop', bl: 'borderRight' },
       { bottom: 6, left: 6, bt: 'borderBottom', bl: 'borderLeft' }, { bottom: 6, right: 6, bt: 'borderBottom', bl: 'borderRight' }]
         .map((c, i) => (
-          <motion.div
+          <div
             key={i}
-            whileHover={{ borderColor: 'rgba(201,168,76,0.9)' }}
             style={{
-              position: 'absolute', width: 14, height: 14,
+              position: 'absolute', width: 14, height: 14, zIndex: 3,
               top: c.top, left: c.left, right: c.right, bottom: c.bottom,
               [c.bt]: '1px solid rgba(201,168,76,0.45)',
               [c.bl]: '1px solid rgba(201,168,76,0.45)',
-              transition: 'border-color 0.3s',
             }}
           />
         ))
       }
+      {/* Image — fills the entire card */}
+      {image ? (
+        <img
+          src={image}
+          alt={label}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            position: 'absolute',
+            inset: 0,
+            zIndex: 1,
+            padding: '20px 28px',
+          }}
+          onError={(e) => {
+            e.target.style.display = 'none';
+            e.target.nextSibling.style.display = 'block';
+          }}
+        />
+      ) : null}
       <span style={{
         fontFamily: '"Cinzel",serif', fontSize: 10, letterSpacing: '0.25em',
         color: 'rgba(201,168,76,0.22)', userSelect: 'none',
+        display: image ? 'none' : 'block',
+        position: 'relative', zIndex: 1,
       }}>{label}</span>
     </motion.div>
   );
 }
 
-function PatronsCarousel() {
-  const [slide, setSlide] = useState(0);
-  const total = SPONSOR_SLIDES.length;
-
-  useEffect(() => {
-    const id = setInterval(() => setSlide(s => (s + 1) % total), 4000);
-    return () => clearInterval(id);
-  }, [total]);
-
-  const prev = () => setSlide(s => (s - 1 + total) % total);
-  const next = () => setSlide(s => (s + 1) % total);
-
+function PatronsSection() {
   return (
     <section style={{
       background: '#000',
@@ -526,7 +528,7 @@ function PatronsCarousel() {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         viewport={{ once: true }}
-        style={{ marginBottom: 48, position: 'relative', zIndex: 1 }}
+        style={{ marginBottom: 48, position: 'relative', zIndex: 1, textAlign: 'center' }}
       >
         <h2 style={{
           fontFamily: '"Cinzel Decorative",serif',
@@ -554,73 +556,30 @@ function PatronsCarousel() {
           transition={{ delay: 0.3, duration: 0.7, ease: 'easeOut' }}
           viewport={{ once: true }}
           style={{
-            marginTop: 10, height: 2, width: 80,
-            background: 'linear-gradient(to right, #C9A84C, transparent)',
-            transformOrigin: 'left',
+            marginTop: 10, height: 2, width: 80, margin: '10px auto 0',
+            background: 'linear-gradient(to right, transparent, #C9A84C, transparent)',
+            transformOrigin: 'center',
           }}
         />
       </motion.div>
 
-      {/* slide area + arrows */}
-      <div style={{ position: 'relative', overflow: 'hidden', zIndex: 1 }}>
-        {/* prev arrow */}
-        <button onClick={prev} aria-label="Previous" style={{
-          position: 'absolute', left: -16, top: '50%', transform: 'translateY(-50%)',
-          zIndex: 2, background: 'transparent', border: '1px solid rgba(201,168,76,0.35)',
-          color: '#C9A84C', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
-          fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'background 0.2s, border-color 0.2s',
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(201,168,76,0.12)'; e.currentTarget.style.borderColor = '#C9A84C'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.35)'; }}
-        >‹</button>
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={slide}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            style={{ display: 'flex', gap: 24 }}
-          >
-            {SPONSOR_SLIDES[slide].map((s, i) => (
-              <PatronCard key={i} label={s.label} index={i} />
-            ))}
-          </motion.div>
-        </AnimatePresence>
-
-        {/* next arrow */}
-        <button onClick={next} aria-label="Next" style={{
-          position: 'absolute', right: -16, top: '50%', transform: 'translateY(-50%)',
-          zIndex: 2, background: 'transparent', border: '1px solid rgba(201,168,76,0.35)',
-          color: '#C9A84C', width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
-          fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'background 0.2s, border-color 0.2s',
-        }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(201,168,76,0.12)'; e.currentTarget.style.borderColor = '#C9A84C'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(201,168,76,0.35)'; }}
-        >›</button>
-      </div>
-
-      {/* dots */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: 32, position: 'relative', zIndex: 1 }}>
-        {SPONSOR_SLIDES.map((_, i) => (
-          <motion.button
-            key={i}
-            onClick={() => setSlide(i)}
-            animate={{ width: i === slide ? 28 : 8, background: i === slide ? '#C9A84C' : 'rgba(201,168,76,0.25)' }}
-            transition={{ duration: 0.3 }}
-            style={{
-              height: 8, borderRadius: 4, border: 'none',
-              cursor: 'pointer', padding: 0,
-            }}
-          />
+      {/* Static 2-card grid */}
+      <div style={{
+        display: 'flex',
+        gap: 32,
+        justifyContent: 'center',
+        flexWrap: 'wrap',
+        position: 'relative',
+        zIndex: 1,
+      }}>
+        {PATRONS.map((p, i) => (
+          <PatronCard key={i} label={p.label} image={p.image} index={i} />
         ))}
       </div>
     </section>
   );
 }
+
 
 /* ── Phases Section ────────────────────────────────────────────── */
 const PHASES = [
@@ -890,8 +849,8 @@ export default function Landing() {
       <GoldDivider />
       <HieroStrip />
 
-      {/* ── THE PATRONS carousel ───────────────────────────────── */}
-      <PatronsCarousel />
+      {/* ── THE PATRONS (static) ─────────────────────────────── */}
+      <PatronsSection />
 
       <GoldDivider />
 
