@@ -574,4 +574,14 @@ router.post('/expire', authMiddleware, async (req, res) => {
   }
 });
 
+/* ══ POST /game/eliminate-fullscreen — fullscreen violation elimination ══ */
+router.post('/eliminate-fullscreen', authMiddleware, async (req, res) => {
+  try {
+    await eliminatePlayer(req.user.uid, 'Exited fullscreen twice during the hunt.');
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

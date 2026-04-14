@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ref, onValue, off } from 'firebase/database';
 import { rtdb } from '../lib/firebase';
@@ -40,12 +40,20 @@ function StatusBadge({ status }) {
 }
 
 export default function Leaderboard() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch]   = useState('');
   const [flashId, setFlashId] = useState(null);
   const myRowRef = useRef(null);
+
+  // Guard: redirect players who are still playing back to the game
+  useEffect(() => {
+    if (profile && profile.status === 'playing') {
+      navigate('/game');
+    }
+  }, [profile, navigate]);
 
   // Initial fetch from backend
   useEffect(() => {

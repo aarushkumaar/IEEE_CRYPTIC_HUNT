@@ -96,7 +96,7 @@ function WarningBanner() {
 }
 
 /* ── Egyptian nav bar ─────────────────────────────────────────────── */
-function EgyptianNav({ score, progress, onBack, loginTime, warningActive, onTimerExpire }) {
+function EgyptianNav({ score, progress, loginTime, warningActive, onTimerExpire }) {
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0,
@@ -111,33 +111,6 @@ function EgyptianNav({ score, progress, onBack, loginTime, warningActive, onTime
       height: 56,
       gap: 12,
     }}>
-      {/* ← Back to ROUNDS button */}
-      <button
-        id="back-to-rounds-btn"
-        onClick={onBack}
-        style={{
-          background: 'rgba(0,0,0,0.7)',
-          border: '1px solid #D4AF37',
-          borderRadius: 20,
-          color: '#D4AF37',
-          padding: '6px 16px',
-          fontFamily: '"Cinzel", serif',
-          fontSize: 9,
-          letterSpacing: '0.2em',
-          cursor: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          transition: 'background 0.2s, box-shadow 0.2s',
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
-        }}
-        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 0 16px rgba(212,175,55,0.4)'}
-        onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-      >
-        ← ROUNDS
-      </button>
-
       {/* Centre — Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: '0 0 auto' }}>
         <span style={{ fontSize: 20, filter: 'drop-shadow(0 0 6px rgba(201,168,76,0.5))' }}>𓂀</span>
@@ -178,6 +151,172 @@ function EgyptianNav({ score, progress, onBack, loginTime, warningActive, onTime
         </div>
       </div>
     </header>
+  );
+}
+
+/* ── Uncopyable text renderer ─────────────────────────────────────── */
+function UncopyableText({ text }) {
+  return (
+    <p style={{
+      fontFamily: '"IM Fell English", Georgia, serif',
+      fontStyle: 'italic',
+      fontSize: 'clamp(15px, 1.8vw, 18px)',
+      color: '#F5ECD0',
+      lineHeight: 1.8,
+      whiteSpace: 'pre-wrap',
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      MozUserSelect: 'none',
+      msUserSelect: 'none',
+      WebkitTouchCallout: 'none',
+    }}>
+      {text.split('').map((char, i) => (
+        <span
+          key={i}
+          style={{
+            display: 'inline',
+            userSelect: 'none',
+            WebkitUserSelect: 'none',
+          }}
+        >
+          {char}
+        </span>
+      ))}
+    </p>
+  );
+}
+
+/* ── Card back (face-down) ────────────────────────────────────────── */
+function CardBack() {
+  return (
+    <div style={{
+      width: 48, height: 72,
+      background: '#0D0B05',
+      border: '1px solid #C9A84C44',
+      borderRadius: 6,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <svg width="36" height="54" viewBox="0 0 36 54">
+        <rect x="2" y="2" width="32" height="50" rx="4"
+          fill="none" stroke="#C9A84C" strokeWidth="0.5" opacity="0.4"/>
+        <rect x="6" y="6" width="24" height="42" rx="2"
+          fill="none" stroke="#C9A84C" strokeWidth="0.3" opacity="0.2"/>
+        <text x="18" y="30" textAnchor="middle" dominantBaseline="central"
+          fill="#C9A84C" fontSize="16" opacity="0.5">✦</text>
+      </svg>
+    </div>
+  );
+}
+
+/* ── Card face (answered / current) ──────────────────────────────── */
+function CardFace({ suit, index, isCurrent, isAnswered }) {
+  const SUIT_SYMBOLS_CF = { spades: '♠', hearts: '♥', diamonds: '♦', clubs: '♣' };
+  const SUIT_COLORS_CF  = {
+    spades: '#7B6EF6', hearts: '#F04A57',
+    diamonds: '#F5C542', clubs: '#1BE0D4',
+  };
+  const symbol = SUIT_SYMBOLS_CF[suit] || '♠';
+  const color  = SUIT_COLORS_CF[suit]  || '#C9A84C';
+
+  return (
+    <div style={{
+      width: 48, height: 72,
+      background: isCurrent ? '#1A1408' : '#0D0B05',
+      border: `1px solid ${isCurrent ? '#C9A84C' : color + '44'}`,
+      borderRadius: 6,
+      boxShadow: isCurrent ? '0 0 16px #C9A84C66' : 'none',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      position: 'relative', transition: 'all 0.3s',
+    }}>
+      <span style={{
+        fontSize: 8, color: '#C9A84C88',
+        fontFamily: '"Cinzel", serif',
+        position: 'absolute', top: 4, left: 4,
+      }}>
+        {index + 1}
+      </span>
+      <span style={{ fontSize: 22, color: isAnswered ? color : color + '66' }}>
+        {symbol}
+      </span>
+    </div>
+  );
+}
+
+/* ── Joker card (wildcard slot) ───────────────────────────────────── */
+function JokerCard({ isCurrent }) {
+  return (
+    <div style={{
+      width: 48, height: 72,
+      background: isCurrent ? '#1A0A1A' : '#0D0B05',
+      border: `1px solid ${isCurrent ? '#F5C542' : '#F5C54244'}`,
+      borderRadius: 6,
+      boxShadow: isCurrent ? '0 0 16px #F5C54266' : 'none',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+    }}>
+      <span style={{ fontSize: 18, marginBottom: 2 }}>🃏</span>
+      <span style={{
+        fontSize: 6, color: '#F5C542',
+        fontFamily: '"Cinzel", serif', letterSpacing: '0.05em',
+      }}>WILD</span>
+    </div>
+  );
+}
+
+/* ── Card panel (left sidebar) ────────────────────────────────────── */
+const PANEL_SUITS = [
+  'spades', 'hearts', 'diamonds', 'clubs',
+  'spades', 'hearts', 'diamonds', 'clubs',
+  'spades', 'hearts', 'diamonds', 'clubs',
+  'wildcard',
+];
+
+function CardPanel({ currentIndex }) {
+  return (
+    <div style={{
+      width: 80,
+      minHeight: '100vh',
+      background: '#080808',
+      backgroundImage: [
+        'linear-gradient(#C9A84C11 1px, transparent 1px)',
+        'linear-gradient(90deg, #C9A84C11 1px, transparent 1px)',
+      ].join(','),
+      backgroundSize: '32px 32px',
+      borderRight: '1px solid #C9A84C22',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      padding: '16px 0',
+      gap: 6,
+      overflowY: 'auto',
+      flexShrink: 0,
+    }}>
+      <p style={{
+        color: '#C9A84C44', fontSize: 8,
+        fontFamily: '"Cinzel", serif', letterSpacing: '0.1em',
+        marginBottom: 8, writingMode: 'vertical-rl',
+        textOrientation: 'mixed', transform: 'rotate(180deg)',
+      }}>CARDS</p>
+
+      {PANEL_SUITS.map((suit, i) => {
+        const isCurrent  = i === currentIndex;
+        const isAnswered = i < currentIndex;
+        const isWildcard = i === 12;
+
+        if (isWildcard)    return <JokerCard key={i} isCurrent={isCurrent} />;
+        if (!isAnswered && !isCurrent) return <CardBack key={i} />;
+        return (
+          <CardFace
+            key={i}
+            suit={suit}
+            index={i}
+            isCurrent={isCurrent}
+            isAnswered={isAnswered}
+          />
+        );
+      })}
+    </div>
   );
 }
 
@@ -619,6 +758,7 @@ export default function Game() {
   const [phaseOverlay, setPhaseOverlay] = useState(null); // phase number being completed
   const [gameExpired, setGameExpired]   = useState(false);
   const [showBackToast, setShowBackToast] = useState(false);
+  const [showFullscreenWarning, setShowFullscreenWarning] = useState(false);
 
   // Login-time based state (from /game/status polling)
   const [loginTime, setLoginTime]         = useState(null);
@@ -628,6 +768,7 @@ export default function Game() {
   const [showExhausted, setShowExhausted] = useState(false);
 
   const inputRef = useRef(null);
+  const fullscreenViolations = useRef(0);
 
   // Derive from progress
   const currentPhase  = progress ? (progress.phase ?? getPhaseFromIndex(progress.index ?? 0)) : 1;
@@ -636,6 +777,70 @@ export default function Game() {
   const isWildcard    = progress?.isWildcard ?? false;
   const suit          = question?.suit ?? 'spades';
   const symbol        = SUIT_SYMBOLS[suit] ?? '♠';
+
+  /* ── Copy / context-menu protection ──────────────────────────────── */
+  useEffect(() => {
+    const noRightClick = (e) => e.preventDefault();
+    document.addEventListener('contextmenu', noRightClick);
+
+    const noCopy = (e) => {
+      if (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 'u')) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('keydown', noCopy);
+
+    const noSelect = (e) => e.preventDefault();
+    document.addEventListener('selectstart', noSelect);
+
+    return () => {
+      document.removeEventListener('contextmenu', noRightClick);
+      document.removeEventListener('keydown', noCopy);
+      document.removeEventListener('selectstart', noSelect);
+    };
+  }, []);
+
+  /* ── Fullscreen enforcement ───────────────────────────────────────── */
+  // NOTE: requestFullscreen is blocked on HTTP. This works after Vercel (HTTPS) deployment.
+  useEffect(() => {
+    const requestFS = async () => {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch (err) {
+        console.log('Fullscreen not available (HTTP or browser restriction)');
+      }
+    };
+    requestFS();
+
+    const handleFullscreenChange = async () => {
+      if (!document.fullscreenElement) {
+        fullscreenViolations.current += 1;
+
+        if (fullscreenViolations.current === 1) {
+          setShowFullscreenWarning(true);
+          setTimeout(async () => {
+            try {
+              await document.documentElement.requestFullscreen();
+            } catch {}
+          }, 3000);
+        }
+
+        if (fullscreenViolations.current >= 2) {
+          try {
+            await api.post('/game/eliminate-fullscreen');
+          } catch {}
+          navigate('/eliminated', {
+            state: { reason: 'Exited fullscreen twice during the hunt.' },
+          });
+        }
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [navigate]);
 
   /* ── Initial load ─────────────────────────────────────────────── */
   useEffect(() => {
@@ -701,7 +906,7 @@ export default function Game() {
     return () => clearInterval(id);
   }, [navigate]);
 
-  /* ── Handle back button ───────────────────────────────────────── */
+  /* ── Handle back button (kept for BackToast but button removed from nav) ── */
   function handleBack() {
     if (answer.trim().length > 0) setShowBackToast(true);
     else navigate('/rounds');
@@ -816,11 +1021,37 @@ export default function Game() {
         flexDirection: 'column',
       }}
     >
+      {/* Fullscreen violation warning */}
+      {showFullscreenWarning && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            position: 'fixed', top: 20, left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#1A0A0A',
+            border: '2px solid #F04A57',
+            color: '#F04A57',
+            padding: '16px 32px',
+            zIndex: 99999,
+            fontFamily: '"Cinzel", serif',
+            fontSize: 13,
+            letterSpacing: '0.1em',
+            textAlign: 'center',
+          }}
+        >
+          ⚠ WARNING: FULLSCREEN VIOLATION 1/2
+          <br />
+          <span style={{ fontSize: 10, color: '#E8D5A0' }}>
+            Exit again and you will be eliminated from the hunt.
+          </span>
+        </motion.div>
+      )}
+
       {/* Egyptian Nav */}
       <EgyptianNav
         score={score}
         progress={progress}
-        onBack={handleBack}
         loginTime={loginTime}
         warningActive={warningActive}
         onTimerExpire={handleTimerExpire}
@@ -831,16 +1062,25 @@ export default function Game() {
         {warningActive && <WarningBanner key="warning" />}
       </AnimatePresence>
 
-      {/* Main two-column layout */}
+      {/* Main layout: card panel + two-column content */}
       <div style={{
         flex: 1,
         paddingTop: warningActive ? 96 : 56,
-        display: 'grid',
-        gridTemplateColumns: 'minmax(280px, 380px) 1fr',
-        gap: 0,
+        display: 'flex',
+        flexDirection: 'row',
         minHeight: `calc(100vh - ${warningActive ? 96 : 56}px)`,
         transition: 'padding-top 0.3s',
       }}>
+        {/* Ornate card panel */}
+        <CardPanel currentIndex={progress?.index ?? 0} />
+
+        {/* ── Content area: card column + problem column ─────────── */}
+        <div style={{
+          flex: 1,
+          display: 'grid',
+          gridTemplateColumns: 'minmax(240px, 340px) 1fr',
+          gap: 0,
+        }}>
 
         {/* ── LEFT COLUMN — Card ──────────────────────────────────── */}
         <div style={{
@@ -1046,18 +1286,25 @@ export default function Game() {
                   padding: '28px 32px',
                   borderRadius: 2,
                   position: 'relative',
+                  userSelect: 'none',
+                  WebkitUserSelect: 'none',
+                  MozUserSelect: 'none',
+                  msUserSelect: 'none',
+                  WebkitTouchCallout: 'none',
                 }}
               >
-                <p style={{
-                  fontFamily: '"IM Fell English", Georgia, serif',
-                  fontStyle: 'italic',
-                  fontSize: 'clamp(15px, 1.8vw, 18px)',
-                  color: '#F5ECD0',
-                  lineHeight: 1.8,
-                  whiteSpace: 'pre-wrap',
-                }}>
-                  "{question.question}"
-                </p>
+                {/* Transparent overlay to intercept right-click on the card */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    zIndex: 1,
+                    userSelect: 'none',
+                    WebkitUserSelect: 'none',
+                  }}
+                  onContextMenu={(e) => e.preventDefault()}
+                />
+                <UncopyableText text={`"${question.question}"`} />
               </motion.div>
             ) : (
               <div style={{
@@ -1143,6 +1390,7 @@ export default function Game() {
             </p>
           )}
         </div>
+        </div> {/* end content grid */}
       </div>
 
       {/* ── Back Toast ────────────────────────────────────────────── */}

@@ -6,6 +6,27 @@ import { useGame } from '../hooks/useGame';
 import QuestionCard from '../components/QuestionCard';
 import ScoreBar from '../components/ScoreBar';
 import ProgressPips from '../components/ProgressPips';
+import api from '../lib/api';
+
+/* ── Uncopyable text renderer ─────────────────────────────────── */
+function UncopyableText({ text, style }) {
+  return (
+    <p style={{
+      userSelect: 'none',
+      WebkitUserSelect: 'none',
+      MozUserSelect: 'none',
+      msUserSelect: 'none',
+      WebkitTouchCallout: 'none',
+      ...style,
+    }}>
+      {text.split('').map((char, i) => (
+        <span key={i} style={{ display: 'inline', userSelect: 'none', WebkitUserSelect: 'none' }}>
+          {char}
+        </span>
+      ))}
+    </p>
+  );
+}
 
 export default function Wildcard() {
   const navigate = useNavigate();
@@ -20,7 +41,9 @@ export default function Wildcard() {
   const [score, setScore]             = useState(profile?.score ?? 0);
   const [showSkipConfirm, setShowSkipConfirm] = useState(false);
   const [feedback, setFeedback]       = useState(null);
+  const [showFullscreenWarning, setShowFullscreenWarning] = useState(false);
   const inputRef = useRef(null);
+  const fullscreenViolations = useRef(0);
 
   useEffect(() => {
     (async () => {
@@ -31,6 +54,70 @@ export default function Wildcard() {
       if (data?.completed) navigate('/pass');
     })();
   }, []);
+
+  /* ── Copy / context-menu protection ────────────────────────────── */
+  useEffect(() => {
+    const noRightClick = (e) => e.preventDefault();
+    document.addEventListener('contextmenu', noRightClick);
+
+    const noCopy = (e) => {
+      if (e.ctrlKey && (e.key === 'c' || e.key === 'a' || e.key === 'u')) {
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('keydown', noCopy);
+
+    const noSelect = (e) => e.preventDefault();
+    document.addEventListener('selectstart', noSelect);
+
+    return () => {
+      document.removeEventListener('contextmenu', noRightClick);
+      document.removeEventListener('keydown', noCopy);
+      document.removeEventListener('selectstart', noSelect);
+    };
+  }, []);
+
+  /* ── Fullscreen enforcement ────────────────────────────────── */
+  // NOTE: requestFullscreen is blocked on HTTP. Works after Vercel (HTTPS) deployment.
+  useEffect(() => {
+    const requestFS = async () => {
+      try {
+        await document.documentElement.requestFullscreen();
+      } catch (err) {
+        console.log('Fullscreen not available (HTTP or browser restriction)');
+      }
+    };
+    requestFS();
+
+    const handleFullscreenChange = async () => {
+      if (!document.fullscreenElement) {
+        fullscreenViolations.current += 1;
+
+        if (fullscreenViolations.current === 1) {
+          setShowFullscreenWarning(true);
+          setTimeout(async () => {
+            try {
+              await document.documentElement.requestFullscreen();
+            } catch {}
+          }, 3000);
+        }
+
+        if (fullscreenViolations.current >= 2) {
+          try {
+            await api.post('/game/eliminate-fullscreen');
+          } catch {}
+          navigate('/eliminated', {
+            state: { reason: 'Exited fullscreen twice during the hunt.' },
+          });
+        }
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [navigate]);
 
   useEffect(() => {
     if (profile?.score !== undefined) setScore(profile.score);
@@ -78,6 +165,33 @@ export default function Wildcard() {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: '#080808', color: '#F5ECD0' }}>
+      {/* Fullscreen violation warning */}
+      {showFullscreenWarning && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            position: 'fixed', top: 20, left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#1A0A0A',
+            border: '2px solid #F04A57',
+            color: '#F04A57',
+            padding: '16px 32px',
+            zIndex: 99999,
+            fontFamily: '"Cinzel", serif',
+            fontSize: 13,
+            letterSpacing: '0.1em',
+            textAlign: 'center',
+          }}
+        >
+          ⚠ WARNING: FULLSCREEN VIOLATION 1/2
+          <br />
+          <span style={{ fontSize: 10, color: '#E8D5A0' }}>
+            Exit again and you will be eliminated from the hunt.
+          </span>
+        </motion.div>
+      )}
+
       {/* Special Wildcard ScoreBar */}
       <div
         className="w-full flex items-center justify-between px-4 md:px-8 py-3"
