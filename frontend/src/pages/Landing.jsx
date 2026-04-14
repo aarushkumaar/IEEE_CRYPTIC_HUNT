@@ -95,21 +95,17 @@ function SandParticles() {
   );
 }
 /* ── Static URL frame arrays ─────────────────────────────────────
-   Frames live in /frontend/assets/ (Vite static serving),
-   not in /src/assets/, so import.meta.glob returns empty.
-   We generate the URL list directly from the known naming pattern.
+   Frames are loaded from Cloudinary.
 ── */
 
-/** Generate sequential frame URLs from a static /assets/ folder. */
-function makeFrameUrls(folder, startNum, count, ext = 'jpg') {
-  return Array.from({ length: count }, (_, i) => {
-    const n = startNum + i;
-    return `/assets/${folder}/frame${String(n).padStart(8, '0')}.${ext}`;
-  });
+const getFrameUrl = (frameIndex) => {
+  const frameNumber = 86400 + frameIndex
+  const padded = String(frameNumber).padStart(8, '0')
+  return `https://res.cloudinary.com/dfiskvjbl/image/upload/tomb_opening_1/frame${padded}`
 }
 
-// Tomb opening: frame00086400.jpg → frame00086591.jpg (192 frames)
-const tombFrames = makeFrameUrls('tomb_opening_1', 86400, 192, 'jpg');
+// Tomb opening: 192 frames
+const tombFrames = Array.from({ length: 192 }, (_, i) => getFrameUrl(i));
 
 // Pyramid flythrough: detect dynamically by checking if first frame loads
 // (pyramid folder present only on some builds — we keep 0-length as graceful fallback)
