@@ -942,7 +942,7 @@ export default function Game() {
         }
       } catch { /* silent */ }
     }
-    const id = setInterval(pollStatus, 60_000);
+    const id = setInterval(pollStatus, 300_000); // 5 minutes
     return () => clearInterval(id);
   }, [navigate]);
 
