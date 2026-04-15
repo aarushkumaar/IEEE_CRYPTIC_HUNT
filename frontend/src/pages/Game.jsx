@@ -925,9 +925,13 @@ export default function Game() {
     if (profile?.score !== undefined) setScore(profile.score);
   }, [profile]);
 
-  /* ── Poll /game/status every 60 s for timer + warning state ──── */
+  /* ── Poll /game/status every 5 min for timer + warning state ──── */
   useEffect(() => {
+    let isFetching = false; // prevent overlapping polls
+
     async function pollStatus() {
+      if (isFetching) return; // skip if previous poll still in-flight
+      isFetching = true;
       try {
         const { data } = await api.get('/game/status');
         if (data?.loginTime) setLoginTime(data.loginTime);
@@ -940,7 +944,9 @@ export default function Game() {
             navigate('/eliminated', { replace: true, state: { reason: 'Time-based elimination.' } });
           }
         }
-      } catch { /* silent */ }
+      } catch { /* silent */ } finally {
+        isFetching = false;
+      }
     }
     const id = setInterval(pollStatus, 300_000); // 5 minutes
     return () => clearInterval(id);

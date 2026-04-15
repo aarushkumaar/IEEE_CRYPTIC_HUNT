@@ -1,6 +1,10 @@
 import express from 'express';
 import { adminAuth } from '../middleware/adminAuth.js';
 import { db, rtdb, auth } from '../firebase.js';
+import { getCache, setCache, invalidatePrefix } from '../cache.js';
+
+const ADMIN_CACHE_TTL = 10_000; // 10 seconds
+const ADMIN_CACHE_PREFIX = 'admin_';
 
 
 const router = express.Router();
@@ -9,6 +13,9 @@ router.use(adminAuth);
 // ── GET /admin/players — list all players with full data ─────────────────────
 router.get('/players', async (req, res) => {
   try {
+    const cached = getCache('admin_players', ADMIN_CACHE_TTL);
+    if (cached) return res.json(cached);
+
     const snapshot = await db.collection('profiles').orderBy('score', 'desc').get();
 
     const enriched = snapshot.docs.map(doc => {
@@ -37,17 +44,20 @@ router.get('/players', async (req, res) => {
       };
     });
 
+    setCache('admin_players', enriched);
     res.json(enriched);
   } catch (err) {
     console.error('/admin/players error:', err.message);
     res.status(500).json({ error: err.message });
-
   }
 });
 
 // ── GET /admin/stats — live aggregate counts ─────────────────────────────────
 router.get('/stats', async (req, res) => {
   try {
+    const cached = getCache('admin_stats', ADMIN_CACHE_TTL);
+    if (cached) return res.json(cached);
+
     const snapshot = await db.collection('profiles').get();
     const counts = { total: snapshot.size, playing: 0, passed: 0, failed: 0, waiting: 0, disqualified: 0, finished: 0 };
 
@@ -58,17 +68,20 @@ router.get('/stats', async (req, res) => {
       if (p.gameFinished) counts.finished++;
     });
 
+    setCache('admin_stats', counts);
     res.json(counts);
   } catch (err) {
     console.error('/admin/stats error:', err.message);
     res.status(500).json({ error: err.message });
-
   }
 });
 
 // ── GET /admin/analytics — rich analytics from profiles + sessions ────────────
 router.get('/analytics', async (req, res) => {
   try {
+    const cached = getCache('admin_analytics', ADMIN_CACHE_TTL);
+    if (cached) return res.json(cached);
+
     const [profilesSnap, sessionsSnap] = await Promise.all([
       db.collection('profiles').orderBy('score', 'desc').get(),
       db.collection('sessions').get(),
@@ -82,7 +95,6 @@ router.get('/analytics', async (req, res) => {
       const p    = doc.data();
       const sess = sessionMap[doc.id] ?? null;
       const loginTime = p.loginTime ?? p.gameStartTime ?? null;
-
 
       return {
         id:                  doc.id,
@@ -108,6 +120,7 @@ router.get('/analytics', async (req, res) => {
       };
     });
 
+    setCache('admin_analytics', rows);
     res.json(rows);
   } catch (err) {
     console.error('/admin/analytics error:', err.message);
@@ -159,6 +172,7 @@ async function deleteQueryBatch(db, query, resolve) {
 
 // ── POST /admin/reset — reset ALL sessions and scores ────────────────────────
 router.post('/reset', async (req, res) => {
+  invalidatePrefix(ADMIN_CACHE_PREFIX); // stale after a global reset
   try {
     // 1. Reset all profiles using batch writes (Firestore batch limit = 500)
     const profilesSnap = await db.collection('profiles').get();
@@ -237,6 +251,7 @@ router.post('/player/:id/reset', async (req, res) => {
       }),
       rtdb.ref(`leaderboard/${id}`).update({ score: 0, status: 'waiting', timeStarted: null, timeEnded: null }),
     ]);
+    invalidatePrefix(ADMIN_CACHE_PREFIX);
     res.json({ success: true });
   } catch (err) {
     console.error('/admin/player/:id/reset error:', err.message);
@@ -260,11 +275,11 @@ router.delete('/player/:id', async (req, res) => {
     // Delete from RTDB
     await rtdb.ref(`leaderboard/${id}`).remove();
 
+    invalidatePrefix(ADMIN_CACHE_PREFIX);
     res.json({ success: true });
   } catch (err) {
     console.error('/admin/player/:id delete error:', err.message);
     res.status(500).json({ error: err.message });
-
   }
 });
 

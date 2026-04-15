@@ -277,7 +277,7 @@ export default function Admin() {
       fetchPlayers();
       fetchAnalytics();
       fetchStats();
-    }, 30000);
+    }, 60000); // 60 s — halves Firestore reads vs the old 30 s interval
     return () => clearInterval(intervalRef.current);
   }, [authed]);
 

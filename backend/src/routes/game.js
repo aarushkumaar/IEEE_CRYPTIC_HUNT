@@ -3,6 +3,11 @@ import rateLimit from 'express-rate-limit';
 import { authMiddleware } from '../middleware/auth.js';
 import { buildQueue } from '../services/queueBuilder.js';
 import { db, rtdb } from '../firebase.js';
+import { getCache, setCache, invalidateCache } from '../cache.js';
+
+// Throttle lastSeen writes: track the last write time per user (in-process memory)
+const lastSeenAt = new Map(); // userId → timestamp
+const LAST_SEEN_THROTTLE_MS = 30_000; // write at most once per 30 s
 
 const router = express.Router();
 
@@ -88,10 +93,14 @@ async function checkTwelveHourExpiry(userId, loginTime, gameFinished) {
   return false;
 }
 
-/* ── Update last_seen (fire-and-forget) ────────────────────────────── */
+/* ── Update last_seen — throttled to max 1 write per 30 s per user ─── */
 function updateLastSeen(userId) {
+  const now = Date.now();
+  const last = lastSeenAt.get(userId) ?? 0;
+  if (now - last < LAST_SEEN_THROTTLE_MS) return; // skip — wrote recently
+  lastSeenAt.set(userId, now);
   db.collection('profiles').doc(userId)
-    .update({ lastSeen: new Date().toISOString() })
+    .update({ lastSeen: new Date(now).toISOString() })
     .catch(() => {}); // intentional fire-and-forget
 }
 
@@ -359,6 +368,7 @@ router.post('/answer', authMiddleware, answerLimit, async (req, res) => {
       ...(newIndex >= TOTAL_QUESTIONS ? { completedAt: new Date().toISOString() } : {}),
     };
     await db.collection('sessions').doc(userId).update(sessionUpdate);
+    invalidateCache(`status_${userId}`); // invalidate cached status after answer
 
     // Profile update
     const profileUpdate = { score: newScore };
@@ -445,6 +455,7 @@ router.post('/skip', authMiddleware, async (req, res) => {
       currentIndex: newIndex,
       currentRound: Math.min(getPhase(newIndex), 4),
     });
+    invalidateCache(`status_${userId}`); // invalidate cached status after skip
 
     if (gameComplete) {
       await db.collection('profiles').doc(userId).update({
@@ -540,14 +551,18 @@ router.get('/result', authMiddleware, async (req, res) => {
 /* ══ GET /game/status — lightweight polling endpoint ════════════════ */
 router.get('/status', authMiddleware, async (req, res) => {
   try {
-    const userId = req.user.uid;
+    const userId   = req.user.uid;
+    const cacheKey = `status_${userId}`;
 
+    // ── Cache hit: serve without touching Firestore ──────────────────
+    const cached = getCache(cacheKey, 5_000);
+    if (cached) return res.json(cached);
+
+    // ── Cache miss: read from Firestore ──────────────────────────────
     const profileDoc = await db.collection('profiles').doc(userId).get();
     const profile    = profileDoc.data();
 
-    const timeInfo = buildTimeInfo(profile?.loginTime, profile?.score);
-
-    // Also check 2h expiry on status poll
+    // Check 2-hour expiry — this is a mutation, so don't cache the result
     if (profile?.loginTime && !profile?.gameFinished) {
       const elapsed = Date.now() - new Date(profile.loginTime).getTime();
       if (elapsed > TWELVE_HOURS_MS) {
@@ -555,20 +570,26 @@ router.get('/status', authMiddleware, async (req, res) => {
         await db.collection('profiles').doc(userId).update({
           gameFinished: true, status: 'failed', logoutTime: now,
         });
+        invalidateCache(cacheKey);
         return res.json({ gameExpired: true, score: profile?.score ?? 0 });
       }
     }
 
-    updateLastSeen(userId);
+    const timeInfo = buildTimeInfo(profile?.loginTime, profile?.score);
 
-    res.json({
-      score:        profile?.score ?? 0,
-      status:       profile?.status ?? 'waiting',
-      eliminated:   profile?.eliminated ?? false,
-      loginTime:    profile?.loginTime ?? null,
-      hoursElapsed: timeInfo.hoursElapsed,
+    const result = {
+      score:         profile?.score        ?? 0,
+      status:        profile?.status       ?? 'waiting',
+      eliminated:    profile?.eliminated   ?? false,
+      loginTime:     profile?.loginTime    ?? null,
+      hoursElapsed:  timeInfo.hoursElapsed,
       warningActive: timeInfo.warningActive,
-    });
+    };
+
+    setCache(cacheKey, result); // cache for 5 s
+    updateLastSeen(userId);     // throttled — at most once per 30 s
+
+    res.json(result);
   } catch (err) {
     console.error('/game/status error:', err.message);
     res.status(500).json({ error: err.message });
@@ -610,6 +631,7 @@ router.post('/expire', authMiddleware, async (req, res) => {
     await db.collection('profiles').doc(userId).update({
       gameFinished: true, status: 'failed', logoutTime: now,
     });
+    invalidateCache(`status_${userId}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -619,7 +641,9 @@ router.post('/expire', authMiddleware, async (req, res) => {
 /* ══ POST /game/eliminate-fullscreen — fullscreen violation elimination ══ */
 router.post('/eliminate-fullscreen', authMiddleware, async (req, res) => {
   try {
-    await eliminatePlayer(req.user.uid, 'Exited fullscreen twice during the hunt.');
+    const userId = req.user.uid;
+    await eliminatePlayer(userId, 'Exited fullscreen twice during the hunt.');
+    invalidateCache(`status_${userId}`);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
